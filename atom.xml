@@ -4,14 +4,13 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-12T11:21:52+08:00</updated>
+  <updated>2016-03-12T11:37:55+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
-  <generator uri="http://www.coderforart.com/">CoderForArt</generator>
-
+  <generator uri="http://www.mweb.im/">MWeb</generator>
   
   <entry>
     <title type="html"><![CDATA[GeekBand-OC中的类别和协议]]></title>
@@ -62,7 +61,7 @@ PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现�
 
 <hr/>
 
-<h1 id="toc_0">扩展（extension）</h1>
+<h2 id="toc_0">扩展（extension）</h2>
 
 <p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
 
@@ -86,7 +85,7 @@ PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现�
 
 <h2 id="toc_1"><img src="http://upload-images.jianshu.io/upload_images/1663498-c499a65fb39f5040.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ20160308-2@2x.png"/></h2>
 
-<h1 id="toc_2">协议（protocol）</h1>
+<h2 id="toc_2">协议（protocol）</h2>
 
 <p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
 
