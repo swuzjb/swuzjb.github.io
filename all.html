@@ -142,8 +142,9 @@
 
 <p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
 
-<p><img src="http://upload-images.jianshu.io/upload_images/1663498-e4d1a799ce2dd3b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ20160308-1@2x.png"/><br/>
-PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
+
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
 
 <hr/>
 
@@ -169,9 +170,11 @@ PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现�
 @end
 </code></pre>
 
-<h2 id="toc_1"><img src="http://upload-images.jianshu.io/upload_images/1663498-c499a65fb39f5040.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ20160308-2@2x.png"/></h2>
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
 
-<h2 id="toc_2">协议（protocol）</h2>
+<hr/>
+
+<h2 id="toc_1">协议（protocol）</h2>
 
 <p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
 
@@ -193,7 +196,7 @@ PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现�
 <p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
 协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
 
-<p><img src="http://upload-images.jianshu.io/upload_images/1663498-4ba6efee8da0fb88.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ20160308-0@2x.png"/></p>
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
 
                         
                       </div>
