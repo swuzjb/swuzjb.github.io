@@ -4,13 +4,35 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-12T23:16:10+08:00</updated>
+  <updated>2016-03-12T23:18:36+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[前笔记汇总]]></title>
+    <link href="http://swuzjb.github.io/14578438756442.html"/>
+    <updated>2016-03-13T12:37:55+08:00</updated>
+    <id>http://swuzjb.github.io/14578438756442.html</id>
+    <content type="html"><![CDATA[
+<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
+但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
+给大家留个传送门。<br/>
+<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
+<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
+<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
+<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
+<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
+<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
+<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a><br/>
+<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
+<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a></p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand-OC中的类别和协议]]></title>
