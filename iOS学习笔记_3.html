@@ -97,51 +97,23 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14585388984918.html">
+                <a class="clearlink" href="14578438756442.html">
                 
-                  <h1>GeekBand.iOS-键盘回收</h1>
+                  <h1>前笔记汇总</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>我们在程序中经常涉及使用系统键盘录入数据，但是iOS并没有提供一个默认的键盘回收方案。经过查阅网络以及实验，总结以下几种键盘回收方案：</p>
-
-<h2 id="toc_0">触摸空白处回收键盘</h2>
-
-<ol>
-<li><p>点击View空白处实现对键盘的隐藏<br/>
-覆盖UIViewController的touchBegan方法</p>
-
-<pre><code>-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-    //[self.view endEditing:YES];
-    [textFiled resignFirstResponder]; 
-}
-</code></pre></li>
-<li><p>创建自定义的触摸手势来实现对键盘的隐藏</p>
-
-<pre><code>-(void)viewDidLoad{  
-    [super viewDidLoad];  
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardHide:)];  
-    //设置成NO表示当前控件响应后会传播到其他控件上，默认为YES。  
-    tapGestureRecognizer.cancelsTouchesInView = NO;  
-    //将触摸事件添加到当前view  
-    [self.view addGestureRecognizer:tapGestureRecognizer];  
-}  
-
--(void)keyboardHide:(UITapGestureRecognizer*)tap{  
-    [textFiled resignFirstResponder];  
-}  
-</code></pre></li>
-<li><p>修改xib中UIView的Custom class为UIControl，UIControl是一些常用控件如UIButton的父类，是UIView的派生类，实现了对触摸和下按的封装。<br/>
-    1.首先设置xib中得UIView的Custom class为UIControl<br/>
-    2.设置关系事件，将xib中得UIView拖到.m区中设置好事件为Touch Up Inside<br/>
-    3、编写隐藏代码：</p>
-
-<pre><code>-(IBAction)touchView:(id)sender {  
-    [self.view endEditing:YES];  
-}  
-</code></pre></li>
-</ol>
+                        	<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
+但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
+给大家留个传送门。<br/>
+<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
+<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
+<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
+<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
+<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
+<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
+<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
 
                         
                       </div>
@@ -150,7 +122,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/3/21</span>
+                    <span class="date">2016/3/13</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -172,12 +144,12 @@
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   
+			   <a href="iOS学习笔记_2.html">&laquo; Prev Page</a>  
 			  </p>
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="iOS学习笔记_1.html">&raquo; Next Page</a> 
+			 <a href="iOS学习笔记_4.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
