@@ -97,50 +97,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14585388984918.html">
+                <a class="clearlink" href="14585643199431.html">
                 
-                  <h1>GeekBand.iOS-键盘回收</h1>
+                  <h1>GeekBand.iOS-UIViewController</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>我们在程序中经常涉及使用系统键盘录入数据，但是iOS并没有提供一个默认的键盘回收方案。经过查阅网络以及实验，总结以下几种键盘回收方案：</p>
+                        	<p>UIViewController是一个普通的ObjC对象，它的主要功能是管理View、传递数据、响应用户操作、内存管理（状态保持）、适应适配。</p>
 
-<h2 id="toc_0">触摸空白处回收键盘</h2>
+<h2 id="toc_0">iOS设计模式</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-cocoa_mvc.gif" alt="iOS设计模式"/></p>
+
+<h2 id="toc_1">UIViewController调用顺序</h2>
+
+<p>ViewController生命周期会经历初始化、加载视图、销毁视图、生命结束等过程。</p>
 
 <ol>
-<li><p>点击View空白处实现对键盘的隐藏<br/>
-覆盖UIViewController的touchBegan方法</p>
+<li>init方法
+初始化ViewController本身。</li>
+<li>loadView方法
+当view需要被展示而它却是nil时，viewController会调用该方法，如果代码构建View的话需要重写此方法。</li>
+<li>viewDidLoad方法
+执行完loadView后继续执行viewDidLoad，loadView时还没有view，而viewDidLoad时view已经创建好了。</li>
+<li>viewDidUnload方法
+当系统内存吃紧的时候会调用该方法。</li>
+<li>dealloc
+释放其他资源或内存。</li>
+</ol>
 
-<pre><code>-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-    //[self.view endEditing:YES];
-    [textFiled resignFirstResponder]; 
+<p>View Controller的生命周期如下图所示：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-UIViewController%20Class%20Reference_2x.png" alt="UIViewController生命周期"/></p>
+
+<h2 id="toc_2">rootViewController的过程</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585714986064.jpg" alt="rootViewController"/></p>
+
+<p>使用代码指定rootViewController</p>
+
+<pre><code>- (void) tryNibName {
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+  UIViewController * rootVC = [[UIViewController alloc] initWithNibName:@&quot;rootVC&quot; bundle:nil];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
 }
-</code></pre></li>
-<li><p>创建自定义的触摸手势来实现对键盘的隐藏</p>
 
-<pre><code>-(void)viewDidLoad{  
-    [super viewDidLoad];  
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardHide:)];  
-    //设置成NO表示当前控件响应后会传播到其他控件上，默认为YES。  
-    tapGestureRecognizer.cancelsTouchesInView = NO;  
-    //将触摸事件添加到当前view  
-    [self.view addGestureRecognizer:tapGestureRecognizer];  
-}  
+- (void) tryNibOfUserVCName {
+  // xib can be MyViewController or MyView
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[MyViewController alloc] init];
+  self.window.rootViewController = rootVC;
 
--(void)keyboardHide:(UITapGestureRecognizer*)tap{  
-    [textFiled resignFirstResponder];  
-}  
-</code></pre></li>
-<li><p>修改xib中UIView的Custom class为UIControl，UIControl是一些常用控件如UIButton的父类，是UIView的派生类，实现了对触摸和下按的封装。<br/>
-    1.首先设置xib中得UIView的Custom class为UIControl<br/>
-    2.设置关系事件，将xib中得UIView拖到.m区中设置好事件为Touch Up Inside<br/>
-    3、编写隐藏代码：</p>
+  [self.window makeKeyAndVisible];
+}
 
-<pre><code>-(IBAction)touchView:(id)sender {  
-    [self.view endEditing:YES];  
-}  
-</code></pre></li>
+- (void) tryNibOfVCName {
+  // UI prefix in class name means system class, which will bypass xib lookup!
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[UIViewController alloc] init];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+</code></pre>
+
+<h2 id="toc_3">多个ViewController的替换</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585720269718.jpg" alt=""/></p>
+
+<h2 id="toc_4">ViewController传值</h2>
+
+<ol>
+<li>使用属性进行传值</li>
+<li>使用delegate进行回调进行传值</li>
+<li>使用segue进行传值</li>
 </ol>
 
                         
@@ -234,6 +268,18 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14585643199431.html">GeekBand.iOS-UIViewController</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14585638251666.html">GeekBand.iOS—APP生命周期</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14585388984918.html">GeekBand.iOS-键盘回收</a>
 			      </li>
 		     
@@ -251,16 +297,8 @@
 		     
 		  
 		      
-			      <li class="post">
-			        <a href="14578438756442.html">前笔记汇总</a>
-			      </li>
-		     
 		  
 		      
-			      <li class="post">
-			        <a href="14577530083114.html">GeekBand-OC中的类别和协议</a>
-			      </li>
-		     
 		   
 		  		</ul>
                 </div>
