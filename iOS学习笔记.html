@@ -97,6 +97,76 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14585388984918.html">
+                
+                  <h1>GeekBand.iOS-键盘回收</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>我们在程序中经常涉及使用系统键盘录入数据，但是iOS并没有提供一个默认的键盘回收方案。经过查阅网络以及实验，总结以下几种键盘回收方案：</p>
+
+<h2 id="toc_0">触摸空白处回收键盘</h2>
+
+<ol>
+<li><p>点击View空白处实<br/>
+覆盖UIViewController的touchBegan方法</p>
+
+<pre><code>-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    //[self.view endEditing:YES];
+    [textFiled resignFirstResponder]; 
+}
+</code></pre></li>
+<li><p>创建自定义的触摸手势来实现对键盘的隐藏</p>
+
+<pre><code>-(void)viewDidLoad{  
+    [super viewDidLoad];  
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardHide:)];  
+    //设置成NO表示当前控件响应后会传播到其他控件上，默认为YES。  
+    tapGestureRecognizer.cancelsTouchesInView = NO;  
+    //将触摸事件添加到当前view  
+    [self.view addGestureRecognizer:tapGestureRecognizer];  
+}  
+
+-(void)keyboardHide:(UITapGestureRecognizer*)tap{  
+    [textFiled resignFirstResponder];  
+}  
+</code></pre></li>
+<li><p>修改xib中UIView的Custom class为UIControl，UIControl是一些常用控件如UIButton的父类，是UIView的派生类，实现了对触摸和下按的封装。<br/>
+    1.首先设置xib中得UIView的Custom class为UIControl<br/>
+    2.设置关系事件，将xib中得UIView拖到.m区中设置好事件为Touch Up Inside<br/>
+    3、编写隐藏代码：</p>
+
+<pre><code>-(IBAction)touchView:(id)sender {  
+    [self.view endEditing:YES];  
+}  
+</code></pre></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14581131891410.html">
                 
                   <h1>GeekBand.iOS-猜城市游戏</h1>
@@ -755,6 +825,12 @@ typedef enum {
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="14585388984918.html">GeekBand.iOS-键盘回收</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="14581131891410.html">GeekBand.iOS-猜城市游戏</a>

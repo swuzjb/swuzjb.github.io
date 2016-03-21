@@ -4,13 +4,61 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-16T17:51:03+08:00</updated>
+  <updated>2016-03-16T17:59:43+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-键盘回收]]></title>
+    <link href="http://swuzjb.github.io/14585388984918.html"/>
+    <updated>2016-03-21T13:41:38+08:00</updated>
+    <id>http://swuzjb.github.io/14585388984918.html</id>
+    <content type="html"><![CDATA[
+<p>我们在程序中经常涉及使用系统键盘录入数据，但是iOS并没有提供一个默认的键盘回收方案。经过查阅网络以及实验，总结以下几种键盘回收方案：</p>
+
+<h2 id="toc_0">触摸空白处回收键盘</h2>
+
+<ol>
+<li><p>点击View空白处实<br/>
+覆盖UIViewController的touchBegan方法</p>
+
+<pre><code>-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    //[self.view endEditing:YES];
+    [textFiled resignFirstResponder]; 
+}
+</code></pre></li>
+<li><p>创建自定义的触摸手势来实现对键盘的隐藏</p>
+
+<pre><code>-(void)viewDidLoad{  
+    [super viewDidLoad];  
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(keyboardHide:)];  
+    //设置成NO表示当前控件响应后会传播到其他控件上，默认为YES。  
+    tapGestureRecognizer.cancelsTouchesInView = NO;  
+    //将触摸事件添加到当前view  
+    [self.view addGestureRecognizer:tapGestureRecognizer];  
+}  
+
+-(void)keyboardHide:(UITapGestureRecognizer*)tap{  
+    [textFiled resignFirstResponder];  
+}  
+</code></pre></li>
+<li><p>修改xib中UIView的Custom class为UIControl，UIControl是一些常用控件如UIButton的父类，是UIView的派生类，实现了对触摸和下按的封装。<br/>
+    1.首先设置xib中得UIView的Custom class为UIControl<br/>
+    2.设置关系事件，将xib中得UIView拖到.m区中设置好事件为Touch Up Inside<br/>
+    3、编写隐藏代码：</p>
+
+<pre><code>-(IBAction)touchView:(id)sender {  
+    [self.view endEditing:YES];  
+}  
+</code></pre></li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.iOS-猜城市游戏]]></title>
