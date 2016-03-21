@@ -4,7 +4,7 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-16T17:59:43+08:00</updated>
+  <updated>2016-03-21T13:53:53+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -23,7 +23,7 @@
 <h2 id="toc_0">触摸空白处回收键盘</h2>
 
 <ol>
-<li><p>点击View空白处实<br/>
+<li><p>点击View空白处实现对键盘的隐藏<br/>
 覆盖UIViewController的touchBegan方法</p>
 
 <pre><code>-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
