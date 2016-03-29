@@ -4,13 +4,104 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-28T22:09:57+08:00</updated>
+  <updated>2016-03-29T18:25:24+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-UICollectionView]]></title>
+    <link href="http://swuzjb.github.io/14592472421509.html"/>
+    <updated>2016-03-29T18:27:22+08:00</updated>
+    <id>http://swuzjb.github.io/14592472421509.html</id>
+    <content type="html"><![CDATA[
+<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
+为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
+它对TableView的优化：
+- 对表格的自然扩展：网格式界面
+- 对表格内部职责进一步细分：分离Layout
+</code></pre>
+
+<h2 id="toc_0">CollectionView实例</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
+
+<h2 id="toc_1">CollectionView界面构成</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
+
+<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
+
+<h2 id="toc_2">说明</h2>
+
+<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
+- cell在collection中被称为item<br/>
+- header/footer被称为supplementary view<br/>
+- item view必须register<br/>
+- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
+
+<h2 id="toc_3">Cell（Item）供应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
+
+<h2 id="toc_4">基本使用</h2>
+
+<ol>
+<li>创建CollectionView对象</li>
+<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
+
+<pre><code>//返回item的数量
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
+
+//返回item实例
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre></li>
+</ol>
+
+<h2 id="toc_5">交互</h2>
+
+<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。</p>
+
+<ul>
+<li>点选</li>
+<li><p>编辑格子</p>
+
+<ul>
+<li>插入、删除</li>
+<li>移动格子的位置</li>
+</ul></li>
+<li><p>刷新数据</p></li>
+<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
+<li><p>滚动到某个格子</p></li>
+<li><p>动态更换布局</p></li>
+</ul>
+
+<h3 id="toc_6">交互响应机会</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
+
+<h3 id="toc_7">刷新CollectionView</h3>
+
+<ul>
+<li>reloadData  全部刷新</li>
+<li>reloadSection  刷新某个section</li>
+<li>reloadItemsAtIndexPaths 刷新某个cell</li>
+</ul>
+
+<h3 id="toc_8">手工移动格子</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
+
+<h2 id="toc_9">参考资料</h2>
+
+<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
+<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.iOS-UILocalized​Indexed​Collation]]></title>

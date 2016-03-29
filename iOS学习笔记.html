@@ -97,112 +97,94 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14591709450392.html">
+                <a class="clearlink" href="14592472421509.html">
                 
-                  <h1>GeekBand.iOS-UILocalized​Indexed​Collation</h1>
+                  <h1>GeekBand.iOS-UICollectionView</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>tableView中区域索引标题（section index titles）。它们是在列表右边纵向排列的字母，你可以在电话本联系人界面和音乐曲库界面中看到它们。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591711593577.jpg" alt="Section Index Titles Example"/><br/>
-当用户在那个列表里向下移动手指时，列表会在对应的区域间跳动。这会使得冗长的列表视图变得超级好用。<br/>
-可以通过实现下列 UITableViewDataSource 中的方法来显示区域索引标题：</p>
-
-<pre><code>//返回一个区域索引标题的数组，用于在列表右边显示，例如字母序列 A...Z 和 #。区域索引标题很短，通常不能多于两个 Unicode 字符。
--sectionIndexTitlesForTableView:
-//返回当用户触摸到某个索引标题时列表应该跳至的区域的索引。 
--tableView:sectionForSectionIndexTitle:atIndex: 
+                        	<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
+为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
+它对TableView的优化：
+- 对表格的自然扩展：网格式界面
+- 对表格内部职责进一步细分：分离Layout
 </code></pre>
 
-<p>我们肯定不想自己去生成这个字母列表。对于不同的地区来说，字母的顺序，甚至「字母」，的意义都会大不相同。此时UILocalizedIndexedCollation来拯救我们了。<br/>
-UILocalizedIndexedCollation 是一个帮助我们组织列表数据的类，它能够根据地区来生成与之对应区域索引标题。不需要直接创建它的对象，我们可以通过 UILocalizedIndexedCollation +currentCollation 获得一个对应当前地区的单例对象。<br/>
-UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域索引标题应该是什么，我们可以通过 sectionIndexTitles 属性来获得它们。</p>
+<h2 id="toc_0">CollectionView实例</h2>
 
-<p>下表可以帮助你更好的了解不同地区之间区域索引标题的差别。</p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
 
-<table>
-<thead>
-<tr>
-<th>Locale</th>
-<th>Section Index Titles</th>
-</tr>
-</thead>
+<h2 id="toc_1">CollectionView界面构成</h2>
 
-<tbody>
-<tr>
-<td>en_US</td>
-<td>A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, #</td>
-</tr>
-<tr>
-<td>ja_JP</td>
-<td>A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, あ, か, さ, た, な, は, ま, や, ら, わ, #</td>
-</tr>
-<tr>
-<td>sv_SE</td>
-<td>A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Å, Ä, Ö, #</td>
-</tr>
-<tr>
-<td>ko_KO</td>
-<td>A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅅ, ㅇ, ㅈ, ㅊ, ㅋ, ㅌ, ㅍ, ㅎ, #</td>
-</tr>
-<tr>
-<td>ar_SA</td>
-<td>A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, آ, ب, ت, ث, ج, ح, خ, د, ذ, ر, ز, س, ش, ص, ض, ط, ظ, ع, غ, ف, ق, ك, ل, م, ن, ه, و, ي, #</td>
-</tr>
-</tbody>
-</table>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
 
-<p>有了这些区域标题，下一步就是判断每个模型对象分别对应哪个区域了。这可以通过实现 <code>-sectionForObject:collationStringSelector:</code> 做到。这个方法返回 NSInteger 类型的索引，它对应了模型对象的指定方法的返回值。方法名称可以为 localizedName、title 甚至 description 等。</p>
+<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
 
-<p>显而易见，列表数据源中会有一个数组，它对应了列表中有多少区域，数组元素表示区域中的每一行。由于整理工作是由 UILocalizedIndexedCollation 来做的，因此理所当然地，也应该由它来为每个区域中的行进行排序。和 -sectionForObject:collationStringSelector: 的实现方式类似，– sortedArrayFromArray:collationStringSelector: 可以为我们基于模型对象的本地化标题来排列模型对象。</p>
+<h2 id="toc_2">说明</h2>
 
-<p>最后，数据源应该实现 -tableView:sectionForSectionIndexTitle:atIndex: 方法，这样当我们触摸到区域索引标题时，能够让列表调至对应的区域。UILocalizedIndexedCollation -sectionForSectionIndexTitleAtIndex: 可以轻松帮我们做到。</p>
+<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
+- cell在collection中被称为item<br/>
+- header/footer被称为supplementary view<br/>
+- item view必须register<br/>
+- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
 
-<p>都说完了，下边是列表数据源的一个常见实现：</p>
+<h2 id="toc_3">Cell（Item）供应</h2>
 
-<pre><code>//数据预处理
--(NSMutableArray *)getSectionsArray{
-    UILocalizedIndexedCollation* collation = [UILocalizedIndexedCollation currentCollation];
-    //获得索引数和section标题数
-    NSInteger index, sectionTitlesCount = [[collation sectionTitles] count];
-    //临时数据，存放section对应的联系人数组数据
-    NSMutableArray *newSectionsArray = [[NSMutableArray alloc] initWithCapacity:sectionTitlesCount];
-    //设置sections数组初始化：元素包含联系人数据的空数据
-    for (index = 0; index &lt; sectionTitlesCount; index++) {
-        NSMutableArray *array = [[NSMutableArray alloc] init];
-        [newSectionsArray addObject:array];
-    }
-    for (Linkman *linkman in self.allLinkmen) {
-        
-        //根据Linkman的name，获得对应的的section number
-        NSInteger sectionNumber = [collation sectionForObject:linkman collationStringSelector:@selector(name)];
-        //获得section的数组
-        NSMutableArray *tempSections = [newSectionsArray objectAtIndex:sectionNumber];
-        //添加内容到section中
-        [tempSections addObject:linkman];
-    }
-    return newSectionsArray;
-}
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
 
+<h2 id="toc_4">基本使用</h2>
 
+<ol>
+<li>创建CollectionView对象</li>
+<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
 
+<pre><code>//返回item的数量
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
 
+//返回item实例
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre></li>
+</ol>
 
-//数据容器操作
-//返回索引的title值
--(NSArray&lt;NSString *&gt; *)sectionIndexTitlesForTableView:(UITableView *)tableView{
-    return [[UILocalizedIndexedCollation currentCollation] sectionIndexTitles];
-}
-//设置section的header的title值
--(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
-    return [UILocalizedIndexedCollation currentCollation].sectionTitles[section];
-}
-//点击索引的位置移动
--(NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index{
-    return [[UILocalizedIndexedCollation currentCollation] sectionForSectionIndexTitleAtIndex:index];
-}
-</code></pre>
+<h2 id="toc_5">交互</h2>
+
+<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。</p>
+
+<ul>
+<li>点选</li>
+<li><p>编辑格子</p>
+
+<ul>
+<li>插入、删除</li>
+<li>移动格子的位置</li>
+</ul></li>
+<li><p>刷新数据</p></li>
+<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
+<li><p>滚动到某个格子</p></li>
+<li><p>动态更换布局</p></li>
+</ul>
+
+<h3 id="toc_6">交互响应机会</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
+
+<h3 id="toc_7">刷新CollectionView</h3>
+
+<ul>
+<li>reloadData  全部刷新</li>
+<li>reloadSection  刷新某个section</li>
+<li>reloadItemsAtIndexPaths 刷新某个cell</li>
+</ul>
+
+<h3 id="toc_8">手工移动格子</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
+
+<h2 id="toc_9">参考资料</h2>
+
+<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
+<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
 
                         
                       </div>
@@ -211,7 +193,7 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/3/28</span>
+                    <span class="date">2016/3/29</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -295,6 +277,12 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
 	      
 		      
 			      <li class="post">
+			        <a href="14592472421509.html">GeekBand.iOS-UICollectionView</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14591709450392.html">GeekBand.iOS-UILocalized​Indexed​Collation</a>
 			      </li>
 		     
@@ -318,10 +306,6 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
 		     
 		  
 		      
-			      <li class="post">
-			        <a href="14585764912552.html">GeekBand.iOS-StoryBoard</a>
-			      </li>
-		     
 		  
 		      
 		  
