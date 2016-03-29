@@ -4,7 +4,7 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-03-29T18:25:24+08:00</updated>
+  <updated>2016-03-29T19:22:59+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -63,7 +63,7 @@
 
 <h2 id="toc_5">交互</h2>
 
-<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。</p>
+<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。实现UICollectionViewDelegate协议</p>
 
 <ul>
 <li>点选</li>
