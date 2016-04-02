@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  前笔记汇总 - 展镜博的个人博客
+  GeekBand.iOS-Autoresizing - 展镜博的个人博客
   
   </title>
   
@@ -97,10 +97,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>前笔记汇总</h1>
+          <h1>GeekBand.iOS-Autoresizing</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/3/13</span>
+          <span class="date">2016/4/2</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -117,16 +117,79 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
-但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
-给大家留个传送门。<br/>
-<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
-<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
-<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
-<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
-<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
-<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
-<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
+      <p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
+为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
+
+<h2 id="toc_0">界面布局过程</h2>
+
+<ul>
+<li>super view
+
+<ul>
+<li>layoutSubviews
+
+<ul>
+<li>iOS5.1- 实现是空的</li>
+<li>后续的版本实现了autoLayout的支持</li>
+</ul></li>
+<li>setNeedsLayout
+
+<ul>
+<li>下次绘制之前需要重新推算布局</li>
+</ul></li>
+<li>layoutIfNeeded
+
+<ul>
+<li>立即重新推算布局
+##对布局的需求的分析
+实现布局主要是计算界面元素之间的间距</li>
+</ul></li>
+<li>固定间距
+用struts（柱子）表示</li>
+<li>弹性间距
+根据界面尺寸比例调整的间距，用springs（弹簧）表示
+##UIView的AutoresizingMask</li>
+</ul></li>
+<li>Fixed vs Flexible
+
+<ul>
+<li>未指定flexible 就是 fixed</li>
+<li>UIViewAutoResizing
+
+<ul>
+<li>None</li>
+<li>FlexibleLeftMargin</li>
+<li>FlexibleWidth</li>
+<li>FlexibleRightMargin</li>
+<li>FlexibleTopMargin</li>
+<li>FlexibleHeight</li>
+<li>FlexibleBottomMargin</li>
+</ul></li>
+<li>Size
+
+<ul>
+<li>width</li>
+<li>height</li>
+</ul></li>
+<li>Margin
+
+<ul>
+<li>left</li>
+<li>right</li>
+<li>Top</li>
+<li>bottom</li>
+</ul></li>
+</ul></li>
+</ul>
+
+<h2 id="toc_1">在Xcode中设置autoresizing</h2>
+
+<ol>
+<li>将View的autoLayout关闭掉
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
+<li>在Xcode中设置autoresizing
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
+</ol>
 
       </div>
 
@@ -134,16 +197,13 @@
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14580567370996.html" 
-          title="Previous Post: GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总">&laquo; GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14577530083114.html" 
-          title="Next Post: GeekBand-OC中的类别和协议">GeekBand-OC中的类别和协议 &raquo;</a>
+          <a  href="14595674718251.html" 
+          title="Next Post: GeekBand.iOS-View的定位">GeekBand.iOS-View的定位 &raquo;</a>
       
       </p>
         </div>
