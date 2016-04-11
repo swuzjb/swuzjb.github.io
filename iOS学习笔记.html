@@ -97,109 +97,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14596904523529.html">
+                <a class="clearlink" href="14603532939876.html">
                 
-                  <h1>GeekBand.iOS-AutoLayout</h1>
+                  <h1>GeekBand.iOS-xcode的工程管理</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
-在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
-
-<h2 id="toc_0">什么是AutoLayout</h2>
-
-<ul>
-<li>AutoLayout是一种布局技术，专门用于布局UI界面。用来取代Frame布局无法适应屏幕分辨率多重多样的不足。</li>
-<li>AutoLayout自iOS6开始引入，由于Xcode4的不给力，当时并没有获得大的推广</li>
-<li>在iOS7（Xcode5）开始，Autolayout的开发效率得到很大的提升</li>
-</ul>
-
-<p>ps.苹果官方也推荐开发者尽量使用Autolayout来布局UI界面<br/>
-Autolayout能轻松的解决屏幕适配的问题</p>
-
-<h2 id="toc_1">开始使用AutoLayout</h2>
-
-<p>自从Xcode6之后，你会看到我们新建一个Single Application，会发现一个ViewController的View非常大，跟任何一个iPhone/iPad的尺寸都不一样，这些都是假象、假象、假象。Apple 把尺寸抽象为了一个正方形，到真正的设备上才是真正的布局。</p>
-
-<h3 id="toc_2">AutoLayout概念</h3>
-
-<ul>
-<li>Pin(相对处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325788323184.png" alt="Pin"/>
-
-<ol>
-<li>边缘距离。最上面的四个虚线表示某个View的距离上、下、左、右多少像素。参考位置一般为对应方向离得最近的View。</li>
-<li>限制View的宽高属性值，或者在宽高中加入一次计算关系。</li>
-<li>那个蓝色的Constrain To Margin 是iPhone6出现之后新增的。Apple 觉得更大的分辨率有点间距好看，默认为8，如果这个勾上了，这个View距离四周的值就变成了你输入的值+8。可以根据实际需求确定是否勾选。</li>
-</ol></li>
-<li>Align(对齐处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325765517581.png" alt="Align"/>
-
-<ol>
-<li>Leading Edges：左对齐</li>
-<li>Trailing Edges：右对齐</li>
-<li>Top Edges：上对齐</li>
-<li>Bottom Edges：下对齐</li>
-<li>Horizontal Centers：水平中心对齐</li>
-<li>Vertical Centers：竖向中心对齐</li>
-<li>Baselines：基线对齐</li>
-<li>Horizontal Center in Container：对齐容器中的水平中心</li>
-<li>Vertical Center in Container：对齐容器中的竖向中心</li>
-</ol></li>
-</ul>
-
-<h3 id="toc_3">Autolayout使用</h3>
-
-<p>本单元中使用Demo对AutoLayout的各种约束进行讲解，讲解Demo主要来自文章开头提到的来源。AutoLayout的核心是参照，也就是基本上任何一个View都可以参照另一个View。</p>
-
-<h4 id="toc_4">Demo0-准备</h4>
-
-<p>我们开始Demo前先想想我们在Frame时代，布局需要什么：</p>
-
-<pre><code>{
-    original：{x,y}
-    size:{width,height}
-}
-</code></pre>
-
-<p>在iOS中布局是绝对定位的（大致这么理解吧）。所以我们需要某个View的X，Y，W，H。我们从基本的入门 ，我们无论添加多少约束，都是需要定位好某个View的X，Y，W，H。少了不行，多了更不行。</p>
-
-<h4 id="toc_5">Demo1-某个View距离父View上下左右间距全部为20。</h4>
-
-<p>对该View添加如下约束：<br/>
-    <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324481117197.png" alt=""/><br/>
-这里有几条注意事项：<br/>
-    1.请注意我这里把距离下面的，也就是BottomLayoutGuide的约束改成了距离控制器的View，为什么？因为BottomLayoutGuide是晚于View加载的，如果参考这个，会造成进入页面会卡一下。尽量不要直接参考下面 TopLayoutGuide 则没事。<br/>
-    2.加完约束你会发现貌似并没有什么效果？不是的，屏幕中出现的黄色的线条 ，这是IB在提升我们你所添加的约束 。和真实的尺寸不一样，怎么修改？在Resolve Auto Layout Issue中选择Update Frame。参考动图。<br/>
-动图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324514982324.gif" alt="demo1"/></p>
-
-<h4 id="toc_6">Demo2-某个View距离在父View的左侧20，白色View，上20，宽高为100。</h4>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324604147373.gif" alt="Demo2"/></p>
-
-<h4 id="toc_7">Demo3-添加一个白色View，距上20，左20，宽高和demo2中的一致</h4>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo3"/></p>
-
-<h4 id="toc_8">Demo4-AspectRatio比例。假设某个假设某个View距离父View右上角20,20 宽高比2:1宽100。</h4>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo4"/><br/>
-AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*Multiplier+Constant</code>,注意比例是支持表达式的如2:3、relation是支持great than,less than.具体的值由系统自动计算。</p>
-
-<h4 id="toc_9">Demo5-某个View距离在父View的右侧20，demo4中白色View上20，宽高和Demo4中的宽高一样，并且有对齐。</h4>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324807851881.gif" alt="Demo5"/></p>
-
-<h2 id="toc_10">参考资料</h2>
-
-<blockquote>
-<ol>
-<li><a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a></li>
-<li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
-</ol>
+                        	<blockquote>
+<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
 </blockquote>
+
+<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
+
+<h2 id="toc_0">Xcode的工程结构</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
+
+<h2 id="toc_1">Workspace</h2>
+
+<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
+其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
+
+<ul>
+<li>这些项目将使用同一个位置
+
+<ul>
+<li>保存项目状态</li>
+<li>保存构造出来的产品</li>
+<li>自动可以相互引用</li>
+</ul></li>
+<li>Xcode自动为独立的项目提供Workspace</li>
+<li>Workspace中的Project仍然可以独立打开</li>
+</ul>
+
+<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
+
+<h2 id="toc_2">Project</h2>
+
+<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
+
+<ul>
+<li>组织工程用到的文件</li>
+<li>管理构建目标Traget</li>
+<li>告诉Xcode当前构建和执行目标
+
+<ul>
+<li>通过Scheme选择</li>
+</ul></li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
+
+<h3 id="toc_3">Group vs. Floder Reference</h3>
+
+<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
+Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
+
+<h2 id="toc_4">Traget</h2>
+
+<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
+- 定义如何构造一个产品（product）<br/>
+    - 指定用到的文件子集<br/>
+    - 定义依赖关系<br/>
+    - 提供构建过程的规则与参数<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
+
+<h3 id="toc_5">Traget与Project区别</h3>
+
+<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
+建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
+
+<h2 id="toc_6">Scheme和Destination</h2>
+
+<ul>
+<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
+<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
+</ul>
 
                         
                       </div>
@@ -208,7 +183,7 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/3</span>
+                    <span class="date">2016/4/11</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -219,7 +194,7 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -308,6 +283,12 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 	      
 		      
 			      <li class="post">
+			        <a href="14603532939876.html">GeekBand.iOS-xcode的工程管理</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14596904523529.html">GeekBand.iOS-AutoLayout</a>
 			      </li>
 		     
@@ -331,10 +312,6 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 		     
 		  
 		      
-			      <li class="post">
-			        <a href="14591709450392.html">GeekBand.iOS-UILocalized​Indexed​Collation</a>
-			      </li>
-		     
 		  
 		      
 		  
