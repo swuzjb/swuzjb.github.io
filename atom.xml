@@ -4,13 +4,105 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-04-10T23:10:54+08:00</updated>
+  <updated>2016-04-11T14:21:12+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-View的层次结构与属性]]></title>
+    <link href="http://swuzjb.github.io/14603730042058.html"/>
+    <updated>2016-04-11T19:10:04+08:00</updated>
+    <id>http://swuzjb.github.io/14603730042058.html</id>
+    <content type="html"><![CDATA[
+<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+
+<h2 id="toc_0">什么是UIView</h2>
+
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
+
+<h2 id="toc_1">屏幕对象UIScreen</h2>
+
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
+
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
+</code></pre>
+
+<h3 id="toc_2">iOS8+</h3>
+
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
+</code></pre>
+
+<h3 id="toc_3">截图</h3>
+
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
+
+<h2 id="toc_4">UIWindow</h2>
+
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
+
+<h2 id="toc_5">UIView</h2>
+
+<h3 id="toc_6">UIView的树状层次</h3>
+
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
+
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+
+<ul>
+<li><p>增加(Create)</p>
+
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
+
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
+</code></pre>
+
+<h3 id="toc_8">UIView的重要属性</h3></li>
+<li><p>定位</p>
+
+<ul>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
+</ul></li>
+<li><p>视觉</p>
+
+<ul>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li><p>访问<br/>
+.tag =&gt; -viewWithTag</p></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.iOS-xcode的工程管理]]></title>
@@ -294,7 +386,9 @@ UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件�
 <h2 id="toc_0">View的层次</h2>
 
 <p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
+上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
 
 <h2 id="toc_1">UIKit坐标系</h2>
 

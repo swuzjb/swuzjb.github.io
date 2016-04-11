@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-View的定位 - 展镜博的个人博客
+  GeekBand.iOS-View的层次结构与属性 - 展镜博的个人博客
   
   </title>
   
@@ -97,10 +97,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-View的定位</h1>
+          <h1>GeekBand.iOS-View的层次结构与属性</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/2</span>
+          <span class="date">2016/4/11</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -111,7 +111,7 @@
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
             
           </span>
 
@@ -119,63 +119,88 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
-UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+      <p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
 
-<h2 id="toc_0">View的层次</h2>
+<h2 id="toc_0">什么是UIView</h2>
 
-<p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
-上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
 
-<h2 id="toc_1">UIKit坐标系</h2>
+<h2 id="toc_1">屏幕对象UIScreen</h2>
 
-<p>-CGPoint{x,y}用于描述坐标<br/>
--CGSize{width,height}用于描述宽和高<br/>
--CGRect{origin,size}描述一个矩形区域<br/>
-坐标系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
 
-<h2 id="toc_2">View的定位-Frame</h2>
-
-<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
-
-<pre><code>-(CGRect)frame{
-    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
-}
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
 </code></pre>
 
-<h2 id="toc_3">View的定位-Bounds</h2>
+<h3 id="toc_2">iOS8+</h3>
 
-<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
-
-<pre><code>-(CGRect)bounds{
-    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
-}
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
 </code></pre>
 
-<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
+<h3 id="toc_3">截图</h3>
 
-<h2 id="toc_4">View的定位-Center</h2>
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
 
-<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
+<h2 id="toc_4">UIWindow</h2>
 
-<h2 id="toc_5">Demo展示</h2>
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
 
-<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
-[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
-view1.backgroundColor = [UIColor redColor];  
-[self.view addSubview:view1];//添加到self.view  
-NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
-  
-UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
-view2.backgroundColor = [UIColor yellowColor];  
-[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
-NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+<h2 id="toc_5">UIView</h2>
+
+<h3 id="toc_6">UIView的树状层次</h3>
+
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
+
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+
+<ul>
+<li><p>增加(Create)</p>
+
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
+
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
 </code></pre>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
+<h3 id="toc_8">UIView的重要属性</h3></li>
+<li><p>定位</p>
+
+<ul>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
+</ul></li>
+<li><p>视觉</p>
+
+<ul>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li><p>访问<br/>
+.tag =&gt; -viewWithTag</p></li>
+</ul>
 
       </div>
 
@@ -183,16 +208,13 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14595830611425.html" 
-          title="Previous Post: GeekBand.iOS-Autoresizing">&laquo; GeekBand.iOS-Autoresizing</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14592472421509.html" 
-          title="Next Post: GeekBand.iOS-UICollectionView">GeekBand.iOS-UICollectionView &raquo;</a>
+          <a  href="14603532939876.html" 
+          title="Next Post: GeekBand.iOS-xcode的工程管理">GeekBand.iOS-xcode的工程管理 &raquo;</a>
       
       </p>
         </div>
@@ -204,7 +226,7 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
           
 
           
-              <div class="ds-thread" data-thread-key="14595674718251.html" data-url="http://swuzjb.github.io/14595674718251.html" data-title="GeekBand.iOS-View的定位"></div>
+              <div class="ds-thread" data-thread-key="14603730042058.html" data-url="http://swuzjb.github.io/14603730042058.html" data-title="GeekBand.iOS-View的层次结构与属性"></div>
           
         </div>
       </div>
