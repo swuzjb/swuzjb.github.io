@@ -4,13 +4,153 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-04-13T00:03:04+08:00</updated>
+  <updated>2016-04-13T00:04:11+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-UIView动画]]></title>
+    <link href="http://swuzjb.github.io/14610365861382.html"/>
+    <updated>2016-04-19T11:29:46+08:00</updated>
+    <id>http://swuzjb.github.io/14610365861382.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>这周的两个课程安排都是大坑啊，一周怎么够！</p>
+</blockquote>
+
+<p>先安利：<br/>
+- <a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a><br/>
+- <a href="http://transitiontreasury.com">http://transitiontreasury.com</a><br/>
+- <a href="https://github.com/sxyx2008/awesome-ios-animation">awesome-ios-animation</a></p>
+
+<p>课程知识汇总：</p>
+
+<h2 id="toc_0">UIKit提供的动画支持</h2>
+
+<p>苹果给UIView已经做好了简单的动画操作方法，可以自动的给一些属性的变化添加关键帧，生成动画效果。支持的属性包括：</p>
+
+<ul>
+<li>frame</li>
+<li>bounds</li>
+<li>center</li>
+<li>transform</li>
+<li>alpha</li>
+<li>backgroundColor</li>
+<li>contentStretch</li>
+</ul>
+
+<p>动画方法：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void));
+</code></pre>
+
+<p>其中可以观察到，duration表述动画的时间，在animation这个block中修改view的可动画属性，系统就会自动添加动画。option是系统提供的各种配置常量，用于不同的动画效果。</p>
+
+<h3 id="toc_1">keyFrame动画支持</h3>
+
+<p>上述的动画操作虽然展示了一些动画效果，但是都比较简单。不能满足我们的日常需要。如果我们需要某个动画，先完成一部分，再完成另一部分。比如将一个view 先从A点移到B点再移到C点，用上面的方法就比较困难。这个时候我们就可以借助。UIView的animateKeyFrame方法。</p>
+
+<pre><code>+(void)animateKeyframesWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewKeyFrameAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished))
+//需要在上述方法的animation中加入
++(void)addKeyFrameWithRelativeStartTime:(double) relativeDuration:(double) animations:(void(^)(void))
+</code></pre>
+
+<p>ps.这里的开始时间，持续时间都是百分比。</p>
+
+<h3 id="toc_2">Spring Animation</h3>
+
+<p>Spring Animation是iOS7.0之后系统新启用的一个动画模式。这里上一篇大神blog作为参考：<a href="https://renfei.org/blog/ios-8-spring-animation.html">ios-8-spring-animation</a>.<br/>
+调用方法如下：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval)duration
+        delay:(NSTimeInterval)delay
+        usingSpringWithDamping:(CGFloat)dampingRatio //阻尼值[0,1.0]
+        initialSpringVelocity:(CGFloat)velocity//初速度
+        options:(UIViewAnimationOptions)options
+        animations:(void(^)(void))animations
+        completion:(void(^)(BOOL finished))completion       
+</code></pre>
+
+<h3 id="toc_3">AutoLayout环境下的动画</h3>
+
+<p>在使用AutoLayout之后，我们对view的frame的属性操作就会失效。这个时候，我们制作动画就应该修改的是view的constraint。步骤如下：<br/>
+1. 修改constraint<br/>
+2. -[view setNeedsUpdateConstraints]//设置约束<br/>
+3. -[view layoutIfNeeded]//在 animation block中调用</p>
+
+<h2 id="toc_4">Transition动画</h2>
+
+<p>上一部分介绍了UIView自带的一些动画效果，但是还有一种动画过程没有介绍。那就是用动画过程完成界面切换。这就是View transition动画。</p>
+
+<h3 id="toc_5">小变化，子View发生变化</h3>
+
+<p>UIView API:</p>
+
+<pre><code>+transitionWithView:(UIView)view //父view
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    animations:(void(^)(void))animations
+    completion:(void(^)(BOOL finished))completion
+</code></pre>
+
+<h3 id="toc_6">大变化，场景转化</h3>
+
+<p>从formView切换到toView</p>
+
+<pre><code>+transitionFromView:(UIView)fromView
+    toView:(UIView)toView
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    completion:(void(^)(BOOL finished))completion           
+</code></pre>
+
+<h2 id="toc_7">UIViewAnimationOptions介绍</h2>
+
+<ul>
+<li>常规动画属性设置（可以同时选择多个进行设置）
+
+<ul>
+<li>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</li>
+<li>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</li>
+<li>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</li>
+<li>UIViewAnimationOptionRepeat：重复运行动画。</li>
+<li>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</li>
+<li>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</li>
+<li>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</li>
+<li>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  </li>
+<li>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</li>
+<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
+</ul></li>
+<li>动画速度控制（可从其中选择一个设置）
+
+<ul>
+<li>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</li>
+<li>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</li>
+<li>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</li>
+<li>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</li>
+</ul></li>
+<li>转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
+
+<ul>
+<li>UIViewAnimationOptionTransitionNone：没有转场动画效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
+</ul></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.iOS-UIScrollView的使用]]></title>
@@ -1821,26 +1961,6 @@ typedef enum {
 <li>这个方法会retain一次view，并且设置它的下一个响应者是receiver，即它的新的父视图。</li>
 <li>每一个视图只能有唯一的一个父视图。如果当前操作视图已经有另外的一个父视图，则addsubview的操作会把它先从上一个父视图中移除（包括响应者链），再加到新的父视图上面。</li>
 </ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[前笔记汇总]]></title>
-    <link href="http://swuzjb.github.io/14578438756442.html"/>
-    <updated>2016-03-13T12:37:55+08:00</updated>
-    <id>http://swuzjb.github.io/14578438756442.html</id>
-    <content type="html"><![CDATA[
-<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
-但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
-给大家留个传送门。<br/>
-<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
-<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
-<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
-<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
-<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
-<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
-<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
 
 ]]></content>
   </entry>
