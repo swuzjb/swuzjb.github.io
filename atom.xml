@@ -4,13 +4,232 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-04-13T00:04:11+08:00</updated>
+  <updated>2016-04-19T16:17:44+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-网络操作]]></title>
+    <link href="http://swuzjb.github.io/14610540983936.html"/>
+    <updated>2016-04-19T16:21:38+08:00</updated>
+    <id>http://swuzjb.github.io/14610540983936.html</id>
+    <content type="html"><![CDATA[
+<p>大部分应用程序都或多或少会牵扯到网络开发，例如说新浪微博、微信等，这些应用本身可能采用iOS开发，但是所有的数据支撑都是基于后台网络服务器的。如今，网络编程越来越普遍，孤立的应用通常是没有生命力的。今天就会给大家介绍这部分内容：</p>
+
+<h2 id="toc_0">Web请求和响应</h2>
+
+<p>做过Web开发的朋友应该很清楚，Http是无连接的请求。每个请求request服务器都有一个对应的响应response，无论是asp.net、jsp、php都是基于这种机制开发的。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-19-220832008241526.png" alt=""/></p>
+
+<p>在Web开发中主要的请求方法有如下几种:</p>
+
+<ul>
+<li>GET请求：get是获取数据的意思，数据以明文在URL中传递，受限于URL长度，所以传输数据量比较小。</li>
+<li>POST请求：post是向服务器提交数据的意思，提交的数据以实际内容形式存放到消息头中进行传递，无法在浏览器url中查看到，大小没有限制。</li>
+<li>HEAD请求：请求头信息，并不返回请求数据体，而只返回请求头信息，常用用于在文件下载中取得文件大小、类型等信息。
+在开发中往往数据存储在服务器端，而客户端（iOS应用）往往通过向服务器端发送请求从服务器端获得数据。要模拟这个过程首先当然是建立服务器端应用，应用的形式没有限制，你可以采用任何Web技术进行开发。</li>
+</ul>
+
+<h2 id="toc_1">原生网络访问</h2>
+
+<p>iOS原生为我们提供了网络访问的能力。我们今天只研究NSURLSession的使用方法。该方法适用于iOS7以后的设备。它提供如下功能：</p>
+
+<ol>
+<li>通过URL将数据下载到内存</li>
+<li>通过URL将数据下载到文件系统</li>
+<li>将数据上传到指定URL</li>
+<li>在后台完成上述功能</li>
+</ol>
+
+<h3 id="toc_2">NSURLSession基本用法</h3>
+
+<ol>
+<li>根据Session类型选择NSURLSessionConfiguration</li>
+<li>设置Configuration，如指定NSURLCache等</li>
+<li><p>用Configuration创建Session</p>
+
+<pre><code>+[NSURLSession sessionWithConfiguration:delegate:delegateQueue:];
++[NSURLSession sessionWithConfiguration];
+</code></pre></li>
+<li><p>在Session里创建网络访问任务</p></li>
+<li><p>启动任务<code>-[NSURLSessionTask resume]</code></p></li>
+</ol>
+
+<h3 id="toc_3">访问Demo</h3>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                         completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [task resume];
+</code></pre>
+
+<p>Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL：</p>
+
+<pre><code>NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+ NSData *data = ...;
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request
+                                                            fromData:data
+                                                   completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [uploadTask resume];
+</code></pre>
+
+<p>Download task 也需要一个 request，不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/file.zip&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
+                                                         completionHandler:
+    ^(NSURL *location, NSURLResponse *response, NSError *error) {
+        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:documentsPath];
+        NSURL *newFileLocation = [documentsDirectoryURL URLByAppendingPathComponent:[[response URL] lastPathComponent]];
+        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+    }];
+
+ [downloadTask resume];
+</code></pre>
+
+<h2 id="toc_4">NSURLSessionConfiguration</h2>
+
+<p>NSURLSessionConfiguration 对象用于对 NSURLSession 对象进行初始化。NSURLSessionConfiguration 对以前 NSMutableURLRequest 所提供的网络请求层的设置选项进行了扩充，提供给我们相当大的灵活性和控制权。从指定可用网络，到 cookie，安全性，缓存策略，再到使用自定义协议，启动事件的设置，以及用于移动设备优化的几个新属性，你会发现使用 NSURLSessionConfiguration 可以找到几乎任何你想要进行配置的选项。<br/>
+NSURLSession 在初始化时会把配置它的 NSURLSessionConfiguration 对象进行一次 copy，并保存到自己的 configuration 属性中，而且这个属性是只读的。因此之后再修改最初配置 session 的那个 configuration 对象对于 session 是没有影响的。也就是说，configuration 只在初始化时被读取一次，之后都是不会变化的。</p>
+
+<h3 id="toc_5">NSURLSessionConfiguration 的工厂方法</h3>
+
+<p>NSURLSessionConfiguration 有三个类工厂方法，这很好地说明了 NSURLSession 设计时所考虑的不同的使用场景。</p>
+
+<ul>
+<li>+defaultSessionConfiguration 返回一个标准的 configuration，这个配置实际上与 NSURLConnection 的网络堆栈（networking stack）是一样的，具有相同的共享 NSHTTPCookieStorage，共享 NSURLCache 和共享 NSURLCredentialStorage。</li>
+<li>+ephemeralSessionConfiguration 返回一个预设配置，这个配置中不会对缓存，Cookie 和证书进行持久性的存储。这对于实现像秘密浏览这种功能来说是很理想的。</li>
+<li>+backgroundSessionConfiguration:(NSString *)identifier 的独特之处在于，它会创建一个后台 session。后台 session 不同于常规的，普通的 session，它甚至可以在应用程序挂起，退出或者崩溃的情况下运行上传和下载任务。初始化时指定的标识符，被用于向任何可能在进程外恢复后台传输的守护进程（daemon）提供上下文。
+###更多内容
+关于NSURLSession的更多信息可以参考<a href="http://objccn.io/issue-5-4/">从 NSURLConnection 到 NSURLSession</a></li>
+</ul>
+
+<h2 id="toc_6">优秀的第三方网络访问库 AFNetworking</h2>
+
+<p>AFNetworking是由Mattt Thompson开发的一个开源的网络访问组件。地址<a href="https://github.com/AFNetworking/AFNetworking">AFNetworking</a><br/>
+从3.0版本开始AFNetworking开始使用NSURLSession进行实现。</p>
+
+<h3 id="toc_7">用法</h3>
+
+<p><code>AFURLSessionManager</code> 创建并管理一个<code>NSURLSession</code>对象 基于指定的<code>NSURLSessionConfiguration</code>对象, 并遵从一下协议 <NSURLSessionTaskDelegate>, <NSURLSessionDataDelegate>, <NSURLSessionDownloadDelegate>, and <NSURLSessionDelegate>.</p>
+
+<h4 id="toc_8">Creating a Download Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/download.zip&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+    return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
+} completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+    NSLog(@&quot;File downloaded to: %@&quot;, filePath);
+}];
+[downloadTask resume];
+</code></pre>
+
+<h4 id="toc_9">Creating an Upload Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURL *filePath = [NSURL fileURLWithPath:@&quot;file://path/to/image.png&quot;];
+NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithRequest:request fromFile:filePath progress:nil completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;Success: %@ %@&quot;, response, responseObject);
+    }
+}];
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_10">Creating an Upload Task for a Multi-Part Request, with Progress</h4>
+
+<pre><code>NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@&quot;POST&quot; URLString:@&quot;http://example.com/upload&quot; parameters:nil constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+        [formData appendPartWithFileURL:[NSURL fileURLWithPath:@&quot;file://path/to/image.jpg&quot;] name:@&quot;file&quot; fileName:@&quot;filename.jpg&quot; mimeType:@&quot;image/jpeg&quot; error:nil];
+    } error:nil];
+
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+
+NSURLSessionUploadTask *uploadTask;
+uploadTask = [manager
+              uploadTaskWithStreamedRequest:request
+              progress:^(NSProgress * _Nonnull uploadProgress) {
+                  // This is not called back on the main queue.
+                  // You are responsible for dispatching to the main queue for UI updates
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      //Update the progress view
+                      [progressView setProgress:uploadProgress.fractionCompleted];
+                  });
+              }
+              completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+                  if (error) {
+                      NSLog(@&quot;Error: %@&quot;, error);
+                  } else {
+                      NSLog(@&quot;%@ %@&quot;, response, responseObject);
+                  }
+              }];
+
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_11">Creating a Data Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://httpbin.org/get&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDataTask *dataTask = [manager dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;%@ %@&quot;, response, responseObject);
+    }
+}];
+[dataTask resume];
+</code></pre>
+
+<h4 id="toc_12">Another way</h4>
+
+<pre><code>NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfiguration:config];
+[manger GET:url parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        //do somthing
+    } failure:nil];
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.iOS-UIView动画]]></title>
@@ -148,6 +367,10 @@
 <li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
 </ul></li>
 </ul>
+
+<h2 id="toc_8">Core Animation</h2>
+
+<p>当进行复杂的动画效果时，需要使用Core Animation System系统进行操作。具体请参考：<a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a></p>
 
 ]]></content>
   </entry>
@@ -1723,244 +1946,6 @@ int main(int argc, char * argv[]){
 
 <p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_34_04.gif" alt="演示1"/><br/>
 <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_48_52.gif" alt="演示2"/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总]]></title>
-    <link href="http://swuzjb.github.io/14580567370996.html"/>
-    <updated>2016-03-15T23:45:37+08:00</updated>
-    <id>http://swuzjb.github.io/14580567370996.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>标题中提到的所有UI控件都可以通过Interface Builder轻松地创建，以下内容仅讨论使用代码建立和修改相关属性</p>
-</blockquote>
-
-<h2 id="toc_0">UILabel</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(x, y, width, height)]; 
-</code></pre></li>
-<li><p>常用属性</p>
-
-<pre><code> //设置显示文字     
-label.text = @&quot;label1&quot;;
-//设置字体:粗体，正常的是 SystemFontOfSize     
-label.font = [UIFont boldSystemFontOfSize:20];     
-//设置文字颜色  
-label.textColor = [UIColor orangeColor];   
-//设置文字排版方式     
-label.textAlignment = UITextAlignmentRight;     
-label.textAlignment = UITextAlignmentCenter;     
-//设置字体大小适应label宽度     
-label.adjustsFontSizeToFitWidth = YES;
-//设置label的显示行数  
-label.numberOfLines = 2; 
-//背景色，也可以设置背景图   
-label.backgroundColor=[UIColor clearColor]; //可以去掉背景色   
-//设置高亮     
-label.highlighted = YES;     
-label.highlightedTextColor = [UIColor orangeColor];     
-//设置阴影     
-label.shadowColor = [UIColor redColor];     
-label.shadowOffset = CGSizeMake(1.0,1.0);     
-//设置是否能与用户进行交互     
-label.userInteractionEnabled = YES;     
-//设置label中的文字是否可变，默认值是YES     
-label.enabled = NO;     
-//设置文字过长时的显示格式     
-label.lineBreakMode = UILineBreakModeMiddleTruncation;//截去中间     
-//  typedef enum {     
-//      UILineBreakModeWordWrap = 0,     
-//      UILineBreakModeCharacterWrap,     
-//      UILineBreakModeClip,//截去多余部分     
-//      UILineBreakModeHeadTruncation,//截去头部     
-//      UILineBreakModeTailTruncation,//截去尾部     
-//      UILineBreakModeMiddleTruncation,//截去中间     
-//  } UILineBreakMode;     
-</code></pre></li>
-</ol>
-
-<h2 id="toc_1">UIButton</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code> //UIButton的定义
-UIButton *button=[[UIButton buttonWithType:(UIButtonType);
-//typedef enum {
-//  UIButtonTypeCustom = 0, 自定义风格
-//  UIButtonTypeRoundedRect, 圆角矩形
-//  UIButtonTypeDetailDisclosure, 蓝色小箭头按钮，主要做详细说明用
-//  UIButtonTypeInfoLight, 亮色感叹号
-//  UIButtonTypeInfoDark, 暗色感叹号
-//  UIButtonTypeContactAdd, 十字加号按钮
-//} UIButtonType;
-</code></pre></li>
-<li><p>常用方法</p>
-
-<pre><code>//设置frame
-button.frame = CGRectMake(20, 20, 280, 40);
-[button setFrame:CGRectMake(20,20,50,50)];
-
-//button背景色
-button.backgroundColor = [UIColor clearColor];
-[button setBackgroundColor:[UIColor blueColor]];
-
-//是否可点击，默认为YES
-button.enable = NO;                          
-//设置button填充图片和背景图片
-[button setImage:(UIImage) forState:UIControlStateNormal];
-[button setBackgroundImage:(UIImage)forState:UIControlStateNormal];
-//设置button标题和标题颜色
-[button1 setTitle:@&quot;点击&quot; forState:UIControlStateNormal];
-[button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-
-//添加或删除事件处理
-[button addTarget:self action:@selector(butClick:)forControlEvents:UIControlEventTouchUpInside];
-[button removeTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
-</code></pre></li>
-</ol>
-
-<h2 id="toc_2">UIImageView</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UIImageView *imageView = [[UIImageView alloc ] init];
-//UIImage加载有两种方式
-//方案1
-UIImage *image = [UIImage imageNamed:@&quot;image_photo&quot;];
-//方案2
-NSString *filePath=[[NSBundle mainBundle] pathForResource:@&quot;image_photo&quot; ofType:@&quot;jpg&quot;];
-UIImage *image=[UIImage imageWithContentsOfFile:filePath];
-
-imageView.image = image;
-</code></pre>
-
-<p>方案一：用imageNamed的方式加载时，系统会把图像Cache到内存。如果图像比较大，或者图像比较多，用这种方式会消耗很大的内存，而且释放图像的内存是一件相对来说比较麻烦的事情。例如：如果利用imageNamed的方式加载图像到一个动态数组NSMutableArray，然后将将数组赋予一个UIView的对象的animationImages进行逐帧动画，那么这将会很有可能造成内存泄露。并且释放图像所占据的内存也不会那么简单。但是利用imageNamed加载图像也有自己的优势。对于同一个图像系统只会把它Cache到内存一次，这对于图像的重复利用是非常有优势的。例如：你需要在一个TableView里重复加载同样一个图标，那么用imageNamed加载图像，系统会把那个图标Cache到内存，在Table里每次利用那个图像的时候，只会把图片指针指向同一块内存。这种情况使用imageNamed加载图像就会变得非常有效。<br/>
-方案二：就是每次单独加载图片，系统不缓存。使用完后记得释放。</p></li>
-<li><p>常用方法</p>
-
-<pre><code> //设置圆角
-imageView.layer.masksToBounds = YES;
-imageView.layer.cornerRadius = 10;
-
-//设置边框颜色和大小
-imageView.layer.borderColor = [UIColor orangeColor].CGColor;
-imageView.layer.borderWidth = 2;
-
-//播放一系列图片
-UIImage *image1 = [UIImage imageNamed:@&quot;1&quot;];
-UIImage *image2 = [UIImage imageNamed:@&quot;2&quot;];
-UIImage *image3 = [UIImage imageNamed:@&quot;3&quot;];
-NSArray *imagesArray = @[image1,image2,image3];
-imageView.animationImages = imagesArray;
-// 设定所有的图片在多少秒内播放完毕
-imageView.animationDuration = [imagesArray count];
-// 重复播放多少遍，0表示无数遍
-imageView.animationRepeatCount = 0;
-// 开始播放
-[imageView startAnimating];
-
- //为图片添加单击事件：一定要先将userInteractionEnabled置为YES，这样才能响应单击事件
-imageView.userInteractionEnabled = YES;
-UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapImageView:)];
-[imageView addGestureRecognizer:singleTap];
-
-//其他设置
-imageView.hidden = YES或者NO;    // 隐藏或者显示图片
-imageView.alpha =0.5;    // 设置透明度
-// 设置高亮时显示的图片
-imageView.highlightedImage = (UIImage *)hightlightedImage;
-imageView.image = (UIImage *)image; // 设置正常显示的图片
-</code></pre></li>
-</ol>
-
-<h2 id="toc_3">UITextField</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UITextField* textField = [[UITextField alloc] initWithFrame:CGRectMake(x, y, width, height)];
-</code></pre></li>
-<li><p>常用方法</p>
-
-<pre><code>textField setBorderStyle:UITextBorderStyleRoundedRect]; //外框类型
-textField.placeholder = @&quot;password&quot;; //默认显示的字 
-textField.secureTextEntry = YES; //密码 
-
-textField.autocorrectionType = UITextAutocorrectionType; //设置是否自动纠错
-typedef enum {
-    UITextAutocorrectionTypeDefault, //默认
-    UITextAutocorrectionTypeNo, 　//不自动纠错
-    UITextAutocorrectionTypeYes,　//自动纠错
-}UITextAutocorrectionType;
-
-textField.clearButtonMode = UITextFieldViewMode; //编辑时会出现个修改X
-typedef enum {
-    UITextFieldViewModeNever,　//重不出现
-    UITextFieldViewModeWhileEditing, //编辑时出现
-    UITextFieldViewModeUnlessEditing,　//除了编辑外都出现
-    UITextFieldViewModeAlways 　//一直出现
-}UITextFieldViewMode; 
-
-//可以在UITextField使用下面方法，按return键返回
--(IBAction) textFieldDone:(id) sender
-{
- [textFieldName resignFirstResponder]; 
-}
-//链接TextField控件的&quot;Did end on exit&quot;
-
-//再次编辑就清空
-textField.clearsOnBeginEditing = YES; 
-
-//设置键盘样式
-textField.keyboardType = UIKeyboardType;
-typedef enum {
-        UIKeyboardTypeDefault,     　//默认键盘，支持所有字符         
-        UIKeyboardTypeASCIICapable,　//支持ASCII的默认键盘
-        UIKeyboardTypeNumbersAndPunctuation,　//标准电话键盘，支持＋＊＃字符
-        UIKeyboardTypeURL,            //URL键盘，支持.com按钮 只支持URL字符
-        UIKeyboardTypeNumberPad,       //数字键盘
-        UIKeyboardTypePhonePad,　 　//电话键盘
-        UIKeyboardTypeNamePhonePad, 　//电话键盘，也支持输入人名
-        UIKeyboardTypeEmailAddress, 　//用于输入电子邮件地址的键盘     
-        UIKeyboardTypeDecimalPad,   　//数字键盘有数字和小数点
-        UIKeyboardTypeTwitter,      　//优化的键盘，方便输入@、#字符
-        UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable, 
-}UIKeyboardType;
-
-//return键样式
-text.returnKeyType =UIReturnKeyType;
-typedef enum {
-    UIReturnKeyDefault, 默认 灰色按钮，标有Return
-    UIReturnKeyGo,    　标有Go的蓝色按钮
-    UIReturnKeyGoogle,标有Google的蓝色按钮，用语搜索
-    UIReturnKeyJoin,标有Join的蓝色按钮
-    UIReturnKeyNext,标有Next的蓝色按钮
-    UIReturnKeyRoute,标有Route的蓝色按钮
-    UIReturnKeySearch,标有Search的蓝色按钮
-    UIReturnKeySend,标有Send的蓝色按钮
-    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
-    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
-    UIReturnKeyEmergencyCall, 紧急呼叫按钮
-} UIReturnKeyType;
-
-</code></pre></li>
-</ol>
-
-<h2 id="toc_4">To ALL</h2>
-
-<p>把上述View加入页面[self.view addSubview:(UIView)]需注意两点：</p>
-
-<ol>
-<li>这个方法会retain一次view，并且设置它的下一个响应者是receiver，即它的新的父视图。</li>
-<li>每一个视图只能有唯一的一个父视图。如果当前操作视图已经有另外的一个父视图，则addsubview的操作会把它先从上一个父视图中移除（包括响应者链），再加到新的父视图上面。</li>
-</ol>
 
 ]]></content>
   </entry>
