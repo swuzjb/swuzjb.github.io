@@ -4,7 +4,7 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-04-19T17:39:42+08:00</updated>
+  <updated>2016-04-24T16:49:59+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -157,6 +157,8 @@ NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:
 <li>并行队列：放到并行队列的任务，GCD 也会FIFO（先进先出）的取出来，但不同的是，它取出来一个就会放到别的线程，然后再取出来一个又放到另一个的线程。这样由于取的动作很快，忽略不计，看起来，所有的任务都是一起执行的。不过需要注意，GCD 会根据系统资源控制并行的数量，所以如果任务很多，它并不会让所有任务同时执行。</li>
 </ul></li>
 </ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14615060017180.jpg" alt=""/></p>
 
 <h4 id="toc_8">队列的创建</h4>
 
