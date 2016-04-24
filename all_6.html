@@ -97,83 +97,97 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14603532939876.html">
+                <a class="clearlink" href="14603730042058.html">
                 
-                  <h1>GeekBand.iOS-xcode的工程管理</h1>
+                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
-</blockquote>
+                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
 
-<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
+<h2 id="toc_0">什么是UIView</h2>
 
-<h2 id="toc_0">Xcode的工程结构</h2>
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
+<h2 id="toc_1">屏幕对象UIScreen</h2>
 
-<h2 id="toc_1">Workspace</h2>
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
 
-<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
-其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
+</code></pre>
+
+<h3 id="toc_2">iOS8+</h3>
+
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
+</code></pre>
+
+<h3 id="toc_3">截图</h3>
+
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
+
+<h2 id="toc_4">UIWindow</h2>
+
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
+
+<h2 id="toc_5">UIView</h2>
+
+<h3 id="toc_6">UIView的树状层次</h3>
+
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
+
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
 
 <ul>
-<li>这些项目将使用同一个位置
+<li><p>增加(Create)</p>
 
-<ul>
-<li>保存项目状态</li>
-<li>保存构造出来的产品</li>
-<li>自动可以相互引用</li>
-</ul></li>
-<li>Xcode自动为独立的项目提供Workspace</li>
-<li>Workspace中的Project仍然可以独立打开</li>
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
+
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
+</code></pre></li>
 </ul>
 
-<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
-
-<h2 id="toc_2">Project</h2>
-
-<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
+<h3 id="toc_8">UIView的重要属性</h3>
 
 <ul>
-<li>组织工程用到的文件</li>
-<li>管理构建目标Traget</li>
-<li>告诉Xcode当前构建和执行目标
+<li>定位
 
 <ul>
-<li>通过Scheme选择</li>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
 </ul></li>
-</ul>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
-
-<h3 id="toc_3">Group vs. Floder Reference</h3>
-
-<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
-Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
-
-<h2 id="toc_4">Traget</h2>
-
-<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
-- 定义如何构造一个产品（product）<br/>
-    - 指定用到的文件子集<br/>
-    - 定义依赖关系<br/>
-    - 提供构建过程的规则与参数<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
-
-<h3 id="toc_5">Traget与Project区别</h3>
-
-<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
-建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
-
-<h2 id="toc_6">Scheme和Destination</h2>
+<li>视觉
 
 <ul>
-<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
-<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li>访问
+.tag =&gt; -viewWithTag</li>
 </ul>
 
                         
@@ -194,7 +208,7 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -283,6 +297,12 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 	      
 		      
 			      <li class="post">
+			        <a href="14614801701186.html">GeekBand.iOS-多线程编程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14610540983936.html">GeekBand.iOS-网络操作</a>
 			      </li>
 		     
@@ -302,12 +322,6 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 		      
 			      <li class="post">
 			        <a href="14603833170565.html">GeekBand.iOS-触摸手势</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14603791205821.html">GeekBand.iOS-事件处理</a>
 			      </li>
 		     
 		  
