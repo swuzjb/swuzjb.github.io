@@ -97,222 +97,376 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14610540983936.html">
+                <a class="clearlink" href="14614801701186.html">
                 
-                  <h1>GeekBand.iOS-网络操作</h1>
+                  <h1>GeekBand.iOS-多线程编程</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>大部分应用程序都或多或少会牵扯到网络开发，例如说新浪微博、微信等，这些应用本身可能采用iOS开发，但是所有的数据支撑都是基于后台网络服务器的。如今，网络编程越来越普遍，孤立的应用通常是没有生命力的。今天就会给大家介绍这部分内容：</p>
+                        	<p>程序都是按部就班的一步一步执行，可是我们现在却可以在听歌的过程中同时做很多事情。cpu为了提高性能也变成双核、四核、八核等等。这些都是多线程技术的应用。今天我们就来总结一下iOS中的多线程编程。</p>
 
-<h2 id="toc_0">Web请求和响应</h2>
-
-<p>做过Web开发的朋友应该很清楚，Http是无连接的请求。每个请求request服务器都有一个对应的响应response，无论是asp.net、jsp、php都是基于这种机制开发的。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-19-220832008241526.png" alt=""/></p>
-
-<p>在Web开发中主要的请求方法有如下几种:</p>
-
-<ul>
-<li>GET请求：get是获取数据的意思，数据以明文在URL中传递，受限于URL长度，所以传输数据量比较小。</li>
-<li>POST请求：post是向服务器提交数据的意思，提交的数据以实际内容形式存放到消息头中进行传递，无法在浏览器url中查看到，大小没有限制。</li>
-<li>HEAD请求：请求头信息，并不返回请求数据体，而只返回请求头信息，常用用于在文件下载中取得文件大小、类型等信息。
-在开发中往往数据存储在服务器端，而客户端（iOS应用）往往通过向服务器端发送请求从服务器端获得数据。要模拟这个过程首先当然是建立服务器端应用，应用的形式没有限制，你可以采用任何Web技术进行开发。</li>
-</ul>
-
-<h2 id="toc_1">原生网络访问</h2>
-
-<p>iOS原生为我们提供了网络访问的能力。我们今天只研究NSURLSession的使用方法。该方法适用于iOS7以后的设备。它提供如下功能：</p>
+<h2 id="toc_0">进程与线程</h2>
 
 <ol>
-<li>通过URL将数据下载到内存</li>
-<li>通过URL将数据下载到文件系统</li>
-<li>将数据上传到指定URL</li>
-<li>在后台完成上述功能</li>
+<li><p>什么是进程？</p>
+
+<p>进程是指在系统中正在运行的一个应用程序。每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805198291.png" alt=""/><br/>
+比如同时打开QQ、Xcode，系统就会分别启动2个进程。通过“活动监视器”可以查看Mac系统中所开启的进程。</p></li>
+<li><p>什么是线程？</p>
+
+<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）<br/>
+线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行<br/>
+比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805962966.png" alt=""/></p></li>
+<li><p>线程的串行</p>
+
+<p>1个线程中任务的执行是串行的。如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务。也就是说，在同一时间内，1个线程只能执行1个任务。比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614806779748.png" alt=""/></p></li>
 </ol>
 
-<h3 id="toc_2">NSURLSession基本用法</h3>
+<h2 id="toc_1">多线程</h2>
 
 <ol>
-<li>根据Session类型选择NSURLSessionConfiguration</li>
-<li>设置Configuration，如指定NSURLCache等</li>
-<li><p>用Configuration创建Session</p>
+<li><p>什么是多线程？</p>
 
-<pre><code>+[NSURLSession sessionWithConfiguration:delegate:delegateQueue:];
-+[NSURLSession sessionWithConfiguration];
+<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务<br/>
+进程 -&gt;车间，线程-&gt;车间工人<br/>
+多线程技术可以提高程序的执行效率<br/>
+比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614808579347.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614809045254.png" alt=""/></p></li>
+<li><p>多线程的优缺点<br/>
+优点：</p>
+
+<ul>
+<li>能适当提高程序的执行效率</li>
+<li>能适当提高资源利用率</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+<li>启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</li>
+<li>线程越多，CPU在调度线程上的开销就越大</li>
+<li>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</li>
+</ul></li>
+<li><p>多线程在iOS开发中的应用<br/>
+主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”<br/>
+主线程的主要作用：显示\刷新UI界面、处理UI事件（比如点击事件、滚动事件、拖拽事件等）。<br/>
+主线程的使用注意:别将比较耗时的操作放到主线程中。<br/>
+耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验。</p></li>
+</ol>
+
+<h2 id="toc_2">iOS中的多线程开发</h2>
+
+<p>iOS中目前主流的多线程实现方案有三种，分别是：</p>
+
+<blockquote>
+<ul>
+<li>NSThread</li>
+<li>GCD</li>
+<li>NSOperation &amp; NSOperationQueue</li>
+</ul>
+</blockquote>
+
+<h3 id="toc_3">NSThread</h3>
+
+<p>这是一套经过苹果封装后的，面向对象的多线程操作方案。利用它可以直接操控线程对象，但是在生命周期管理以及代码复用上并不是很好，所以使用并不是很多。</p>
+
+<h4 id="toc_4">创建并启动</h4>
+
+<ol>
+<li><p>先创建线程类，再启动</p>
+
+<pre><code>// 创建
+NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:nil];
+// 启动
+[thread start];
 </code></pre></li>
-<li><p>在Session里创建网络访问任务</p></li>
-<li><p>启动任务<code>-[NSURLSessionTask resume]</code></p></li>
+<li><p>创建并自动启动</p>
+
+<pre><code>[NSThread detachNewThreadSelector:@selector(run:) toTarget:self withObject:nil];
+</code></pre>
+
+<h4 id="toc_5">其他方法</h4>
+
+<p>NSThread虽然不常用，但是很多方法在我们编程的时候还是比较有价值的。</p></li>
 </ol>
 
-<h3 id="toc_3">访问Demo</h3>
+<pre><code>//取消线程
+- (void)cancel;
 
-<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+//启动线程
+- (void)start;
 
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionDataTask *task = [session dataTaskWithRequest:request
-                                         completionHandler:
-     ^(NSData *data, NSURLResponse *response, NSError *error) {
-         // ...
-     }];
+//判断某个线程的状态的属性
+@property (readonly, getter=isExecuting) BOOL executing;
+@property (readonly, getter=isFinished) BOOL finished;
+@property (readonly, getter=isCancelled) BOOL cancelled;
 
- [task resume];
+//设置和获取线程名字
+-(void)setName:(NSString *)n;
+-(NSString *)name;
+
+//获取当前线程信息
++ (NSThread *)currentThread;
+
+//获取主线程信息
++ (NSThread *)mainThread;
+
+//使当前线程暂停一段时间，或者暂停到某个时刻
++ (void)sleepForTimeInterval:(NSTimeInterval)time;
++ (void)sleepUntilDate:(NSDate *)date;
 </code></pre>
 
-<p>Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL：</p>
+<h3 id="toc_6">GCD</h3>
 
-<pre><code>NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
- NSData *data = ...;
+<p>GCD(Grand Central Dispatch)，名字霸气。他是苹果为多核的并行运算提出的解决方案，所以会自动合理地利用更多的CPU内核（比如双核、四核），最重要的是它会自动管理线程的生命周期（创建线程、调度任务、销毁线程），完全不需要我们管理，我们只需要告诉干什么就行。同时它使用的也是c语言API，不过由于使用了Block，使得使用起来更加方便，而且灵活。所以基本上大家都使用 GCD 这套方案。</p>
 
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request
-                                                            fromData:data
-                                                   completionHandler:
-     ^(NSData *data, NSURLResponse *response, NSError *error) {
-         // ...
-     }];
+<h4 id="toc_7">任务和队列</h4>
 
- [uploadTask resume];
-</code></pre>
-
-<p>Download task 也需要一个 request，不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
-
-<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/file.zip&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
-                                                         completionHandler:
-    ^(NSURL *location, NSURLResponse *response, NSError *error) {
-        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:documentsPath];
-        NSURL *newFileLocation = [documentsDirectoryURL URLByAppendingPathComponent:[[response URL] lastPathComponent]];
-        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
-    }];
-
- [downloadTask resume];
-</code></pre>
-
-<h2 id="toc_4">NSURLSessionConfiguration</h2>
-
-<p>NSURLSessionConfiguration 对象用于对 NSURLSession 对象进行初始化。NSURLSessionConfiguration 对以前 NSMutableURLRequest 所提供的网络请求层的设置选项进行了扩充，提供给我们相当大的灵活性和控制权。从指定可用网络，到 cookie，安全性，缓存策略，再到使用自定义协议，启动事件的设置，以及用于移动设备优化的几个新属性，你会发现使用 NSURLSessionConfiguration 可以找到几乎任何你想要进行配置的选项。<br/>
-NSURLSession 在初始化时会把配置它的 NSURLSessionConfiguration 对象进行一次 copy，并保存到自己的 configuration 属性中，而且这个属性是只读的。因此之后再修改最初配置 session 的那个 configuration 对象对于 session 是没有影响的。也就是说，configuration 只在初始化时被读取一次，之后都是不会变化的。</p>
-
-<h3 id="toc_5">NSURLSessionConfiguration 的工厂方法</h3>
-
-<p>NSURLSessionConfiguration 有三个类工厂方法，这很好地说明了 NSURLSession 设计时所考虑的不同的使用场景。</p>
+<p>在GCD中，加入了两个非常重要的概念：任务和队列。</p>
 
 <ul>
-<li>+defaultSessionConfiguration 返回一个标准的 configuration，这个配置实际上与 NSURLConnection 的网络堆栈（networking stack）是一样的，具有相同的共享 NSHTTPCookieStorage，共享 NSURLCache 和共享 NSURLCredentialStorage。</li>
-<li>+ephemeralSessionConfiguration 返回一个预设配置，这个配置中不会对缓存，Cookie 和证书进行持久性的存储。这对于实现像秘密浏览这种功能来说是很理想的。</li>
-<li>+backgroundSessionConfiguration:(NSString *)identifier 的独特之处在于，它会创建一个后台 session。后台 session 不同于常规的，普通的 session，它甚至可以在应用程序挂起，退出或者崩溃的情况下运行上传和下载任务。初始化时指定的标识符，被用于向任何可能在进程外恢复后台传输的守护进程（daemon）提供上下文。
-###更多内容
-关于NSURLSession的更多信息可以参考<a href="http://objccn.io/issue-5-4/">从 NSURLConnection 到 NSURLSession</a></li>
+<li><p>任务:即操作，你想要干什么，说白了就是一段代码，在GCD中就是一个Block，所以添加任务十分方便。任务有两种执行方式：同步执行和异步执行。</p>
+
+<ul>
+<li>同步（sync）执行：它会阻塞当前线程并等待Block中的代码执行完毕，然后当前线程才会继续往下运行。不具备开启新线程的能力。</li>
+<li>异步（async）执行：当前线程会直接往下执行，并不会阻塞当前线程。具备开启新线程的能力。</li>
+</ul></li>
+<li><p>队列：用于存放任务。在GCD中有两种队列：串行队列和并行队列。</p>
+
+<ul>
+<li>串行队列：队列中的任务会根据队列的先进先出的顺序执行，一个接一个的执行。</li>
+<li>并行队列：放到并行队列的任务，GCD 也会FIFO（先进先出）的取出来，但不同的是，它取出来一个就会放到别的线程，然后再取出来一个又放到另一个的线程。这样由于取的动作很快，忽略不计，看起来，所有的任务都是一起执行的。不过需要注意，GCD 会根据系统资源控制并行的数量，所以如果任务很多，它并不会让所有任务同时执行。</li>
+</ul></li>
 </ul>
 
-<h2 id="toc_6">优秀的第三方网络访问库 AFNetworking</h2>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14615060017180.jpg" alt=""/></p>
 
-<p>AFNetworking是由Mattt Thompson开发的一个开源的网络访问组件。地址<a href="https://github.com/AFNetworking/AFNetworking">AFNetworking</a><br/>
-从3.0版本开始AFNetworking开始使用NSURLSession进行实现。</p>
+<h4 id="toc_8">队列的创建</h4>
 
-<h3 id="toc_7">用法</h3>
+<ul>
+<li><p><strong>主队列</strong>：这是一个特殊的<em>串行队列</em>。主队列，就是APP的主线程，放在这个队列中的任务会在主线程中运行。主要用于刷新UI，所以一般耗时的任务都应该放在别的线程中执行，防止主线程阻塞。</p>
 
-<p><code>AFURLSessionManager</code> 创建并管理一个<code>NSURLSession</code>对象 基于指定的<code>NSURLSessionConfiguration</code>对象, 并遵从一下协议 <NSURLSessionTaskDelegate>, <NSURLSessionDataDelegate>, <NSURLSessionDownloadDelegate>, and <NSURLSessionDelegate>.</p>
+<pre><code>dispatch_queue_t queue = dispatch_get_main_queue();
 
-<h4 id="toc_8">Creating a Download Task</h4>
+</code></pre></li>
+<li><p><strong>自建队列</strong>：自己创建的队列可以是串行队列，也可以是并行队列。创建的方法为<code>dispatch_queue_create</code>。这个方法有两个参数，第一个参数是标识符，用于DEBUG的时候表示唯一的队列，可以为空，一般命名方式为域名的反写。第二个参数声明创建的队列的参数的类型。</p>
 
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+<pre><code>//串行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, NULL);
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_SERIAL);
+//并行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_CONCURRENT);
+</code></pre></li>
+<li><p><strong>全局并行队列</strong>：一个全局的并行队列，系统提供。一般并行任务都加入这个队列中。</p>
 
-NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/download.zip&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
-NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
-    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-    return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
-} completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
-    NSLog(@&quot;File downloaded to: %@&quot;, filePath);
-}];
-[downloadTask resume];
+<pre><code>dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 </code></pre>
 
-<h4 id="toc_9">Creating an Upload Task</h4>
+<h4 id="toc_9">创建任务</h4></li>
+<li><p>同步任务</p>
 
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+<pre><code>dispatch_sync(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+<li><p>异步任务</p>
 
-NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+<pre><code>dispatch_async(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre>
 
-NSURL *filePath = [NSURL fileURLWithPath:@&quot;file://path/to/image.png&quot;];
-NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithRequest:request fromFile:filePath progress:nil completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-    if (error) {
-        NSLog(@&quot;Error: %@&quot;, error);
-    } else {
-        NSLog(@&quot;Success: %@ %@&quot;, response, responseObject);
+<h4 id="toc_10">队列组</h4>
+
+<p>队列组可以将很多队列添加到一个组里，这样做的好处是，当这个组里所有的任务都执行完了，队列组会通过一个方法通知我们。下面是使用方法，这是一个很实用的功能。</p>
+
+<pre><code>//1.创建队列组
+dispatch_group_t group = dispatch_group_create();
+//2.创建队列
+dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+
+//3.多次使用队列组的方法执行任务, 只有异步方法
+//3.1.执行3次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 3; i++) {
+        NSLog(@&quot;group-01 - %@&quot;, [NSThread currentThread]);
     }
-}];
-[uploadTask resume];
-</code></pre>
+});
 
-<h4 id="toc_10">Creating an Upload Task for a Multi-Part Request, with Progress</h4>
-
-<pre><code>NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@&quot;POST&quot; URLString:@&quot;http://example.com/upload&quot; parameters:nil constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
-        [formData appendPartWithFileURL:[NSURL fileURLWithPath:@&quot;file://path/to/image.jpg&quot;] name:@&quot;file&quot; fileName:@&quot;filename.jpg&quot; mimeType:@&quot;image/jpeg&quot; error:nil];
-    } error:nil];
-
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-
-NSURLSessionUploadTask *uploadTask;
-uploadTask = [manager
-              uploadTaskWithStreamedRequest:request
-              progress:^(NSProgress * _Nonnull uploadProgress) {
-                  // This is not called back on the main queue.
-                  // You are responsible for dispatching to the main queue for UI updates
-                  dispatch_async(dispatch_get_main_queue(), ^{
-                      //Update the progress view
-                      [progressView setProgress:uploadProgress.fractionCompleted];
-                  });
-              }
-              completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
-                  if (error) {
-                      NSLog(@&quot;Error: %@&quot;, error);
-                  } else {
-                      NSLog(@&quot;%@ %@&quot;, response, responseObject);
-                  }
-              }];
-
-[uploadTask resume];
-</code></pre>
-
-<h4 id="toc_11">Creating a Data Task</h4>
-
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
-
-NSURL *URL = [NSURL URLWithString:@&quot;http://httpbin.org/get&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
-NSURLSessionDataTask *dataTask = [manager dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-    if (error) {
-        NSLog(@&quot;Error: %@&quot;, error);
-    } else {
-        NSLog(@&quot;%@ %@&quot;, response, responseObject);
+//3.2.主队列执行8次循环
+dispatch_group_async(group, dispatch_get_main_queue(), ^{
+    for (NSInteger i = 0; i &lt; 8; i++) {
+        NSLog(@&quot;group-02 - %@&quot;, [NSThread currentThread]);
     }
+});
+
+//3.3.执行5次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        NSLog(@&quot;group-03 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//4.都完成后会自动通知
+dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+    NSLog(@&quot;完成 - %@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+</ul>
+
+<h3 id="toc_11">NSOperation和NSOperationQueue</h3>
+
+<p><code>NSOperation</code>是苹果公司对<code>GCD</code>的封装，完全面向对象，所以使用起来更好理解。 大家可以看到<code>NSOperation</code>和<code>NSOperationQueue</code> 分别对应 <code>GCD</code>的任务和队列。操作步骤也很好理解：</p>
+
+<pre><code>1. 将要执行的任务封装为一个NSOperation对象
+2. 将这个任务添加到一个NSOperationQueue对象中。
+</code></pre>
+
+<h3 id="toc_12">添加任务</h3>
+
+<p>值得说明的是，<code>NSOperation</code> 只是一个抽象类，所以不能封装任务。但它有 2个子类用于封装任务。分别是：<code>NSInvocationOperation</code> 和 <code>NSBlockOperation</code> 。创建一个 Operation 后，需要调用 start 方法来启动任务，它会默认在当前队列同步执行。当然你也可以在中途取消一个任务，只需要调用其cancel方法即可。</p>
+
+<ul>
+<li>NSInvocationOperation</li>
+</ul>
+
+<pre><code>//1.创建NSInvocationOperation对象
+NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(run) object:nil];
+
+//2.开始执行
+[operation start];
+</code></pre>
+
+<ul>
+<li>NSBlockOperation</li>
+</ul>
+
+<pre><code>    //1.创建NSBlockOperation对象
+  NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+      NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+  }];
+
+  //2.开始任务
+  [operation start];
+</code></pre>
+
+<p>之前说过这样的任务，默认会在当前线程执行。但是 NSBlockOperation 还有一个方法：<code>addExecutionBlock:</code>，通过这个方法可以给 Operation 添加多个执行 Block。这样 Operation 中的任务会并发执行，它会在主线程和其它的多个线程执行这些任务。</p>
+
+<ul>
+<li>自定义Operation
+除了上面的两种 Operation 以外，我们还可以自定义 Operation。自定义 Operation 需要继承 NSOperation 类，并实现其 main() 方法，因为在调用 start() 方法的时候，内部会调用 main() 方法完成相关逻辑。所以如果以上的两个类无法满足你的欲望的时候，你就需要自定义了。你想要实现什么功能都可以写在里面。除此之外，你还需要实现 cancel() 在内的各种方法。所以这个功能提供给高级玩家，我在这里就不说了，等我需要用到时在研究它，到时候可能会再做更新。</li>
+</ul>
+
+<h4 id="toc_13">创建队列</h4>
+
+<p>看过上面的内容就知道，我们可以调用一个 NSOperation 对象的 start() 方法来启动这个任务，但是这样做他们默认是同步执行的。就算是 <code>addExecutionBlock</code>方法，也会在 当前线程和其他线程中执行，也就是说还是会占用当前线程。这是就要用到队列 NSOperationQueue 了。而且，按类型来说的话一共有两种类型：主队列、其他队列。只要添加到队列，会自动调用任务的 start() 方法。</p>
+
+<ul>
+<li>主队列</li>
+</ul>
+
+<p>细心的同学就会发现，每套多线程方案都会有一个主线程（当然啦，说的是iOS中，像 pthread 这种多系统的方案并没有，因为 UI线程 理论需要每种操作系统自己定制）。这是一个特殊的线程，必须串行。所以添加到主队列的任务都会一个接一个地排着队在主线程处理。</p>
+
+<p><code>NSOperationQueue *queue = [NSOperationQueue mainQueue];</code></p>
+
+<ul>
+<li>其它队列</li>
+</ul>
+
+<p>因为主队列比较特殊，所以会单独有一个类方法来获得主队列。那么通过初始化产生的队列就是其他队列了，因为只有这两种队列，除了主队列，其他队列就不需要名字了。</p>
+
+<pre><code>    //1.创建一个其他队列    
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    
+    //2.创建NSBlockOperation对象
+    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+    }];
+    
+    //3.添加多个Block
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        [operation addExecutionBlock:^{
+            NSLog(@&quot;第%ld次：%@&quot;, i, [NSThread currentThread]);
+        }];
+    }
+    
+    //4.队列添加任务
+    [queue addOperation:operation];
+</code></pre>
+
+<p>OK, 这时应该发问了，大家将 NSOperationQueue 与 GCD的队列 相比较就会发现，这里没有串行队列，那如果我想要10个任务在其他线程串行的执行怎么办？</p>
+
+<p>这就是苹果封装的妙处，你不用管串行、并行、同步、异步这些名词。NSOperationQueue 有一个参数 maxConcurrentOperationCount 最大并发数，用来设置最多可以让多少个任务同时执行。当你把它设置为 1 的时候，他不就是串行了嘛！</p>
+
+<p>NSOperationQueue 还有一个添加任务的方法，- (void)addOperationWithBlock:(void (<sup>)(void))block;</sup> ，这是不是和 GCD 差不多？这样就可以添加一个任务到队列中了，十分方便。<br/>
+NSOperation 有一个非常实用的功能，那就是添加依赖。比如有 3 个任务：A: 从服务器上下载一张图片，B：给这张图片加个水印，C：把图片返回给服务器。这时就可以用到依赖了:</p>
+
+<pre><code>//1.任务一：下载图片
+NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;下载图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
 }];
-[dataTask resume];
+
+//2.任务二：打水印
+NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;打水印   - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//3.任务三：上传图片
+NSBlockOperation *operation3 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;上传图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//4.设置依赖
+[operation2 addDependency:operation1];      //任务二依赖任务一
+[operation3 addDependency:operation2];      //任务三依赖任务二
+
+//5.创建队列并加入任务
+NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+[queue addOperations:@[operation3, operation2, operation1] waitUntilFinished:NO];
 </code></pre>
 
-<h4 id="toc_12">Another way</h4>
+<h4 id="toc_14">其它方法</h4>
 
-<pre><code>NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfiguration:config];
-[manger GET:url parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        //do somthing
-    } failure:nil];
-</code></pre>
+<ul>
+<li><p>NSOperation</p>
+
+<pre><code>BOOL executing; //判断任务是否正在执行
+
+BOOL finished; //判断任务是否完成
+
+void (^completionBlock)(void); //用来设置完成后需要执行的操作
+
+- (void)cancel; //取消任务
+
+- (void)waitUntilFinished; //阻塞当前线程直到此任务执行完毕
+</code></pre></li>
+<li><p>NSOperationQueue</p>
+
+<pre><code>NSUInteger operationCount; //获取队列的任务数
+
+-(void)cancelAllOperations; //取消队列中所有的任务
+
+-(void)waitUntilAllOperationsAreFinished; //阻塞当前线程直到此队列中的所有任务执行完毕
+
+[queue setSuspended:YES]; // 暂停queue
+
+[queue setSuspended:NO]; // 继续queue
+</code></pre></li>
+</ul>
+
+<h2 id="toc_15">更多内容</h2>
+
+<p>参考<a href="http://www.jianshu.com/p/0b0d9b1f1f19">关于iOS多线程，你看我就够了</a></p>
 
                         
                       </div>
@@ -321,7 +475,7 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/19</span>
+                    <span class="date">2016/4/24</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -332,7 +486,7 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610540983936.html" data-count-type="comments" href="14610540983936.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14614801701186.html" data-count-type="comments" href="14614801701186.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -421,6 +575,12 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
 	      
 		      
 			      <li class="post">
+			        <a href="14623728039466.html">GeekBand.iOS-数据持久化</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14614801701186.html">GeekBand.iOS-多线程编程</a>
 			      </li>
 		     
@@ -440,12 +600,6 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
 		      
 			      <li class="post">
 			        <a href="14604722520928.html">GeekBand.iOS-UIScrollView的使用</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14603833170565.html">GeekBand.iOS-触摸手势</a>
 			      </li>
 		     
 		  

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  iOS学习笔记 - 展镜博的个人博客
+  GeekBand.iOS-数据持久化 - 展镜博的个人博客
   
   </title>
   
@@ -88,137 +88,243 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14585643199431.html">
-                
-                  <h1>GeekBand.iOS-UIViewController</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>UIViewController是一个普通的ObjC对象，它的主要功能是管理View、传递数据、响应用户操作、内存管理（状态保持）、适应适配。</p>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>GeekBand.iOS-数据持久化</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/5/4</span>
 
-<h2 id="toc_0">iOS设计模式</h2>
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+           
+         
+          <span class="comments">
+            
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-cocoa_mvc.gif" alt="iOS设计模式"/></p>
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
+            
+          </span>
 
-<h2 id="toc_1">UIViewController调用顺序</h2>
+        </div>
+      </div><!-- article -->
 
-<p>ViewController生命周期会经历初始化、加载视图、销毁视图、生命结束等过程。</p>
+      <div class="article-content">
+      <p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
+
+<blockquote>
+<ul>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
+</ul>
+</blockquote>
+
+<h2 id="toc_0">文件存储</h2>
+
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+
+<ul>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+</ul>
+
+<h3 id="toc_2">APP Bundle</h3>
+
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
 
 <ol>
-<li>init方法
-初始化ViewController本身。</li>
-<li>loadView方法
-当view需要被展示而它却是nil时，viewController会调用该方法，如果代码构建View的话需要重写此方法。</li>
-<li>viewDidLoad方法
-执行完loadView后继续执行viewDidLoad，loadView时还没有view，而viewDidLoad时view已经创建好了。</li>
-<li>viewDidUnload方法
-当系统内存吃紧的时候会调用该方法。</li>
-<li>dealloc
-释放其他资源或内存。</li>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
 </ol>
 
-<p>View Controller的生命周期如下图所示：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-UIViewController%20Class%20Reference_2x.png" alt="UIViewController生命周期"/></p>
+<p>纯C语言API</p>
 
-<h2 id="toc_2">rootViewController的过程</h2>
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585714986064.jpg" alt="rootViewController"/></p>
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
 
-<p>使用代码指定rootViewController</p>
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
 
-<pre><code>- (void) tryNibName {
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-  UIViewController * rootVC = [[UIViewController alloc] initWithNibName:@&quot;rootVC&quot; bundle:nil];
-  self.window.rootViewController = rootVC;
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
+    }
+}
+sqlite3_finalize(stmt);
 
-  [self.window makeKeyAndVisible];
+//关闭SQLite
+sqlite3_close(db);
+</code></pre>
+
+<h3 id="toc_7">FMDB</h3>
+
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
+
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
+
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
+
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
+</code></pre>
+
+<h2 id="toc_8">CoreData简介</h2>
+
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
+
+<ol>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+</ol>
+
+<h4 id="toc_11">简单使用</h4>
+
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
+
+//保存
+NSError* error = nil;
+[context save:entity error:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
 }
 
-- (void) tryNibOfUserVCName {
-  // xib can be MyViewController or MyView
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  UIViewController * rootVC = [[MyViewController alloc] init];
-  self.window.rootViewController = rootVC;
-
-  [self.window makeKeyAndVisible];
-}
-
-- (void) tryNibOfVCName {
-  // UI prefix in class name means system class, which will bypass xib lookup!
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  UIViewController * rootVC = [[UIViewController alloc] init];
-  self.window.rootViewController = rootVC;
-
-  [self.window makeKeyAndVisible];
-}
+//删除
+[context deleteObject:managedObject];
 
 </code></pre>
 
-<h2 id="toc_3">多个ViewController的替换</h2>
+<h4 id="toc_12">参考资料</h4>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585720269718.jpg" alt=""/></p>
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
 
-<h2 id="toc_4">ViewController传值</h2>
+      </div>
 
-<ol>
-<li>使用属性进行传值</li>
-<li>使用delegate进行回调进行传值</li>
-<li>使用segue进行传值</li>
-</ol>
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14614801701186.html" 
+          title="Next Post: GeekBand.iOS-多线程编程">GeekBand.iOS-多线程编程 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
 
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
+          
 
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585643199431.html" data-count-type="comments" href="14585643199431.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
+          
+              <div class="ds-thread" data-thread-key="14623728039466.html" data-url="http://swuzjb.github.io/14623728039466.html" data-title="GeekBand.iOS-数据持久化"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="iOS学习笔记_17.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="iOS学习笔记_19.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">
