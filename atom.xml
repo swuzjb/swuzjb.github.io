@@ -4,7 +4,7 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-04-24T22:18:29+08:00</updated>
+  <updated>2016-05-06T01:49:57+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -161,7 +161,7 @@ NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@
 
 //保存
 NSError* error = nil;
-[context save:entity error:&amp;error];
+[context save:&amp;error];
 
 //查询
 NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
