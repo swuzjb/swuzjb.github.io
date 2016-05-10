@@ -4,13 +4,154 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-05-08T22:20:57+08:00</updated>
+  <updated>2016-05-10T16:46:25+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-下标与操作符]]></title>
+    <link href="http://swuzjb.github.io/14628720930939.html"/>
+    <updated>2016-05-10T17:21:33+08:00</updated>
+    <id>http://swuzjb.github.io/14628720930939.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+</blockquote>
+
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
+
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
+}
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
+}
+for i in 0..&lt;10{
+    print(datas[i])
+}
+</code></pre>
+
+<h2 id="toc_1">操作符</h2>
+
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
+
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
+}
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
+</code></pre>
+
+<h3 id="toc_3">相等操作符</h3>
+
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
+
+
+var c5=c3
+
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
+
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.Swift-属性与方法]]></title>
@@ -2509,63 +2650,6 @@ UIView* view =(UIView *) [cell viewWithTag:int];
     <id>http://swuzjb.github.io/14586526599234.html</id>
     <content type="html"><![CDATA[
 <p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-22-uikit_classes.jpg-Watermark.jpeg" alt="UIKIT继承关系"/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-StoryBoard]]></title>
-    <link href="http://swuzjb.github.io/14585764912552.html"/>
-    <updated>2016-03-22T00:08:11+08:00</updated>
-    <id>http://swuzjb.github.io/14585764912552.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
-</blockquote>
-
-<p>本文主要介绍segue。</p>
-
-<h2 id="toc_0">使用storyboard进行页面跳转</h2>
-
-<ol>
-<li><p>纯storyBoard操作</p>
-
-<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
-松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
-从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
-此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
-我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
-<li><p>使用代码调用segue跳转<br/>
-需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
-使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
-</ol>
-
-<h2 id="toc_1">使用segue传递数据</h2>
-
-<ol>
-<li><p>使用prepareForSegue进行传值</p>
-
-<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // segue.identifier：获取连线的ID
-    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
-        // segue.destinationViewController：获取连线时所指的界面（VC）
-        //方法1：设置属性
-        ReceiveViewController *receive = segue.destinationViewController;
-        receive.name = @&quot;Garvey&quot;;
-        receive.age = 110;
-        //2:使用KVC给目标场景传值
-        [destinationController setValue:@119 forKey:@number];
-     }
-}
-</code></pre></li>
-<li><p>返回上级的某个页面<br/>
-使用unwindForSegue进行返回（iOS9+）。<br/>
-<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
-</ol>
 
 ]]></content>
   </entry>

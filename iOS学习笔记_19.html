@@ -97,60 +97,14 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14585764912552.html">
+                <a class="clearlink" href="14586526599234.html">
                 
-                  <h1>GeekBand.iOS-StoryBoard</h1>
+                  <h1>GeekBand.iOS-UIKIT继承关系</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
-</blockquote>
-
-<p>本文主要介绍segue。</p>
-
-<h2 id="toc_0">使用storyboard进行页面跳转</h2>
-
-<ol>
-<li><p>纯storyBoard操作</p>
-
-<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
-松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
-从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
-此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
-我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
-<li><p>使用代码调用segue跳转<br/>
-需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
-使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
-</ol>
-
-<h2 id="toc_1">使用segue传递数据</h2>
-
-<ol>
-<li><p>使用prepareForSegue进行传值</p>
-
-<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // segue.identifier：获取连线的ID
-    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
-        // segue.destinationViewController：获取连线时所指的界面（VC）
-        //方法1：设置属性
-        ReceiveViewController *receive = segue.destinationViewController;
-        receive.name = @&quot;Garvey&quot;;
-        receive.age = 110;
-        //2:使用KVC给目标场景传值
-        [destinationController setValue:@119 forKey:@number];
-     }
-}
-</code></pre></li>
-<li><p>返回上级的某个页面<br/>
-使用unwindForSegue进行返回（iOS9+）。<br/>
-<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
-</ol>
+                        	<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-22-uikit_classes.jpg-Watermark.jpeg" alt="UIKIT继承关系"/></p>
 
                         
                       </div>
@@ -170,7 +124,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14586526599234.html" data-count-type="comments" href="14586526599234.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -259,6 +213,12 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14628720930939.html">GeekBand.Swift-下标与操作符</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14628652524688.html">GeekBand.Swift-属性与方法</a>
 			      </li>
 		     
@@ -278,12 +238,6 @@
 		      
 			      <li class="post">
 			        <a href="14614801701186.html">GeekBand.iOS-多线程编程</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14610540983936.html">GeekBand.iOS-网络操作</a>
 			      </li>
 		     
 		  

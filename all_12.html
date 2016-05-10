@@ -97,86 +97,109 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14595830611425.html">
+                <a class="clearlink" href="14596904523529.html">
                 
-                  <h1>GeekBand.iOS-Autoresizing</h1>
+                  <h1>GeekBand.iOS-AutoLayout</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
-为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
+                        	<p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
+在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
 
-<h2 id="toc_0">界面布局过程</h2>
-
-<ul>
-<li>super view
+<h2 id="toc_0">什么是AutoLayout</h2>
 
 <ul>
-<li>layoutSubviews
-
-<ul>
-<li>iOS5.1- 实现是空的</li>
-<li>后续的版本实现了autoLayout的支持</li>
-</ul></li>
-<li>setNeedsLayout
-
-<ul>
-<li>下次绘制之前需要重新推算布局</li>
-</ul></li>
-<li>layoutIfNeeded
-
-<ul>
-<li>立即重新推算布局
-##对布局的需求的分析
-实现布局主要是计算界面元素之间的间距</li>
-</ul></li>
-<li>固定间距
-用struts（柱子）表示</li>
-<li>弹性间距
-根据界面尺寸比例调整的间距，用springs（弹簧）表示
-##UIView的AutoresizingMask</li>
-</ul></li>
-<li>Fixed vs Flexible
-
-<ul>
-<li>未指定flexible 就是 fixed</li>
-<li>UIViewAutoResizing
-
-<ul>
-<li>None</li>
-<li>FlexibleLeftMargin</li>
-<li>FlexibleWidth</li>
-<li>FlexibleRightMargin</li>
-<li>FlexibleTopMargin</li>
-<li>FlexibleHeight</li>
-<li>FlexibleBottomMargin</li>
-</ul></li>
-<li>Size
-
-<ul>
-<li>width</li>
-<li>height</li>
-</ul></li>
-<li>Margin
-
-<ul>
-<li>left</li>
-<li>right</li>
-<li>Top</li>
-<li>bottom</li>
-</ul></li>
-</ul></li>
+<li>AutoLayout是一种布局技术，专门用于布局UI界面。用来取代Frame布局无法适应屏幕分辨率多重多样的不足。</li>
+<li>AutoLayout自iOS6开始引入，由于Xcode4的不给力，当时并没有获得大的推广</li>
+<li>在iOS7（Xcode5）开始，Autolayout的开发效率得到很大的提升</li>
 </ul>
 
-<h2 id="toc_1">在Xcode中设置autoresizing</h2>
+<p>ps.苹果官方也推荐开发者尽量使用Autolayout来布局UI界面<br/>
+Autolayout能轻松的解决屏幕适配的问题</p>
+
+<h2 id="toc_1">开始使用AutoLayout</h2>
+
+<p>自从Xcode6之后，你会看到我们新建一个Single Application，会发现一个ViewController的View非常大，跟任何一个iPhone/iPad的尺寸都不一样，这些都是假象、假象、假象。Apple 把尺寸抽象为了一个正方形，到真正的设备上才是真正的布局。</p>
+
+<h3 id="toc_2">AutoLayout概念</h3>
+
+<ul>
+<li>Pin(相对处理)
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325788323184.png" alt="Pin"/>
 
 <ol>
-<li>将View的autoLayout关闭掉
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
-<li>在Xcode中设置autoresizing
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
+<li>边缘距离。最上面的四个虚线表示某个View的距离上、下、左、右多少像素。参考位置一般为对应方向离得最近的View。</li>
+<li>限制View的宽高属性值，或者在宽高中加入一次计算关系。</li>
+<li>那个蓝色的Constrain To Margin 是iPhone6出现之后新增的。Apple 觉得更大的分辨率有点间距好看，默认为8，如果这个勾上了，这个View距离四周的值就变成了你输入的值+8。可以根据实际需求确定是否勾选。</li>
+</ol></li>
+<li>Align(对齐处理)
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325765517581.png" alt="Align"/>
+
+<ol>
+<li>Leading Edges：左对齐</li>
+<li>Trailing Edges：右对齐</li>
+<li>Top Edges：上对齐</li>
+<li>Bottom Edges：下对齐</li>
+<li>Horizontal Centers：水平中心对齐</li>
+<li>Vertical Centers：竖向中心对齐</li>
+<li>Baselines：基线对齐</li>
+<li>Horizontal Center in Container：对齐容器中的水平中心</li>
+<li>Vertical Center in Container：对齐容器中的竖向中心</li>
+</ol></li>
+</ul>
+
+<h3 id="toc_3">Autolayout使用</h3>
+
+<p>本单元中使用Demo对AutoLayout的各种约束进行讲解，讲解Demo主要来自文章开头提到的来源。AutoLayout的核心是参照，也就是基本上任何一个View都可以参照另一个View。</p>
+
+<h4 id="toc_4">Demo0-准备</h4>
+
+<p>我们开始Demo前先想想我们在Frame时代，布局需要什么：</p>
+
+<pre><code>{
+    original：{x,y}
+    size:{width,height}
+}
+</code></pre>
+
+<p>在iOS中布局是绝对定位的（大致这么理解吧）。所以我们需要某个View的X，Y，W，H。我们从基本的入门 ，我们无论添加多少约束，都是需要定位好某个View的X，Y，W，H。少了不行，多了更不行。</p>
+
+<h4 id="toc_5">Demo1-某个View距离父View上下左右间距全部为20。</h4>
+
+<p>对该View添加如下约束：<br/>
+    <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324481117197.png" alt=""/><br/>
+这里有几条注意事项：<br/>
+    1.请注意我这里把距离下面的，也就是BottomLayoutGuide的约束改成了距离控制器的View，为什么？因为BottomLayoutGuide是晚于View加载的，如果参考这个，会造成进入页面会卡一下。尽量不要直接参考下面 TopLayoutGuide 则没事。<br/>
+    2.加完约束你会发现貌似并没有什么效果？不是的，屏幕中出现的黄色的线条 ，这是IB在提升我们你所添加的约束 。和真实的尺寸不一样，怎么修改？在Resolve Auto Layout Issue中选择Update Frame。参考动图。<br/>
+动图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324514982324.gif" alt="demo1"/></p>
+
+<h4 id="toc_6">Demo2-某个View距离在父View的左侧20，白色View，上20，宽高为100。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324604147373.gif" alt="Demo2"/></p>
+
+<h4 id="toc_7">Demo3-添加一个白色View，距上20，左20，宽高和demo2中的一致</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo3"/></p>
+
+<h4 id="toc_8">Demo4-AspectRatio比例。假设某个假设某个View距离父View右上角20,20 宽高比2:1宽100。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo4"/><br/>
+AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*Multiplier+Constant</code>,注意比例是支持表达式的如2:3、relation是支持great than,less than.具体的值由系统自动计算。</p>
+
+<h4 id="toc_9">Demo5-某个View距离在父View的右侧20，demo4中白色View上20，宽高和Demo4中的宽高一样，并且有对齐。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324807851881.gif" alt="Demo5"/></p>
+
+<h2 id="toc_10">参考资料</h2>
+
+<blockquote>
+<ol>
+<li><a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a></li>
+<li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
 </ol>
+</blockquote>
 
                         
                       </div>
@@ -185,7 +208,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/2</span>
+                    <span class="date">2016/4/3</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -196,7 +219,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595830611425.html" data-count-type="comments" href="14595830611425.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -285,6 +308,12 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14628720930939.html">GeekBand.Swift-下标与操作符</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14628652524688.html">GeekBand.Swift-属性与方法</a>
 			      </li>
 		     
@@ -304,12 +333,6 @@
 		      
 			      <li class="post">
 			        <a href="14614801701186.html">GeekBand.iOS-多线程编程</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14610540983936.html">GeekBand.iOS-网络操作</a>
 			      </li>
 		     
 		  
