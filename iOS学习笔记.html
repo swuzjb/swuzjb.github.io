@@ -97,94 +97,190 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633830220167.html">
+                <a class="clearlink" href="14633841095158.html">
                 
-                  <h1>GeekBand.Swift-结构与枚举</h1>
+                  <h1>GeekBand.Swift-面向对象</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+<p>面向对象三大特性：封装、继承、多态</p>
 </blockquote>
 
-<h2 id="toc_0">Struct结构</h2>
+<h2 id="toc_0">封装</h2>
 
-<ul>
-<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
-<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
-<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
-<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
-</ul>
+<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
+通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
 
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
+<h3 id="toc_1">访问控制符</h3>
+
+<ol>
+<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
+<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
+<li>public —— 可以被任何人使用</li>
+</ol>
+
+<h3 id="toc_2">一个例子</h3>
+
+<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+
+<pre><code class="language-swift">class Circle {
+    private var area: Double = 0;
+    private var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures();
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius;
+        calculateFigures();
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius;
+        diameter = 2 * M_PI * radius;
+    }
+
+    func getArea() -&gt; Double {
+        return self.area;
+    }
+
+    func getDiameter() -&gt; Double {
+        return self.diameter;
+    } 
 }
 </code></pre>
 
-<h3 id="toc_1">Struct和Class</h3>
+<p>Swift还为我们提供了简便方法。<br/>
+通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
 
-<ul>
-<li>相同点：
-
-<ol>
-<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
-<li>都支持类型扩展、协议</li>
-</ol></li>
-<li>不同点：
-
-<ol>
-<li>类支持继承和多态，结构不支持</li>
-<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
-<li>类支持析构器，结构不支持</li>
-<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
-<li>类支持引用比较。结构不支持。</li>
-</ol></li>
-</ul>
-
-<h2 id="toc_2">Enum枚举</h2>
-
-<ul>
-<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
-<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
-<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
-<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
-<li>还可定义:计算属性、方法、初始化器</li>
-</ul>
-
-<pre><code class="language-swift">//定义枚举类型
-enum Color {
-    case Red
-    case Green
-    case Blue
+<pre><code class="language-swift">class Circle {
+    private(set) var area: Double = 0;
+    private(set) var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures()
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius
+        calculateFigures()
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius
+        diameter = 2 * M_PI * radius
+    }
 }
+</code></pre>
 
-enum ComplexColor{
-    case Red,Green,Blue,Alpha
+<p>当然也可以为属性设置公有的getter方法：</p>
+
+<pre><code class="language-switf">public private(set) var area: Double = 0
+public private(set) var diameter: Double = 0
+</code></pre>
+
+<h2 id="toc_3">继承</h2>
+
+<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
+在Swift中，子类继承父类的属性、方法、下标。</p>
+
+<h3 id="toc_4">一个例子</h3>
+
+<pre><code class="language-swift">struct Point{
+    var x=0;
+    var y=0;
 }
-
-var c1=Color.Red
-var c2:Color
-c2 = Color.Green
-c1 = .Blue
-var c3=c1
-
-
-func print(color: Color){
+class Shape{
+    var no=0;
+    func move() {
+        print(&quot;NO: \(no) Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    var leftUp=Point();
+    var width=0;
+    var height=0;
     
-    switch color {
-    case .Red:
-        print(&quot;Red Color!&quot;)
-    case .Green:
-        print(&quot;Green Color!&quot;)
-    case .Blue:
-        print(&quot;Blue Color!&quot;)
+}
+class Circle: Shape{
+    var center=Point();
+    var radius=0;
+}
+</code></pre>
+
+<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
+
+<h3 id="toc_5">方法重写</h3>
+
+<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
+
+<pre><code class="language-swift">class Shape{
+    var no=0;
+    //用final关键字修饰，子类无法重写
+    final func show(){
+        print(&quot;Shape.show&quot;);
+    }
+    func move() {
+        print(&quot;Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    //重写父类的no属性
+    override var no: Int {
+        get{
+            print(&quot;Rectangle.no.get()&quot;);
+            return super.no;
+        }
+        set{
+            print(&quot;Rectangle.no.set()&quot;);
+            super.no=newValue;
+        }
+    }
+    override func move() {
+        print(&quot;Rectangle.move&quot;);
     }
     
 }
+class Circle: Shape{
+    override func move() {
+        print(&quot;Circle.move&quot;);
+    }
+}
+</code></pre>
+
+<h3 id="toc_6">继承中的初始化器和析构器</h3>
+
+<h4 id="toc_7">初始化器</h4>
+
+<ul>
+<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
+<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
+<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
+<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+</ul>
+
+<h4 id="toc_8">析构器</h4>
+
+<ul>
+<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
+<li>子类析构器执行完毕后，会自动调用父类析构器</li>
+<li>子类析构器自动具有多态性</li>
+</ul>
+
+<h2 id="toc_9">多态</h2>
+
+<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+
+<pre><code class="language-swift">//如下代码是没有问题的
+var rect:Shape;
+rect = Rectangle();
+//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
+rect.move();
 
 </code></pre>
+
+<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
 
                         
                       </div>
@@ -204,7 +300,7 @@ func print(color: Color){
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -293,6 +389,12 @@ func print(color: Color){
 	      
 		      
 			      <li class="post">
+			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
@@ -312,12 +414,6 @@ func print(color: Color){
 		      
 			      <li class="post">
 			        <a href="14626379454584.html">GeekBand.Swift-第一周作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14623728039466.html">GeekBand.iOS-数据持久化</a>
 			      </li>
 		     
 		  
