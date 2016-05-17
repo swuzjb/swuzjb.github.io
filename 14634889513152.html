@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  iOS学习笔记 - 展镜博的个人博客
+  GeekBand.Swift-协议 - 展镜博的个人博客
   
   </title>
   
@@ -88,196 +88,180 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14628720930939.html">
-                
-                  <h1>GeekBand.Swift-下标与操作符</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">下标</h2>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>GeekBand.Swift-协议</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/5/17</span>
 
-<blockquote>
-<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+          
+           
+         
+          <span class="comments">
+            
+
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <blockquote>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
 </blockquote>
 
-<ul>
-<li>下标可以用于class、struct、enum</li>
-<li>只能定义实例下标，不能定义类型下标</li>
-<li>可以定义读写下标或只读下标</li>
-<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
-<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
-</ul>
+<h2 id="toc_0">协议的成员</h2>
 
-<pre><code class="language-swift">
-class Vector{
-    var datas = [Int](count:100,repeatedValue:0);
-    subscript(index:Int)-&gt; Int{
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
+
+<h2 id="toc_1">协议的使用</h2>
+
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
+
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
+    }
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
+}
+class Image :Drawable{
+    var description:String{
         get{
-            return datas[index]
-        }
-        set{          
-            datas[index]=newValue
+            return self.description;
         }
     }
-}
-
-var datas=Vector()
-for i in 0..&lt;10{
-   datas[i]=i
-}
-for i in 0..&lt;10{
-    print(datas[i])
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
 }
 </code></pre>
 
-<h2 id="toc_1">操作符</h2>
-
-<blockquote>
-<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
-</blockquote>
-
-<h3 id="toc_2">重载操作符</h3>
-
-<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
-可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
-也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
-
-<pre><code class="language-swift">class Complex{
-    var real=0.0
-    var imag=0.0
-    
-    init(real:Double, imag:Double){
-        self.real=real
-        self.imag=imag
-    }
-}
-
-//中缀操作符
-func + (left: Complex, right: Complex) -&gt; Complex {
-    
-    return Complex(real: left.real + right.real,
-        imag: left.imag + right.imag)
-}
-
-var c1=Complex(real: 10,imag: 20)
-var c2=Complex(real: 100,imag: 200)
-var c3=c1+c2
-
-
-
-//前缀操作符
-prefix func - (data: Complex) -&gt; Complex {
-    return Complex(real: -data.real, imag: -data.imag)
-}
-
-
-var c4 = -c3
-
-//复合赋值操作符
-func += (inout left: Complex, right: Complex) {
-    left = left + right
-}
-
-c1+=c2
-
-//自定义操作符
-prefix operator +++ {}
-
-prefix func +++ (inout data: Complex) -&gt; Complex {
-    data += data
-    return data
-}
-
-</code></pre>
-
-<h3 id="toc_3">相等操作符</h3>
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
 
 <ul>
-<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
 
 <ul>
-<li>相等 ===</li>
-<li>不等 !==</li>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
+
+<ol>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
+</ol>
+
+<h3 id="toc_4">协议中的方法</h3>
+
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
+
+<ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
 </ul></li>
-<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+</ol>
+
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
 
 <ul>
-<li>相等 ==</li>
-<li>不等 !=</li>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
 </ul></li>
 </ul>
 
-<pre><code class="language-swift">//值相等操作符
-func == (left: Complex, right: Complex) -&gt; Bool {
-    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
-}
-func != (left: Complex, right: Complex) -&gt; Bool {
-    return !(left == right)
-}
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14633841095158.html" 
+          title="Next Post: GeekBand.Swift-面向对象">GeekBand.Swift-面向对象 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="14634889513152.html" data-url="http://swuzjb.github.io/14634889513152.html" data-title="GeekBand.Swift-协议"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-var c5=c3
 
-print(c1==c5) //值相等
-print(c2==c5) //值不等
-print(c1===c5) //引用不等
-print(c3===c5) //引用相等
-print(c3==c5)
-
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/10</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
-
-
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="iOS学习笔记_1.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="iOS学习笔记_3.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

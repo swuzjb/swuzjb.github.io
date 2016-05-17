@@ -97,98 +97,107 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14603730042058.html">
+                <a class="clearlink" href="14603791205821.html">
                 
-                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
+                  <h1>GeekBand.iOS-事件处理</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+                        	<blockquote>
+<p>暂时无感，先做归纳</p>
+</blockquote>
 
-<h2 id="toc_0">什么是UIView</h2>
+<h2 id="toc_0">什么是事件</h2>
 
-<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
-
-<h2 id="toc_1">屏幕对象UIScreen</h2>
-
-<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
-
-<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
-</code></pre>
-
-<h3 id="toc_2">iOS8+</h3>
-
-<pre><code>//可变坐标系
-.coordinateSpace
-//固定坐标系
-.fixedCoordinateSpace
-</code></pre>
-
-<h3 id="toc_3">截图</h3>
-
-<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
-
-<h2 id="toc_4">UIWindow</h2>
-
-<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
-
-<h2 id="toc_5">UIView</h2>
-
-<h3 id="toc_6">UIView的树状层次</h3>
-
-<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
-
-<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+<p>Events:objects sent to an app informing user action<br/>
+在iOS中，事件分为三类：</p>
 
 <ul>
-<li><p>增加(Create)</p>
-
-<pre><code>-(void)addSubView:(UIView *)view
--(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
--(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
--(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
-</code></pre></li>
-<li><p>删除(delete)</p>
-
-<pre><code>//子View调用
--(void)removeFromSuperview
-</code></pre></li>
-<li><p>修改(update)</p>
-
-<pre><code>-(void)bringSubViewToFront:(UIView *)view
--(void)sendSubviewToBack:(UIView *)view
--(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
-</code></pre></li>
-<li><p>查找(Read)</p>
-
-<pre><code>view.window;
-view.superview;
-view.subviews;
-
--(BOOL)isDescendantOfView:(UIView *)view
-</code></pre></li>
+<li>触控事件（单点、多点触控以及各种手势操作）</li>
+<li>传感器事件（重力、加速度传感器等）</li>
+<li>远程控制事件（远程遥控iOS设备多媒体播放等）</li>
 </ul>
 
-<h3 id="toc_8">UIView的重要属性</h3>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603801710492.jpg" alt=""/></p>
+
+<h2 id="toc_1">事件的分发</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603809132422.jpg" alt=""/></p>
+
+<h3 id="toc_2">NSRunLoop</h3>
+
+<p>线程附属对象，监听一组事件源<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603810622282.jpg" alt=""/></p>
+
+<h2 id="toc_3">事件响应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-06022409-75bfb59830bb45c3899de47f77721214.png" alt=""/></p>
+
+<p>处理原理如下：</p>
 
 <ul>
-<li>定位
-
-<ul>
-<li>frame/bounds/center/transform</li>
-<li>resizeToFit</li>
-</ul></li>
-<li>视觉
-
-<ul>
-<li>backgroundColor</li>
-<li>alpha vs. opaque</li>
-<li>maskView(iOS8+)</li>
-</ul></li>
-<li>访问
-.tag =&gt; -viewWithTag</li>
+<li>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</li>
+<li>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</li>
+<li>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</li>
 </ul>
+
+<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
+
+<ul>
+<li>hitTest:withEvent:方法大致处理流程是这样的：
+
+<ul>
+<li>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
+
+<ul>
+<li>若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</li>
+<li>若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</li>
+</ul></li>
+<li>若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</li>
+<li>若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</li>
+<li>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理。</li>
+</ul></li>
+</ul>
+
+<p>拿到这个UIView后，就调用该UIView的touches系列方法。<br/>
+消息处理过程，在找到的那个视图里处理，处理完后根据需要，利用响应链nextResponder可将消息往下一个响应者传递。<br/>
+UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- UIView</p>
+
+<p>【关键】：1、iOS判断哪个界面能接受消息是从View层级结构的父View向子View传递，即树状结构的根节点向叶子节点递归传递。2、hitTest和pointInside成对，且hitTest会调用pointInside。3、iOS的消息处理是，当消息被人处理后默认不再向父层传递</p>
+
+<h3 id="toc_4">事件沿Responder Chain传递</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603818809422.jpg" alt="事件沿Responder Chain传递"/></p>
+
+<h2 id="toc_5">在自定义类里响应触摸事件</h2>
+
+<pre><code>-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+</code></pre>
+
+<p>UITouch:</p>
+
+<ul>
+<li>previousLocationInView 前一次的点击坐标</li>
+<li>locationInView 点击的坐标</li>
+<li>timestamp 时间戳</li>
+<li>type(iOS9+) 防误触，可以判断触摸的是手还是笔</li>
+<li>force(iOS9+) 压力信息</li>
+</ul>
+
+<p>UIEvent:</p>
+
+<ul>
+<li>type:UIEventTypeTouches(Motion/RemoteControl/Press)</li>
+<li>timestamp 时间戳</li>
+</ul>
+
+<h3 id="toc_6">多点触摸</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
 
                         
                       </div>
@@ -208,7 +217,7 @@ view.subviews;
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603791205821.html" data-count-type="comments" href="14603791205821.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -297,6 +306,12 @@ view.subviews;
 	      
 		      
 			      <li class="post">
+			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
 			      </li>
 		     
@@ -316,12 +331,6 @@ view.subviews;
 		      
 			      <li class="post">
 			        <a href="14628652524688.html">GeekBand.Swift-属性与方法</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14626379454584.html">GeekBand.Swift-第一周作业</a>
 			      </li>
 		     
 		  

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  iOS学习笔记 - 展镜博的个人博客
+  展镜博的个人博客
   
   </title>
   
@@ -97,144 +97,106 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14628720930939.html">
+                <a class="clearlink" href="14577530083114.html">
                 
-                  <h1>GeekBand.Swift-下标与操作符</h1>
+                  <h1>GeekBand-OC中的类别和协议</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">下标</h2>
-
-<blockquote>
-<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+                        	<blockquote>
+<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
 </blockquote>
 
-<ul>
-<li>下标可以用于class、struct、enum</li>
-<li>只能定义实例下标，不能定义类型下标</li>
-<li>可以定义读写下标或只读下标</li>
-<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
-<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
-</ul>
+<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
 
-<pre><code class="language-swift">
-class Vector{
-    var datas = [Int](count:100,repeatedValue:0);
-    subscript(index:Int)-&gt; Int{
-        get{
-            return datas[index]
-        }
-        set{          
-            datas[index]=newValue
-        }
+<pre><code> @interface 已有类 （类别名）
+    //.......方法实现
+ @end
+</code></pre>
+
+<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
+
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+@interface NSNumber (code)
+ -(NSNumber *) add:(double) num;
+ -(NSNumber *) mult:(double) num
+@end
+</code></pre>
+
+<p>该类别的实现部分如下</p>
+
+<pre><code> #import &quot;NSNumber+code.h&quot;
+
+ @implementation NSNumber (code)
+ -(NSNumber *) add:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue] +num)];
+}
+-(NSNumber *) mult:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
+}
+@end
+</code></pre>
+
+<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
+
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
+
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
+
+<hr/>
+
+<h2 id="toc_0">扩展（extension）</h2>
+
+<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
+
+<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
+
+<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
+
+<pre><code>//&quot;Vehicle.m&quot;
+#import &quot;Vehicle.h&quot;
+@interface Vehicle ()
+@property(nonatomic, strong) NSString *color;
+-(void) drive:(NSString *)name;
+@end
+@implementation Vehicle
+-(void) drive:(NSString *)name
+{
+    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
+}
+@end
+</code></pre>
+
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
+
+<hr/>
+
+<h2 id="toc_1">协议（protocol）</h2>
+
+<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
+
+<p>正式协议使用@protocol关键字定义</p>
+
+<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
+    {
+          //.....方法声明
     }
-}
-
-var datas=Vector()
-for i in 0..&lt;10{
-   datas[i]=i
-}
-for i in 0..&lt;10{
-    print(datas[i])
-}
+    @end
 </code></pre>
 
-<h2 id="toc_1">操作符</h2>
+<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
+遵守协议的语法如下：</p>
 
-<blockquote>
-<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
-</blockquote>
-
-<h3 id="toc_2">重载操作符</h3>
-
-<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
-可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
-也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
-
-<pre><code class="language-swift">class Complex{
-    var real=0.0
-    var imag=0.0
-    
-    init(real:Double, imag:Double){
-        self.real=real
-        self.imag=imag
-    }
-}
-
-//中缀操作符
-func + (left: Complex, right: Complex) -&gt; Complex {
-    
-    return Complex(real: left.real + right.real,
-        imag: left.imag + right.imag)
-}
-
-var c1=Complex(real: 10,imag: 20)
-var c2=Complex(real: 100,imag: 200)
-var c3=c1+c2
-
-
-
-//前缀操作符
-prefix func - (data: Complex) -&gt; Complex {
-    return Complex(real: -data.real, imag: -data.imag)
-}
-
-
-var c4 = -c3
-
-//复合赋值操作符
-func += (inout left: Complex, right: Complex) {
-    left = left + right
-}
-
-c1+=c2
-
-//自定义操作符
-prefix operator +++ {}
-
-prefix func +++ (inout data: Complex) -&gt; Complex {
-    data += data
-    return data
-}
-
+<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
 </code></pre>
 
-<h3 id="toc_3">相等操作符</h3>
+<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
+协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
 
-<ul>
-<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
-
-<ul>
-<li>相等 ===</li>
-<li>不等 !==</li>
-</ul></li>
-<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
-
-<ul>
-<li>相等 ==</li>
-<li>不等 !=</li>
-</ul></li>
-</ul>
-
-<pre><code class="language-swift">//值相等操作符
-func == (left: Complex, right: Complex) -&gt; Bool {
-    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
-}
-func != (left: Complex, right: Complex) -&gt; Bool {
-    return !(left == right)
-}
-
-
-var c5=c3
-
-print(c1==c5) //值相等
-print(c2==c5) //值不等
-print(c1===c5) //引用不等
-print(c3===c5) //引用相等
-print(c3==c5)
-
-</code></pre>
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
 
                         
                       </div>
@@ -243,7 +205,7 @@ print(c3==c5)
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/10</span>
+                    <span class="date">2016/3/12</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -254,7 +216,7 @@ print(c3==c5)
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -267,12 +229,12 @@ print(c3==c5)
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   <a href="iOS学习笔记_1.html">&laquo; Prev Page</a>  
+			   <a href="all_29.html">&laquo; Prev Page</a>  
 			  </p>
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="iOS学习笔记_3.html">&raquo; Next Page</a> 
+			
 			</p>
 			  </div>
 			</div>
