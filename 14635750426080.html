@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  iOS学习笔记 - 展镜博的个人博客
+  GeekBand.Swift-集合类型 - 展镜博的个人博客
   
   </title>
   
@@ -88,150 +88,166 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14603730042058.html">
-                
-                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>GeekBand.Swift-集合类型</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/5/18</span>
 
-<h2 id="toc_0">什么是UIView</h2>
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+           
+         
+          <span class="comments">
+            
 
-<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
+            
+          </span>
 
-<h2 id="toc_1">屏幕对象UIScreen</h2>
+        </div>
+      </div><!-- article -->
 
-<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
+      <div class="article-content">
+      <h2 id="toc_0">数组(Array)</h2>
 
-<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+
+<h3 id="toc_1">内存模型</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
+
+<h3 id="toc_2">使用数组</h3>
+
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
+
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
+
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
 </code></pre>
 
-<h3 id="toc_2">iOS8+</h3>
+<h4 id="toc_3">数组遍历</h4>
 
-<pre><code>//可变坐标系
-.coordinateSpace
-//固定坐标系
-.fixedCoordinateSpace
+<ul>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
+</ul>
+
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
+
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
+
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
 </code></pre>
 
-<h3 id="toc_3">截图</h3>
-
-<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
-
-<h2 id="toc_4">UIWindow</h2>
-
-<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
-
-<h2 id="toc_5">UIView</h2>
-
-<h3 id="toc_6">UIView的树状层次</h3>
-
-<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
-
-<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+<h4 id="toc_4">缓存容量与增长</h4>
 
 <ul>
-<li><p>增加(Create)</p>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
 
-<pre><code>-(void)addSubView:(UIView *)view
--(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
--(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
--(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
-</code></pre></li>
-<li><p>删除(delete)</p>
-
-<pre><code>//子View调用
--(void)removeFromSuperview
-</code></pre></li>
-<li><p>修改(update)</p>
-
-<pre><code>-(void)bringSubViewToFront:(UIView *)view
--(void)sendSubviewToBack:(UIView *)view
--(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
-</code></pre></li>
-<li><p>查找(Read)</p>
-
-<pre><code>view.window;
-view.superview;
-view.subviews;
-
--(BOOL)isDescendantOfView:(UIView *)view
-</code></pre></li>
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
 </ul>
 
-<h3 id="toc_8">UIView的重要属性</h3>
+<h4 id="toc_5">copy-on-write共享技术</h4>
 
-<ul>
-<li>定位
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
 
-<ul>
-<li>frame/bounds/center/transform</li>
-<li>resizeToFit</li>
-</ul></li>
-<li>视觉
+<h2 id="toc_6">集合类型(Set)</h2>
 
-<ul>
-<li>backgroundColor</li>
-<li>alpha vs. opaque</li>
-<li>maskView(iOS8+)</li>
-</ul></li>
-<li>访问
-.tag =&gt; -viewWithTag</li>
-</ul>
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
 
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
 
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14634889513152.html" 
+          title="Next Post: GeekBand.Swift-协议">GeekBand.Swift-协议 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="14635750426080.html" data-url="http://swuzjb.github.io/14635750426080.html" data-title="GeekBand.Swift-集合类型"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="iOS学习笔记_12.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="iOS学习笔记_14.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

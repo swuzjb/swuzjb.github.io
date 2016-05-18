@@ -97,23 +97,241 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14578438756442.html">
+                <a class="clearlink" href="14580567370996.html">
                 
-                  <h1>前笔记汇总</h1>
+                  <h1>GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
-但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
-给大家留个传送门。<br/>
-<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
-<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
-<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
-<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
-<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
-<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
-<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
+                        	<blockquote>
+<p>标题中提到的所有UI控件都可以通过Interface Builder轻松地创建，以下内容仅讨论使用代码建立和修改相关属性</p>
+</blockquote>
+
+<h2 id="toc_0">UILabel</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(x, y, width, height)]; 
+</code></pre></li>
+<li><p>常用属性</p>
+
+<pre><code> //设置显示文字     
+label.text = @&quot;label1&quot;;
+//设置字体:粗体，正常的是 SystemFontOfSize     
+label.font = [UIFont boldSystemFontOfSize:20];     
+//设置文字颜色  
+label.textColor = [UIColor orangeColor];   
+//设置文字排版方式     
+label.textAlignment = UITextAlignmentRight;     
+label.textAlignment = UITextAlignmentCenter;     
+//设置字体大小适应label宽度     
+label.adjustsFontSizeToFitWidth = YES;
+//设置label的显示行数  
+label.numberOfLines = 2; 
+//背景色，也可以设置背景图   
+label.backgroundColor=[UIColor clearColor]; //可以去掉背景色   
+//设置高亮     
+label.highlighted = YES;     
+label.highlightedTextColor = [UIColor orangeColor];     
+//设置阴影     
+label.shadowColor = [UIColor redColor];     
+label.shadowOffset = CGSizeMake(1.0,1.0);     
+//设置是否能与用户进行交互     
+label.userInteractionEnabled = YES;     
+//设置label中的文字是否可变，默认值是YES     
+label.enabled = NO;     
+//设置文字过长时的显示格式     
+label.lineBreakMode = UILineBreakModeMiddleTruncation;//截去中间     
+//  typedef enum {     
+//      UILineBreakModeWordWrap = 0,     
+//      UILineBreakModeCharacterWrap,     
+//      UILineBreakModeClip,//截去多余部分     
+//      UILineBreakModeHeadTruncation,//截去头部     
+//      UILineBreakModeTailTruncation,//截去尾部     
+//      UILineBreakModeMiddleTruncation,//截去中间     
+//  } UILineBreakMode;     
+</code></pre></li>
+</ol>
+
+<h2 id="toc_1">UIButton</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code> //UIButton的定义
+UIButton *button=[[UIButton buttonWithType:(UIButtonType);
+//typedef enum {
+//  UIButtonTypeCustom = 0, 自定义风格
+//  UIButtonTypeRoundedRect, 圆角矩形
+//  UIButtonTypeDetailDisclosure, 蓝色小箭头按钮，主要做详细说明用
+//  UIButtonTypeInfoLight, 亮色感叹号
+//  UIButtonTypeInfoDark, 暗色感叹号
+//  UIButtonTypeContactAdd, 十字加号按钮
+//} UIButtonType;
+</code></pre></li>
+<li><p>常用方法</p>
+
+<pre><code>//设置frame
+button.frame = CGRectMake(20, 20, 280, 40);
+[button setFrame:CGRectMake(20,20,50,50)];
+
+//button背景色
+button.backgroundColor = [UIColor clearColor];
+[button setBackgroundColor:[UIColor blueColor]];
+
+//是否可点击，默认为YES
+button.enable = NO;                          
+//设置button填充图片和背景图片
+[button setImage:(UIImage) forState:UIControlStateNormal];
+[button setBackgroundImage:(UIImage)forState:UIControlStateNormal];
+//设置button标题和标题颜色
+[button1 setTitle:@&quot;点击&quot; forState:UIControlStateNormal];
+[button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+
+//添加或删除事件处理
+[button addTarget:self action:@selector(butClick:)forControlEvents:UIControlEventTouchUpInside];
+[button removeTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
+</code></pre></li>
+</ol>
+
+<h2 id="toc_2">UIImageView</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UIImageView *imageView = [[UIImageView alloc ] init];
+//UIImage加载有两种方式
+//方案1
+UIImage *image = [UIImage imageNamed:@&quot;image_photo&quot;];
+//方案2
+NSString *filePath=[[NSBundle mainBundle] pathForResource:@&quot;image_photo&quot; ofType:@&quot;jpg&quot;];
+UIImage *image=[UIImage imageWithContentsOfFile:filePath];
+
+imageView.image = image;
+</code></pre>
+
+<p>方案一：用imageNamed的方式加载时，系统会把图像Cache到内存。如果图像比较大，或者图像比较多，用这种方式会消耗很大的内存，而且释放图像的内存是一件相对来说比较麻烦的事情。例如：如果利用imageNamed的方式加载图像到一个动态数组NSMutableArray，然后将将数组赋予一个UIView的对象的animationImages进行逐帧动画，那么这将会很有可能造成内存泄露。并且释放图像所占据的内存也不会那么简单。但是利用imageNamed加载图像也有自己的优势。对于同一个图像系统只会把它Cache到内存一次，这对于图像的重复利用是非常有优势的。例如：你需要在一个TableView里重复加载同样一个图标，那么用imageNamed加载图像，系统会把那个图标Cache到内存，在Table里每次利用那个图像的时候，只会把图片指针指向同一块内存。这种情况使用imageNamed加载图像就会变得非常有效。<br/>
+方案二：就是每次单独加载图片，系统不缓存。使用完后记得释放。</p></li>
+<li><p>常用方法</p>
+
+<pre><code> //设置圆角
+imageView.layer.masksToBounds = YES;
+imageView.layer.cornerRadius = 10;
+
+//设置边框颜色和大小
+imageView.layer.borderColor = [UIColor orangeColor].CGColor;
+imageView.layer.borderWidth = 2;
+
+//播放一系列图片
+UIImage *image1 = [UIImage imageNamed:@&quot;1&quot;];
+UIImage *image2 = [UIImage imageNamed:@&quot;2&quot;];
+UIImage *image3 = [UIImage imageNamed:@&quot;3&quot;];
+NSArray *imagesArray = @[image1,image2,image3];
+imageView.animationImages = imagesArray;
+// 设定所有的图片在多少秒内播放完毕
+imageView.animationDuration = [imagesArray count];
+// 重复播放多少遍，0表示无数遍
+imageView.animationRepeatCount = 0;
+// 开始播放
+[imageView startAnimating];
+
+ //为图片添加单击事件：一定要先将userInteractionEnabled置为YES，这样才能响应单击事件
+imageView.userInteractionEnabled = YES;
+UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapImageView:)];
+[imageView addGestureRecognizer:singleTap];
+
+//其他设置
+imageView.hidden = YES或者NO;    // 隐藏或者显示图片
+imageView.alpha =0.5;    // 设置透明度
+// 设置高亮时显示的图片
+imageView.highlightedImage = (UIImage *)hightlightedImage;
+imageView.image = (UIImage *)image; // 设置正常显示的图片
+</code></pre></li>
+</ol>
+
+<h2 id="toc_3">UITextField</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UITextField* textField = [[UITextField alloc] initWithFrame:CGRectMake(x, y, width, height)];
+</code></pre></li>
+<li><p>常用方法</p>
+
+<pre><code>textField setBorderStyle:UITextBorderStyleRoundedRect]; //外框类型
+textField.placeholder = @&quot;password&quot;; //默认显示的字 
+textField.secureTextEntry = YES; //密码 
+
+textField.autocorrectionType = UITextAutocorrectionType; //设置是否自动纠错
+typedef enum {
+    UITextAutocorrectionTypeDefault, //默认
+    UITextAutocorrectionTypeNo, 　//不自动纠错
+    UITextAutocorrectionTypeYes,　//自动纠错
+}UITextAutocorrectionType;
+
+textField.clearButtonMode = UITextFieldViewMode; //编辑时会出现个修改X
+typedef enum {
+    UITextFieldViewModeNever,　//重不出现
+    UITextFieldViewModeWhileEditing, //编辑时出现
+    UITextFieldViewModeUnlessEditing,　//除了编辑外都出现
+    UITextFieldViewModeAlways 　//一直出现
+}UITextFieldViewMode; 
+
+//可以在UITextField使用下面方法，按return键返回
+-(IBAction) textFieldDone:(id) sender
+{
+ [textFieldName resignFirstResponder]; 
+}
+//链接TextField控件的&quot;Did end on exit&quot;
+
+//再次编辑就清空
+textField.clearsOnBeginEditing = YES; 
+
+//设置键盘样式
+textField.keyboardType = UIKeyboardType;
+typedef enum {
+        UIKeyboardTypeDefault,     　//默认键盘，支持所有字符         
+        UIKeyboardTypeASCIICapable,　//支持ASCII的默认键盘
+        UIKeyboardTypeNumbersAndPunctuation,　//标准电话键盘，支持＋＊＃字符
+        UIKeyboardTypeURL,            //URL键盘，支持.com按钮 只支持URL字符
+        UIKeyboardTypeNumberPad,       //数字键盘
+        UIKeyboardTypePhonePad,　 　//电话键盘
+        UIKeyboardTypeNamePhonePad, 　//电话键盘，也支持输入人名
+        UIKeyboardTypeEmailAddress, 　//用于输入电子邮件地址的键盘     
+        UIKeyboardTypeDecimalPad,   　//数字键盘有数字和小数点
+        UIKeyboardTypeTwitter,      　//优化的键盘，方便输入@、#字符
+        UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable, 
+}UIKeyboardType;
+
+//return键样式
+text.returnKeyType =UIReturnKeyType;
+typedef enum {
+    UIReturnKeyDefault, 默认 灰色按钮，标有Return
+    UIReturnKeyGo,    　标有Go的蓝色按钮
+    UIReturnKeyGoogle,标有Google的蓝色按钮，用语搜索
+    UIReturnKeyJoin,标有Join的蓝色按钮
+    UIReturnKeyNext,标有Next的蓝色按钮
+    UIReturnKeyRoute,标有Route的蓝色按钮
+    UIReturnKeySearch,标有Search的蓝色按钮
+    UIReturnKeySend,标有Send的蓝色按钮
+    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
+    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
+    UIReturnKeyEmergencyCall, 紧急呼叫按钮
+} UIReturnKeyType;
+
+</code></pre></li>
+</ol>
+
+<h2 id="toc_4">To ALL</h2>
+
+<p>把上述View加入页面[self.view addSubview:(UIView)]需注意两点：</p>
+
+<ol>
+<li>这个方法会retain一次view，并且设置它的下一个响应者是receiver，即它的新的父视图。</li>
+<li>每一个视图只能有唯一的一个父视图。如果当前操作视图已经有另外的一个父视图，则addsubview的操作会把它先从上一个父视图中移除（包括响应者链），再加到新的父视图上面。</li>
+</ol>
 
                         
                       </div>
@@ -122,7 +340,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/3/13</span>
+                    <span class="date">2016/3/15</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -133,7 +351,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14578438756442.html" data-count-type="comments" href="14578438756442.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14580567370996.html" data-count-type="comments" href="14580567370996.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -222,6 +440,12 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
 			      </li>
 		     
@@ -241,12 +465,6 @@
 		      
 			      <li class="post">
 			        <a href="14628720930939.html">GeekBand.Swift-下标与操作符</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14628652524688.html">GeekBand.Swift-属性与方法</a>
 			      </li>
 		     
 		  
