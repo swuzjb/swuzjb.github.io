@@ -97,190 +97,108 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633841095158.html">
+                <a class="clearlink" href="14635750426080.html">
                 
-                  <h1>GeekBand.Swift-面向对象</h1>
+                  <h1>GeekBand.Swift-集合类型</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>面向对象三大特性：封装、继承、多态</p>
-</blockquote>
+                        	<h2 id="toc_0">数组(Array)</h2>
 
-<h2 id="toc_0">封装</h2>
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
 
-<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
-通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+<h3 id="toc_1">内存模型</h3>
 
-<h3 id="toc_1">访问控制符</h3>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
 
-<ol>
-<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
-<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
-<li>public —— 可以被任何人使用</li>
-</ol>
+<h3 id="toc_2">使用数组</h3>
 
-<h3 id="toc_2">一个例子</h3>
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
 
-<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
 
-<pre><code class="language-swift">class Circle {
-    private var area: Double = 0;
-    private var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures();
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius;
-        calculateFigures();
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius;
-        diameter = 2 * M_PI * radius;
-    }
-
-    func getArea() -&gt; Double {
-        return self.area;
-    }
-
-    func getDiameter() -&gt; Double {
-        return self.diameter;
-    } 
-}
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
 </code></pre>
 
-<p>Swift还为我们提供了简便方法。<br/>
-通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
-
-<pre><code class="language-swift">class Circle {
-    private(set) var area: Double = 0;
-    private(set) var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures()
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius
-        calculateFigures()
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius
-        diameter = 2 * M_PI * radius
-    }
-}
-</code></pre>
-
-<p>当然也可以为属性设置公有的getter方法：</p>
-
-<pre><code class="language-switf">public private(set) var area: Double = 0
-public private(set) var diameter: Double = 0
-</code></pre>
-
-<h2 id="toc_3">继承</h2>
-
-<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
-在Swift中，子类继承父类的属性、方法、下标。</p>
-
-<h3 id="toc_4">一个例子</h3>
-
-<pre><code class="language-swift">struct Point{
-    var x=0;
-    var y=0;
-}
-class Shape{
-    var no=0;
-    func move() {
-        print(&quot;NO: \(no) Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    var leftUp=Point();
-    var width=0;
-    var height=0;
-    
-}
-class Circle: Shape{
-    var center=Point();
-    var radius=0;
-}
-</code></pre>
-
-<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
-
-<h3 id="toc_5">方法重写</h3>
-
-<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
-
-<pre><code class="language-swift">class Shape{
-    var no=0;
-    //用final关键字修饰，子类无法重写
-    final func show(){
-        print(&quot;Shape.show&quot;);
-    }
-    func move() {
-        print(&quot;Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    //重写父类的no属性
-    override var no: Int {
-        get{
-            print(&quot;Rectangle.no.get()&quot;);
-            return super.no;
-        }
-        set{
-            print(&quot;Rectangle.no.set()&quot;);
-            super.no=newValue;
-        }
-    }
-    override func move() {
-        print(&quot;Rectangle.move&quot;);
-    }
-    
-}
-class Circle: Shape{
-    override func move() {
-        print(&quot;Circle.move&quot;);
-    }
-}
-</code></pre>
-
-<h3 id="toc_6">继承中的初始化器和析构器</h3>
-
-<h4 id="toc_7">初始化器</h4>
+<h4 id="toc_3">数组遍历</h4>
 
 <ul>
-<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
-<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
-<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
-<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
 </ul>
 
-<h4 id="toc_8">析构器</h4>
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
 
-<ul>
-<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
-<li>子类析构器执行完毕后，会自动调用父类析构器</li>
-<li>子类析构器自动具有多态性</li>
-</ul>
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
 
-<h2 id="toc_9">多态</h2>
-
-<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
-
-<pre><code class="language-swift">//如下代码是没有问题的
-var rect:Shape;
-rect = Rectangle();
-//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
-rect.move();
-
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
 </code></pre>
 
-<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+<h4 id="toc_4">缓存容量与增长</h4>
+
+<ul>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
+</ul>
+
+<h4 id="toc_5">copy-on-write共享技术</h4>
+
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
+
+<h2 id="toc_6">集合类型(Set)</h2>
+
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
+
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
+
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
 
                         
                       </div>
@@ -289,7 +207,7 @@ rect.move();
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/16</span>
+                    <span class="date">2016/5/18</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -300,7 +218,7 @@ rect.move();
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -389,6 +307,12 @@ rect.move();
 	      
 		      
 			      <li class="post">
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
 			      </li>
 		     
@@ -408,12 +332,6 @@ rect.move();
 		      
 			      <li class="post">
 			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14628720930939.html">GeekBand.Swift-下标与操作符</a>
 			      </li>
 		     
 		  

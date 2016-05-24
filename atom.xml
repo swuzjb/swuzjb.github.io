@@ -4,13 +4,186 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-05-17T23:22:43+08:00</updated>
+  <updated>2016-05-18T23:50:37+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-Homework13]]></title>
+    <link href="http://swuzjb.github.io/14640741638557.html"/>
+    <updated>2016-05-24T15:16:03+08:00</updated>
+    <id>http://swuzjb.github.io/14640741638557.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">题目</h2>
+
+<p>请说出下面代码存在的问题，以及改进方式。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">回答</h2>
+
+<h3 id="toc_2">问题分析</h3>
+
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
+
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+</code></pre>
+
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.Swift-集合类型]]></title>
@@ -2778,97 +2951,6 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
 </code></pre>
 
 <p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-UICollectionView]]></title>
-    <link href="http://swuzjb.github.io/14592472421509.html"/>
-    <updated>2016-03-29T18:27:22+08:00</updated>
-    <id>http://swuzjb.github.io/14592472421509.html</id>
-    <content type="html"><![CDATA[
-<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
-为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
-它对TableView的优化：
-- 对表格的自然扩展：网格式界面
-- 对表格内部职责进一步细分：分离Layout
-</code></pre>
-
-<h2 id="toc_0">CollectionView实例</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
-
-<h2 id="toc_1">CollectionView界面构成</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
-
-<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
-
-<h2 id="toc_2">说明</h2>
-
-<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
-- cell在collection中被称为item<br/>
-- header/footer被称为supplementary view<br/>
-- item view必须register<br/>
-- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
-
-<h2 id="toc_3">Cell（Item）供应</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
-
-<h2 id="toc_4">基本使用</h2>
-
-<ol>
-<li>创建CollectionView对象</li>
-<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
-
-<pre><code>//返回item的数量
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
-
-//返回item实例
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
-</code></pre></li>
-</ol>
-
-<h2 id="toc_5">交互</h2>
-
-<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。实现UICollectionViewDelegate协议</p>
-
-<ul>
-<li>点选</li>
-<li><p>编辑格子</p>
-
-<ul>
-<li>插入、删除</li>
-<li>移动格子的位置</li>
-</ul></li>
-<li><p>刷新数据</p></li>
-<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
-<li><p>滚动到某个格子</p></li>
-<li><p>动态更换布局</p></li>
-</ul>
-
-<h3 id="toc_6">交互响应机会</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
-
-<h3 id="toc_7">刷新CollectionView</h3>
-
-<ul>
-<li>reloadData  全部刷新</li>
-<li>reloadSection  刷新某个section</li>
-<li>reloadItemsAtIndexPaths 刷新某个cell</li>
-</ul>
-
-<h3 id="toc_8">手工移动格子</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
-
-<h2 id="toc_9">参考资料</h2>
-
-<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
-<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
 
 ]]></content>
   </entry>
