@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,144 +99,190 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14628720930939.html">
+                <a class="clearlink" href="14633841095158.html">
                 
-                  <h1>GeekBand.Swift-下标与操作符</h1>
+                  <h1>GeekBand.Swift-面向对象</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">下标</h2>
-
-<blockquote>
-<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+                        	<blockquote>
+<p>面向对象三大特性：封装、继承、多态</p>
 </blockquote>
 
-<ul>
-<li>下标可以用于class、struct、enum</li>
-<li>只能定义实例下标，不能定义类型下标</li>
-<li>可以定义读写下标或只读下标</li>
-<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
-<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
-</ul>
+<h2 id="toc_0">封装</h2>
 
-<pre><code class="language-swift">
-class Vector{
-    var datas = [Int](count:100,repeatedValue:0);
-    subscript(index:Int)-&gt; Int{
+<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
+通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+
+<h3 id="toc_1">访问控制符</h3>
+
+<ol>
+<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
+<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
+<li>public —— 可以被任何人使用</li>
+</ol>
+
+<h3 id="toc_2">一个例子</h3>
+
+<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+
+<pre><code class="language-swift">class Circle {
+    private var area: Double = 0;
+    private var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures();
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius;
+        calculateFigures();
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius;
+        diameter = 2 * M_PI * radius;
+    }
+
+    func getArea() -&gt; Double {
+        return self.area;
+    }
+
+    func getDiameter() -&gt; Double {
+        return self.diameter;
+    } 
+}
+</code></pre>
+
+<p>Swift还为我们提供了简便方法。<br/>
+通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
+
+<pre><code class="language-swift">class Circle {
+    private(set) var area: Double = 0;
+    private(set) var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures()
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius
+        calculateFigures()
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius
+        diameter = 2 * M_PI * radius
+    }
+}
+</code></pre>
+
+<p>当然也可以为属性设置公有的getter方法：</p>
+
+<pre><code class="language-switf">public private(set) var area: Double = 0
+public private(set) var diameter: Double = 0
+</code></pre>
+
+<h2 id="toc_3">继承</h2>
+
+<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
+在Swift中，子类继承父类的属性、方法、下标。</p>
+
+<h3 id="toc_4">一个例子</h3>
+
+<pre><code class="language-swift">struct Point{
+    var x=0;
+    var y=0;
+}
+class Shape{
+    var no=0;
+    func move() {
+        print(&quot;NO: \(no) Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    var leftUp=Point();
+    var width=0;
+    var height=0;
+    
+}
+class Circle: Shape{
+    var center=Point();
+    var radius=0;
+}
+</code></pre>
+
+<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
+
+<h3 id="toc_5">方法重写</h3>
+
+<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
+
+<pre><code class="language-swift">class Shape{
+    var no=0;
+    //用final关键字修饰，子类无法重写
+    final func show(){
+        print(&quot;Shape.show&quot;);
+    }
+    func move() {
+        print(&quot;Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    //重写父类的no属性
+    override var no: Int {
         get{
-            return datas[index]
+            print(&quot;Rectangle.no.get()&quot;);
+            return super.no;
         }
-        set{          
-            datas[index]=newValue
+        set{
+            print(&quot;Rectangle.no.set()&quot;);
+            super.no=newValue;
         }
     }
+    override func move() {
+        print(&quot;Rectangle.move&quot;);
+    }
+    
 }
-
-var datas=Vector()
-for i in 0..&lt;10{
-   datas[i]=i
-}
-for i in 0..&lt;10{
-    print(datas[i])
+class Circle: Shape{
+    override func move() {
+        print(&quot;Circle.move&quot;);
+    }
 }
 </code></pre>
 
-<h2 id="toc_1">操作符</h2>
+<h3 id="toc_6">继承中的初始化器和析构器</h3>
 
-<blockquote>
-<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
-</blockquote>
-
-<h3 id="toc_2">重载操作符</h3>
-
-<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
-可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
-也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
-
-<pre><code class="language-swift">class Complex{
-    var real=0.0
-    var imag=0.0
-    
-    init(real:Double, imag:Double){
-        self.real=real
-        self.imag=imag
-    }
-}
-
-//中缀操作符
-func + (left: Complex, right: Complex) -&gt; Complex {
-    
-    return Complex(real: left.real + right.real,
-        imag: left.imag + right.imag)
-}
-
-var c1=Complex(real: 10,imag: 20)
-var c2=Complex(real: 100,imag: 200)
-var c3=c1+c2
-
-
-
-//前缀操作符
-prefix func - (data: Complex) -&gt; Complex {
-    return Complex(real: -data.real, imag: -data.imag)
-}
-
-
-var c4 = -c3
-
-//复合赋值操作符
-func += (inout left: Complex, right: Complex) {
-    left = left + right
-}
-
-c1+=c2
-
-//自定义操作符
-prefix operator +++ {}
-
-prefix func +++ (inout data: Complex) -&gt; Complex {
-    data += data
-    return data
-}
-
-</code></pre>
-
-<h3 id="toc_3">相等操作符</h3>
+<h4 id="toc_7">初始化器</h4>
 
 <ul>
-<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
-
-<ul>
-<li>相等 ===</li>
-<li>不等 !==</li>
-</ul></li>
-<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
-
-<ul>
-<li>相等 ==</li>
-<li>不等 !=</li>
-</ul></li>
+<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
+<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
+<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
+<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
 </ul>
 
-<pre><code class="language-swift">//值相等操作符
-func == (left: Complex, right: Complex) -&gt; Bool {
-    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
-}
-func != (left: Complex, right: Complex) -&gt; Bool {
-    return !(left == right)
-}
+<h4 id="toc_8">析构器</h4>
 
+<ul>
+<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
+<li>子类析构器执行完毕后，会自动调用父类析构器</li>
+<li>子类析构器自动具有多态性</li>
+</ul>
 
-var c5=c3
+<h2 id="toc_9">多态</h2>
 
-print(c1==c5) //值相等
-print(c2==c5) //值不等
-print(c1===c5) //引用不等
-print(c3===c5) //引用相等
-print(c3==c5)
+<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+
+<pre><code class="language-swift">//如下代码是没有问题的
+var rect:Shape;
+rect = Rectangle();
+//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
+rect.move();
 
 </code></pre>
+
+<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
 
                         
                       </div>
@@ -243,7 +291,7 @@ print(c3==c5)
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/10</span>
+                    <span class="date">2016/5/16</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -254,7 +302,7 @@ print(c3==c5)
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -313,6 +361,8 @@ print(c3==c5)
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -343,6 +393,18 @@ print(c3==c5)
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -356,18 +418,6 @@ print(c3==c5)
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

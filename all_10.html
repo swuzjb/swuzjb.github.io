@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,222 +99,185 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14610540983936.html">
+                <a class="clearlink" href="14623728039466.html">
                 
-                  <h1>GeekBand.iOS-网络操作</h1>
+                  <h1>GeekBand.iOS-数据持久化</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>大部分应用程序都或多或少会牵扯到网络开发，例如说新浪微博、微信等，这些应用本身可能采用iOS开发，但是所有的数据支撑都是基于后台网络服务器的。如今，网络编程越来越普遍，孤立的应用通常是没有生命力的。今天就会给大家介绍这部分内容：</p>
+                        	<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
 
-<h2 id="toc_0">Web请求和响应</h2>
+<blockquote>
+<ul>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
+</ul>
+</blockquote>
 
-<p>做过Web开发的朋友应该很清楚，Http是无连接的请求。每个请求request服务器都有一个对应的响应response，无论是asp.net、jsp、php都是基于这种机制开发的。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-19-220832008241526.png" alt=""/></p>
+<h2 id="toc_0">文件存储</h2>
 
-<p>在Web开发中主要的请求方法有如下几种:</p>
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
 
 <ul>
-<li>GET请求：get是获取数据的意思，数据以明文在URL中传递，受限于URL长度，所以传输数据量比较小。</li>
-<li>POST请求：post是向服务器提交数据的意思，提交的数据以实际内容形式存放到消息头中进行传递，无法在浏览器url中查看到，大小没有限制。</li>
-<li>HEAD请求：请求头信息，并不返回请求数据体，而只返回请求头信息，常用用于在文件下载中取得文件大小、类型等信息。
-在开发中往往数据存储在服务器端，而客户端（iOS应用）往往通过向服务器端发送请求从服务器端获得数据。要模拟这个过程首先当然是建立服务器端应用，应用的形式没有限制，你可以采用任何Web技术进行开发。</li>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
 </ul>
 
-<h2 id="toc_1">原生网络访问</h2>
+<h3 id="toc_2">APP Bundle</h3>
 
-<p>iOS原生为我们提供了网络访问的能力。我们今天只研究NSURLSession的使用方法。该方法适用于iOS7以后的设备。它提供如下功能：</p>
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
 
 <ol>
-<li>通过URL将数据下载到内存</li>
-<li>通过URL将数据下载到文件系统</li>
-<li>将数据上传到指定URL</li>
-<li>在后台完成上述功能</li>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
 </ol>
 
-<h3 id="toc_2">NSURLSession基本用法</h3>
+<p>纯C语言API</p>
+
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
+
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
+
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
+
+
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
+    }
+}
+sqlite3_finalize(stmt);
+
+//关闭SQLite
+sqlite3_close(db);
+</code></pre>
+
+<h3 id="toc_7">FMDB</h3>
+
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
+
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
+
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
+
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
+</code></pre>
+
+<h2 id="toc_8">CoreData简介</h2>
+
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
 
 <ol>
-<li>根据Session类型选择NSURLSessionConfiguration</li>
-<li>设置Configuration，如指定NSURLCache等</li>
-<li><p>用Configuration创建Session</p>
-
-<pre><code>+[NSURLSession sessionWithConfiguration:delegate:delegateQueue:];
-+[NSURLSession sessionWithConfiguration];
-</code></pre></li>
-<li><p>在Session里创建网络访问任务</p></li>
-<li><p>启动任务<code>-[NSURLSessionTask resume]</code></p></li>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
 </ol>
 
-<h3 id="toc_3">访问Demo</h3>
+<h4 id="toc_11">简单使用</h4>
 
-<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
 
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionDataTask *task = [session dataTaskWithRequest:request
-                                         completionHandler:
-     ^(NSData *data, NSURLResponse *response, NSError *error) {
-         // ...
-     }];
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
 
- [task resume];
+//保存
+NSError* error = nil;
+[context save:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
+}
+
+//删除
+[context deleteObject:managedObject];
+
 </code></pre>
 
-<p>Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL：</p>
+<h4 id="toc_12">参考资料</h4>
 
-<pre><code>NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
- NSData *data = ...;
-
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request
-                                                            fromData:data
-                                                   completionHandler:
-     ^(NSData *data, NSURLResponse *response, NSError *error) {
-         // ...
-     }];
-
- [uploadTask resume];
-</code></pre>
-
-<p>Download task 也需要一个 request，不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
-
-<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/file.zip&quot;];
- NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
- NSURLSession *session = [NSURLSession sharedSession];
- NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
-                                                         completionHandler:
-    ^(NSURL *location, NSURLResponse *response, NSError *error) {
-        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:documentsPath];
-        NSURL *newFileLocation = [documentsDirectoryURL URLByAppendingPathComponent:[[response URL] lastPathComponent]];
-        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
-    }];
-
- [downloadTask resume];
-</code></pre>
-
-<h2 id="toc_4">NSURLSessionConfiguration</h2>
-
-<p>NSURLSessionConfiguration 对象用于对 NSURLSession 对象进行初始化。NSURLSessionConfiguration 对以前 NSMutableURLRequest 所提供的网络请求层的设置选项进行了扩充，提供给我们相当大的灵活性和控制权。从指定可用网络，到 cookie，安全性，缓存策略，再到使用自定义协议，启动事件的设置，以及用于移动设备优化的几个新属性，你会发现使用 NSURLSessionConfiguration 可以找到几乎任何你想要进行配置的选项。<br/>
-NSURLSession 在初始化时会把配置它的 NSURLSessionConfiguration 对象进行一次 copy，并保存到自己的 configuration 属性中，而且这个属性是只读的。因此之后再修改最初配置 session 的那个 configuration 对象对于 session 是没有影响的。也就是说，configuration 只在初始化时被读取一次，之后都是不会变化的。</p>
-
-<h3 id="toc_5">NSURLSessionConfiguration 的工厂方法</h3>
-
-<p>NSURLSessionConfiguration 有三个类工厂方法，这很好地说明了 NSURLSession 设计时所考虑的不同的使用场景。</p>
-
-<ul>
-<li>+defaultSessionConfiguration 返回一个标准的 configuration，这个配置实际上与 NSURLConnection 的网络堆栈（networking stack）是一样的，具有相同的共享 NSHTTPCookieStorage，共享 NSURLCache 和共享 NSURLCredentialStorage。</li>
-<li>+ephemeralSessionConfiguration 返回一个预设配置，这个配置中不会对缓存，Cookie 和证书进行持久性的存储。这对于实现像秘密浏览这种功能来说是很理想的。</li>
-<li>+backgroundSessionConfiguration:(NSString *)identifier 的独特之处在于，它会创建一个后台 session。后台 session 不同于常规的，普通的 session，它甚至可以在应用程序挂起，退出或者崩溃的情况下运行上传和下载任务。初始化时指定的标识符，被用于向任何可能在进程外恢复后台传输的守护进程（daemon）提供上下文。
-###更多内容
-关于NSURLSession的更多信息可以参考<a href="http://objccn.io/issue-5-4/">从 NSURLConnection 到 NSURLSession</a></li>
-</ul>
-
-<h2 id="toc_6">优秀的第三方网络访问库 AFNetworking</h2>
-
-<p>AFNetworking是由Mattt Thompson开发的一个开源的网络访问组件。地址<a href="https://github.com/AFNetworking/AFNetworking">AFNetworking</a><br/>
-从3.0版本开始AFNetworking开始使用NSURLSession进行实现。</p>
-
-<h3 id="toc_7">用法</h3>
-
-<p><code>AFURLSessionManager</code> 创建并管理一个<code>NSURLSession</code>对象 基于指定的<code>NSURLSessionConfiguration</code>对象, 并遵从一下协议 <NSURLSessionTaskDelegate>, <NSURLSessionDataDelegate>, <NSURLSessionDownloadDelegate>, and <NSURLSessionDelegate>.</p>
-
-<h4 id="toc_8">Creating a Download Task</h4>
-
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
-
-NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/download.zip&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
-NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
-    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-    return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
-} completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
-    NSLog(@&quot;File downloaded to: %@&quot;, filePath);
-}];
-[downloadTask resume];
-</code></pre>
-
-<h4 id="toc_9">Creating an Upload Task</h4>
-
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
-
-NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
-NSURL *filePath = [NSURL fileURLWithPath:@&quot;file://path/to/image.png&quot;];
-NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithRequest:request fromFile:filePath progress:nil completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-    if (error) {
-        NSLog(@&quot;Error: %@&quot;, error);
-    } else {
-        NSLog(@&quot;Success: %@ %@&quot;, response, responseObject);
-    }
-}];
-[uploadTask resume];
-</code></pre>
-
-<h4 id="toc_10">Creating an Upload Task for a Multi-Part Request, with Progress</h4>
-
-<pre><code>NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@&quot;POST&quot; URLString:@&quot;http://example.com/upload&quot; parameters:nil constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
-        [formData appendPartWithFileURL:[NSURL fileURLWithPath:@&quot;file://path/to/image.jpg&quot;] name:@&quot;file&quot; fileName:@&quot;filename.jpg&quot; mimeType:@&quot;image/jpeg&quot; error:nil];
-    } error:nil];
-
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-
-NSURLSessionUploadTask *uploadTask;
-uploadTask = [manager
-              uploadTaskWithStreamedRequest:request
-              progress:^(NSProgress * _Nonnull uploadProgress) {
-                  // This is not called back on the main queue.
-                  // You are responsible for dispatching to the main queue for UI updates
-                  dispatch_async(dispatch_get_main_queue(), ^{
-                      //Update the progress view
-                      [progressView setProgress:uploadProgress.fractionCompleted];
-                  });
-              }
-              completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
-                  if (error) {
-                      NSLog(@&quot;Error: %@&quot;, error);
-                  } else {
-                      NSLog(@&quot;%@ %@&quot;, response, responseObject);
-                  }
-              }];
-
-[uploadTask resume];
-</code></pre>
-
-<h4 id="toc_11">Creating a Data Task</h4>
-
-<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
-
-NSURL *URL = [NSURL URLWithString:@&quot;http://httpbin.org/get&quot;];
-NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-
-NSURLSessionDataTask *dataTask = [manager dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-    if (error) {
-        NSLog(@&quot;Error: %@&quot;, error);
-    } else {
-        NSLog(@&quot;%@ %@&quot;, response, responseObject);
-    }
-}];
-[dataTask resume];
-</code></pre>
-
-<h4 id="toc_12">Another way</h4>
-
-<pre><code>NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfiguration:config];
-[manger GET:url parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        //do somthing
-    } failure:nil];
-</code></pre>
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
 
                         
                       </div>
@@ -321,7 +286,7 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/19</span>
+                    <span class="date">2016/5/4</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -332,7 +297,7 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610540983936.html" data-count-type="comments" href="14610540983936.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -391,6 +356,8 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -421,6 +388,18 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -434,18 +413,6 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

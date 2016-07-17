@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,97 +99,127 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14603730042058.html">
+                <a class="clearlink" href="14603833170565.html">
                 
-                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
+                  <h1>GeekBand.iOS-触摸手势</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+                        	<h2 id="toc_0">什么是手势</h2>
 
-<h2 id="toc_0">什么是UIView</h2>
-
-<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
-
-<h2 id="toc_1">屏幕对象UIScreen</h2>
-
-<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
-
-<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
-</code></pre>
-
-<h3 id="toc_2">iOS8+</h3>
-
-<pre><code>//可变坐标系
-.coordinateSpace
-//固定坐标系
-.fixedCoordinateSpace
-</code></pre>
-
-<h3 id="toc_3">截图</h3>
-
-<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
-
-<h2 id="toc_4">UIWindow</h2>
-
-<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
-
-<h2 id="toc_5">UIView</h2>
-
-<h3 id="toc_6">UIView的树状层次</h3>
-
-<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
-
-<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
 
 <ul>
-<li><p>增加(Create)</p>
-
-<pre><code>-(void)addSubView:(UIView *)view
--(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
--(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
--(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
-</code></pre></li>
-<li><p>删除(delete)</p>
-
-<pre><code>//子View调用
--(void)removeFromSuperview
-</code></pre></li>
-<li><p>修改(update)</p>
-
-<pre><code>-(void)bringSubViewToFront:(UIView *)view
--(void)sendSubviewToBack:(UIView *)view
--(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
-</code></pre></li>
-<li><p>查找(Read)</p>
-
-<pre><code>view.window;
-view.superview;
-view.subviews;
-
--(BOOL)isDescendantOfView:(UIView *)view
-</code></pre></li>
+<li>Tap 轻拍</li>
+<li>Swipe  单轴滑动</li>
+<li>Double tap  连续两次轻拍</li>
+<li>Long press  长按</li>
+<li>Pinch   捏合手指</li>
+<li>Two finger tap 双指轻拍 </li>
+<li>Rotate 旋转</li>
 </ul>
 
-<h3 id="toc_8">UIView的重要属性</h3>
+<h2 id="toc_1">实现的原理</h2>
+
+<ol>
+<li>收集一些列的UITouch</li>
+<li>分析是否符合所需要的规律
 
 <ul>
-<li>定位
-
-<ul>
-<li>frame/bounds/center/transform</li>
-<li>resizeToFit</li>
+<li>符合：触发手势响应</li>
+<li>否则：转为普通触摸事件响应</li>
 </ul></li>
-<li>视觉
+</ol>
+
+<p>Some Example</p>
+
+<pre><code>//Double Tap
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    for(UITouch *aTouch in touches){
+        if(aTouch.tapCount &gt;= 2){
+            [self respondToDoubleTapFesture:aTouch];
+        }
+    }
+}
+
+//Drag
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    UITouch *aTouch = [touches anyObject];
+    CGPoint loc = [aTouch locationInView:self];
+    CGPpoint preloc= [aTouch previouslocationInView:self];
+    
+    CGRect myFrame = self.frame;
+    float deltaX = loc.x - preloc.x;
+    float deltaY = loc.y - preloc.y;
+    myFrame.orgin.x += deltaX;
+    myFrame.orgin.Y += deltaY;
+    [self setFrame:myFrame];
+    
+}
+</code></pre>
+
+<h2 id="toc_2">UIControl</h2>
+
+<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
 
 <ul>
-<li>backgroundColor</li>
-<li>alpha vs. opaque</li>
-<li>maskView(iOS8+)</li>
+<li>UIControl：UIView：UIResponder</li>
+<li>Traget-Action</li>
+<li>UIControlEvents
+
+<ul>
+<li>TouchDown</li>
+<li>TouchDownRepeat</li>
+<li>TouchDragInside</li>
+<li>TouchDragOutside</li>
+<li>TouchDragEnter</li>
+<li>TouchUpInside</li>
+<li>TouchUpOutside</li>
+<li>TouchCancel</li>
+<li>ValueChanged</li>
+<li>PrimaryActionTriggered</li>
+<li>EditingDidBegin</li>
+<li>EditingChanged</li>
+<li>EditingDidEnd</li>
+<li>EditingDidEndOnExit</li>
+<li>AllTouchEvents</li>
+<li>AllEditingEvents</li>
 </ul></li>
-<li>访问
-.tag =&gt; -viewWithTag</li>
+</ul>
+
+<h2 id="toc_3">UIGestureRecongnizer</h2>
+
+<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
+<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
+<code>-[UIView addGestureRecognizer:]</code><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
+
+<h3 id="toc_4">离散手势与连续手势</h3>
+
+<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
+
+<h3 id="toc_5">手势识别状态</h3>
+
+<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
+如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
+
+<h3 id="toc_6">同时支持多种手势</h3>
+
+<ul>
+<li><p>用依赖关系改变触发顺序</p>
+
+<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
+b失败之前,a先等待</p></li>
+<li><p>使用UIGestureRecognizerDelegate控制</p>
+
+<ul>
+<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
+<li>-gestureRecognizerShouldBegin:是否可以响应</li>
+<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
+</ul></li>
 </ul>
 
                         
@@ -208,7 +240,7 @@ view.subviews;
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603833170565.html" data-count-type="comments" href="14603833170565.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -267,6 +299,8 @@ view.subviews;
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -297,6 +331,18 @@ view.subviews;
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -310,18 +356,6 @@ view.subviews;
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

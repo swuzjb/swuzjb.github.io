@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,95 +99,59 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14585638251666.html">
+                <a class="clearlink" href="14585764912552.html">
                 
-                  <h1>GeekBand.iOS—APP生命周期</h1>
+                  <h1>GeekBand.iOS-StoryBoard</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>iOS的应用程序的生命周期，还有程序是运行在前台还是后台，应用程序各个状态的变换，这些对于开发者来说都是很重要的。 iOS系统的资源是有限的，应用程序在前台和在后台的状态是不一样的。在后台时，程序会受到系统的很多限制，这样可以提高电池的使用和用户体验。</p>
+                        	<blockquote>
+<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
+</blockquote>
 
-<h2 id="toc_0">应用程序的状态</h2>
+<p>本文主要介绍segue。</p>
+
+<h2 id="toc_0">使用storyboard进行页面跳转</h2>
 
 <ol>
-<li>Not Running 未运行 程序没有启动</li>
-<li>Inactive 未激活 程序在前台运行，不过没有接收到事件。在没有事件处理情况下程序通常停留在这个状态。</li>
-<li>Active 激活 程序在前台运行而且接收到了事件。这也是前台的一个正常的模式</li>
-<li>Backgroud 后台 程序在后台而且能执行代码，大多数程序进入这个状态后会在在这个状态上停留一会。时间到之后会进入挂起状态(Suspended)。有的程序经过特殊的请求后可以长期处于Backgroud状态</li>
-<li><p>Suspended 挂起 程序在后台不能执行代码。系统会自动把程序变成这个状态而且不会发出通知。当挂起时，程序还是停留在内存中的，当系统内存低时，系统就把挂起的程序清除掉，为前台程序提供更多的内存。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-1348823833_6296.png" alt="应用程序的状态转换"/><br/>
-大多数发生状态转换时都会调用delegate对象对应的方法来响应App的状态改变。下面汇总了delegate对象的所有方法，当App状态发生转换时，你可能会使用到它们。</p></li>
+<li><p>纯storyBoard操作</p>
+
+<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
+松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
+从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
+此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
+我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
+<li><p>使用代码调用segue跳转<br/>
+需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
+使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
 </ol>
 
-<ul>
-<li>application:willFinishLaunchingWithOptions: - 这个方法是你在启动时的第一次机会来执行代码</li>
-<li>application:didFinishLaunchingWithOptions: - 这个方法允许你在显示app给用户之前执行最后的初始化操作</li>
-<li>applicationDidBecomeActive: - app已经切换到active状态后需要执行的操作</li>
-<li>applicationWillResignActive: - app将要从前台切换到后台时需要执行的操作</li>
-<li>applicationDidEnterBackground: - app已经进入后台后需要执行的操作</li>
-<li>applicationWillEnterForeground: - app将要从后台切换到前台需要执行的操作，但app还不是active状态</li>
-<li><p>applicationWillTerminate: - app将要结束时需要执行的操作<br/>
-现在讲下App启动、来回切换App和锁屏时状态的切换和调用对应哪些delegate对象的方法：</p></li>
-<li><p>App启动和active/inactive<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d15fc4c41.jpg.gif" alt=""/><br/>
-如图所示，当App启动时，首先由not running状态切换到inactive状态，此时调用application:didFinishLaunchingWithOptions:方法；然后由inactive状态切换到active状态，此时调用applicationDidBecomeActive:方法。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d56cdc36a.jpg.gif" alt=""/><br/>
-当App发生中断时，由active状态切换到inactive状态，此时调用applicationWillResignActive:方法。</p></li>
-<li><p>来回切换App<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d259ba79b.jpg.gif" alt=""/><br/>
-如图所示，当切换到另一个App时，由状态active切换到inactive，此时调用applicationWillResignActive:方法；然后从inactive状态切换到Background状态，此时调用applicationDidEnterBackground:方法。<br/>
-而当切换回本来的App时，由Background状态切换到inactive状态，此时调用applicationWillEnterForeground:方法，然后由inactive状态切换到active状态，调用applicationDidBecomeActive:方法。</p></li>
-<li><p>锁屏<br/>
-当手机锁屏时，由状态active切换到inactive，此时调用applicationWillResignActive:；然后再由inactive状态切换到Background状态，此时调用applicationDidEnterBackground:方法。</p></li>
-</ul>
-
-<h2 id="toc_1">Main函数入口</h2>
-
-<p>所有基于OC编写的App的入口都是main函数，但iOS应用程序有点不同。不同就是你不需要为iOS应用程序而自己编写main函数，当你使用Xcode创建工程的时候就已经提供了。除非一些特殊情况，否则你不应该修改Xcode提供的main函数实现。示例代码如下：</p>
-
-<pre><code>#import &lt;UIKit/UIKit.h&gt;  
-#import &quot;AppDelegate.h&quot;  
-  
-int main(int argc, char * argv[]){  
-    @autoreleasepool {  
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));  
-    }   
-}  
-</code></pre>
-
-<p>上面实例代码中有一个很重要的函数UIApplicationMain，它主要是创建App的几个核心对象来处理以下过程：</p>
+<h2 id="toc_1">使用segue传递数据</h2>
 
 <ol>
-<li>从可用Storyboard文件加载用户界面；</li>
-<li>调用AppDelegate自定义代码来做一些初始化设置；</li>
-<li>将App放入Main Run Loop环境中来响应和处理与用户交互产生的事件。
-##Main Run Loop
-一个iOS应用程序的main run loop主要作用是处理所有与用户相关的事件。UIApplication对象在启动时就设置main run loop和使用它来处理事件和更新基于view的界面。正如它的名字显示，main run loop是运行在应用程序的主线程。这样就确保与接收到用户相关的事件被有序地处理。
-下图显示main run loop的架构和用户事件最终是怎样被应用程序处理。当用户与设备交互时，系统就会生成与交互关联的事件，然后被应用程序的UIKit通过一个特殊的端口来分发。应用程序把事件放入队列，然后逐个分发到main run loop来执行。UIApplication对象是第一个对象接收到事件，然后决定怎样处理它。一个touch event通常都被分发到main window对象，然后依次分发到发生触碰的view。其他event的接收事件对象路径可能有点不同。
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588c902a375c.jpg" alt=""/></li>
-</ol>
+<li><p>使用prepareForSegue进行传值</p>
 
-<h2 id="toc_2">程序流程</h2>
-
-<ol>
-<li><p>加载程序进入前台<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121328_1.png" alt="加载程序进入前台"/></p></li>
-<li><p>程序中断<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121433_1.png" alt="程序中断"/></p></li>
-<li><p>进入后台运行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121400_1.png" alt="后台运行"/></p></li>
-</ol>
-
-<h2 id="toc_3">应用程序的终止</h2>
-
-<p>系统常常是为其他app启动时由于内存不足而回收内存最后需要终止应用程序，但有时也会是由于app很长时间才响应而终止。如果app当时运行在后台并且没有暂停，系统会在应用程序终止之前调用applicationWillTerminate:来保存用户的一些重要数据以便下次启动时恢复到app原来的状态。</p>
-
-<h2 id="toc_4">参考</h2>
-
-<ol>
-<li><a href="http://www.cocoachina.com/industry/20140710/9089.html">iOS应用程序的生命周期</a></li>
-<li><a href="http://www.csdn.net/article/2015-06-23/2825023">深度解析iOS应用程序的生命周期</a></li>
+<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // segue.identifier：获取连线的ID
+    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
+        // segue.destinationViewController：获取连线时所指的界面（VC）
+        //方法1：设置属性
+        ReceiveViewController *receive = segue.destinationViewController;
+        receive.name = @&quot;Garvey&quot;;
+        receive.age = 110;
+        //2:使用KVC给目标场景传值
+        [destinationController setValue:@119 forKey:@number];
+     }
+}
+</code></pre></li>
+<li><p>返回上级的某个页面<br/>
+使用unwindForSegue进行返回（iOS9+）。<br/>
+<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
 </ol>
 
                         
@@ -195,7 +161,7 @@ int main(int argc, char * argv[]){
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/3/21</span>
+                    <span class="date">2016/3/22</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -206,7 +172,7 @@ int main(int argc, char * argv[]){
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585638251666.html" data-count-type="comments" href="14585638251666.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -265,6 +231,8 @@ int main(int argc, char * argv[]){
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -295,6 +263,18 @@ int main(int argc, char * argv[]){
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -308,18 +288,6 @@ int main(int argc, char * argv[]){
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

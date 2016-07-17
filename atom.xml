@@ -4,13 +4,527 @@
   <title><![CDATA[展镜博的个人博客]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-05-24T22:43:22+08:00</updated>
+  <updated>2016-05-24T22:52:59+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练-JDBC]]></title>
+    <link href="http://swuzjb.github.io/14686724239639.html"/>
+    <updated>2016-07-16T20:33:43+08:00</updated>
+    <id>http://swuzjb.github.io/14686724239639.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">什么是JDBC</h2>
+
+<blockquote>
+<p>JDBC(Java Data Base Connectivity，Java数据库链接)是一种用于执行SQL语句的Java API。可以为多种关系数据库提供统一的访问，它由一组Java语言编写的类和接口组成。JDBC提供了一种标准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
+</blockquote>
+
+<h3 id="toc_1">JDBC原理</h3>
+
+<p>JDBC原理：JDBC是以前SUN公司定义的一套访问数据库的接口（没有具体实现），具体实现是由各大数据库厂商自己实现的。每个数据库厂商都有自己的JDBC实现，也被称为JDBC驱动实现类。Java应用程序连接指定数据库，需要使用厂家提供的JDBC驱动才能连接。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-16-14686740816527.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">JDBC链接数据库步骤</h2>
+
+<ol>
+<li>加载驱动</li>
+<li>链接数据库</li>
+<li>使用语句操作数据库</li>
+<li>关闭数据库，释放资源</li>
+</ol>
+
+<h3 id="toc_3">在项目中配置数据库驱动（Eclipse）</h3>
+
+<p>右击项目-&gt;Build Path-&gt;Configure Build Path-&gt; Add External JARS</p>
+
+<h3 id="toc_4">加载JDBC驱动</h3>
+
+<p>MySQL JDBC 驱动名称：<em>com.mysql.jdbc.Driver</em><br/>
+加载方式：<code>Class.forName(&quot;驱动名&quot;);</code></p>
+
+<h3 id="toc_5">连接及关闭数据库</h3>
+
+<ol>
+<li><p>DriverManager 驱动管理类，主要负责一个数据的连接。<code>static Connection getConnection(String url, String user, String password)</code>试图建立到给定数据库 URL 的连接。</p></li>
+<li><p>Mysql 数据的连接地址格式：</p>
+
+<ul>
+<li>jdbc:mysql://127.0.0.1:3306/DataBaseName</li>
+<li>jdbc协议：JDBC URL 中的协议总是jdbc</li>
+<li>子协议： 驱动程序名称或数据库连接机制（这种驱动可由一个或多个驱动程序支持）的名称如：mysql</li>
+<li>子名称：一种标示数据库的方法。必须遵循<em>//主机名：端口/数据库</em>的标准URL命名约定，如：<code>//localhost:3306/test</code></li>
+</ul></li>
+<li><p>Connection接口：与特定的数据库的连接(也称为会话)。</p>
+
+<ul>
+<li><code>void close()</code>立即释放此Connection对象的数据库和JDBC资源，而不是等待自动释放</li>
+</ul></li>
+</ol>
+
+<h4 id="toc_6">Demo Code</h4>
+
+<p>封装一个用于获取和关闭连接的工具类DBTool。</p>
+
+<pre><code class="language-Java">package com.swu.JDBC;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DBTool {
+    public static Connection getConnection(){
+        String dbURL = &quot;jdbc:mysql://localhost:3306/test&quot;;
+        String username = &quot;root&quot;;
+        String password = &quot;&quot;;
+        Connection conn = null;
+        try {
+            //注册驱动类
+            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);
+            //获取连接
+            conn = DriverManager.getConnection(dbURL,username,password);
+            
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;加载驱动失败&quot;);
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println(&quot;连接失败&quot;);
+            e.printStackTrace();
+        }
+        return conn;
+    }
+    public static void closeConnection(Connection conn){
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;关闭失败&quot;);
+            e.printStackTrace();
+        }
+    }
+}
+
+</code></pre>
+
+<h2 id="toc_7">使用Statement接口实现数据的增、删、改、查</h2>
+
+<h3 id="toc_8">Statement接口</h3>
+
+<ul>
+<li>作用：用于执行静态SQL语句并返回它所产生的结果的对象。</li>
+<li><code>int executeUpdate(String sql)</code> 执行给定SQL语句。该语句可能为INSERT,UPDATE,DELETE语句或者不返回人格内容的SQL语句。</li>
+<li><code>void close()</code> 立即释放此Statement对象的数据库和JDBC资源，而不是等待对象自动关闭时发生此操作。</li>
+</ul>
+
+<h4 id="toc_9">Statement接口实现添加数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">public void addUser(String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;insert into user(username,password) values(&#39;&quot;+username+&quot;&#39;,&#39;&quot;+password+&quot;&#39;)&quot;;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_10">Statement接口实现修改数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;update user set username=&#39;&quot;+username+&quot;&#39;,password=&#39;&quot;+password+&quot;&#39; where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {              e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_11">Statement接口实现删除数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;delete from user where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+</code></pre>
+
+<h4 id="toc_12">Statment接口实现数据查询</h4>
+
+<p>demo如下（里面的ResultSet后面详细介绍）:</p>
+
+<pre><code class="language-java">public void getAllUser(){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;select * from user&quot;;
+        Statement stmt = null;
+        //保存查询返回结果
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally {
+            try {
+                rs.close();
+                stmt.close();
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+        }
+}
+</code></pre>
+
+<h3 id="toc_13">PreparedStatement接口</h3>
+
+<p>PreparedStatement是Statement的子接口，是一个SQL语句预处理Statement。与直接Statement不同的是PreparedStatement在操作时，是先在数据表中准备好了一条SQL语句，但是此SQL语句的内容暂时不设置，而是之后再进行设置。<em>实际开发过程中建议使用PreparedStatement，可以避免一定的SQL注入问题</em></p>
+
+<h4 id="toc_14">PreparedStatement接口实现数据添加</h4>
+
+<p>demo如下:</p>
+
+<pre><code class="language-java">    public void addUser(String username,String password) throws Exception{
+        //预处理SQL语句
+        String sql = &quot;insert into user(username,password) values(?,?)&quot;;
+        Connection conn = DBTool.getConnection();
+        //获得PreparedStatement对象
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        //设置预处理占位符的实际值
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        //执行添加
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_15">PreparedStatement接口实现数据修改</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password) throws SQLException{
+        String sql = &quot;update user set username=?,password=? where id=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        stmt.setInt(3, id);
+        
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+        
+    }
+</code></pre>
+
+<h3 id="toc_16">PreparedStatement接口实现数据删除</h3>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id) throws SQLException{
+        String sql = &quot;delete from user where id = ?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setInt(1, id);
+    
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_17">PreparedStatement接口实现数据查询</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void getUserByUsername(String username) throws SQLException{
+        String sql = &quot;select * from user where username=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+    
+        ResultSet rs = stmt.executeQuery();
+        
+        while(rs.next()){
+            System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+        }
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h3 id="toc_18">ResultSet结果集</h3>
+
+<blockquote>
+<p>当我们对数据库的数据进行查询的时候，返回的是一个二维的结果集。我们这个时候需要使用ResultSet来遍历结果集，获取每一行的数据。</p>
+</blockquote>
+
+<h4 id="toc_19">获取数据</h4>
+
+<ul>
+<li><code>boolean next()</code>将光标从当前位置向前移动一行</li>
+<li><code>String getString(int columnIndex)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+<li><code>String getString(String columnLabel)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+</ul>
+
+<h4 id="toc_20">使用例子</h4>
+
+<p>见上方实现的数据查询。</p>
+
+<h3 id="toc_21">处理大数据对象</h3>
+
+<blockquote>
+<p>大数据对象处理主要有CLOB(character large object)和BLOB(binary large object)两种类型的字段。在CLOB中可以存储大字符数据对象，比如长篇小说;在BLOB中可以存放二进制大数据对象，比如图片、电影、音乐</p>
+</blockquote>
+
+<h4 id="toc_22">处理CLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setAsciiStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getClob(String columnLabel);</code>获得一个Clob对象，然后可以转为字符串对象。</li>
+</ul>
+
+<h4 id="toc_23">处理BLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setBinaryStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getBlob(String columnLabel);</code>获得一个Blob对象，然后可以转为目标对象。</li>
+</ul>
+
+<h3 id="toc_24">使用CallableStatement接口调用存储过程</h3>
+
+<blockquote>
+<p>CallableStatement 主要是调用数据库中的存储过程,CallableStatement 也是 Statement 接口的子接口。在使用 CallableStatement 时可以接收存储过程的返回值。 </p>
+</blockquote>
+
+<h3 id="toc_25">使用DatabaseMetaData分析数据库</h3>
+
+<blockquote>
+<p>DatabaseMetaData可以得到数据库的一些基本信息,包括数据库的名称、版本,以及得到表的信息。 </p>
+</blockquote>
+
+<ul>
+<li><code>String getDatabaseProductName()</code> 获取此数据库产品的名称。</li>
+<li><code>int getDriverMajorVersion()</code>获取此 JDBC 驱动程序的主版本号。</li>
+<li><code>int getDriverMinorVersion()</code> 获取此 JDBC 驱动程序的次版本号。 </li>
+</ul>
+
+<h3 id="toc_26">使用 ResultSetMetaData 获取 ResultSet 对象中的信息</h3>
+
+<blockquote>
+<p>ResultSetMetaData 可获取关于 ResultSet 对象中列的基本信息;</p>
+</blockquote>
+
+<ul>
+<li><code>int getColumnCount()</code> 返回此 ResultSet 对象中的列数。</li>
+<li><code>String getColumnName(int column)</code> 获取指定列的名称。 </li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练——Java基础1]]></title>
+    <link href="http://swuzjb.github.io/14676190809439.html"/>
+    <updated>2016-07-04T15:58:00+08:00</updated>
+    <id>http://swuzjb.github.io/14676190809439.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">开发环境搭建</h2>
+
+<h3 id="toc_1">JDK的安装与配置</h3>
+
+<ol>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
+
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_2">开发工具eclipse</h3>
+
+<p>下载地址：<a href="http://eclipse.org"></a></p>
+
+<h2 id="toc_3">Hello Java</h2>
+
+<pre><code class="language-java">
+public class Hello {
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_4">输入</h2>
+
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GeekBand.Swift-Homework13]]></title>
@@ -2801,156 +3315,6 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 <li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
 </ol>
 </blockquote>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-Autoresizing]]></title>
-    <link href="http://swuzjb.github.io/14595830611425.html"/>
-    <updated>2016-04-02T15:44:21+08:00</updated>
-    <id>http://swuzjb.github.io/14595830611425.html</id>
-    <content type="html"><![CDATA[
-<p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
-为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
-
-<h2 id="toc_0">界面布局过程</h2>
-
-<ul>
-<li>super view
-
-<ul>
-<li>layoutSubviews
-
-<ul>
-<li>iOS5.1- 实现是空的</li>
-<li>后续的版本实现了autoLayout的支持</li>
-</ul></li>
-<li>setNeedsLayout
-
-<ul>
-<li>下次绘制之前需要重新推算布局</li>
-</ul></li>
-<li>layoutIfNeeded
-
-<ul>
-<li>立即重新推算布局
-##对布局的需求的分析
-实现布局主要是计算界面元素之间的间距</li>
-</ul></li>
-<li>固定间距
-用struts（柱子）表示</li>
-<li>弹性间距
-根据界面尺寸比例调整的间距，用springs（弹簧）表示
-##UIView的AutoresizingMask</li>
-</ul></li>
-<li>Fixed vs Flexible
-
-<ul>
-<li>未指定flexible 就是 fixed</li>
-<li>UIViewAutoResizing
-
-<ul>
-<li>None</li>
-<li>FlexibleLeftMargin</li>
-<li>FlexibleWidth</li>
-<li>FlexibleRightMargin</li>
-<li>FlexibleTopMargin</li>
-<li>FlexibleHeight</li>
-<li>FlexibleBottomMargin</li>
-</ul></li>
-<li>Size
-
-<ul>
-<li>width</li>
-<li>height</li>
-</ul></li>
-<li>Margin
-
-<ul>
-<li>left</li>
-<li>right</li>
-<li>Top</li>
-<li>bottom</li>
-</ul></li>
-</ul></li>
-</ul>
-
-<h2 id="toc_1">在Xcode中设置autoresizing</h2>
-
-<ol>
-<li>将View的autoLayout关闭掉
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
-<li>在Xcode中设置autoresizing
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
-</ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-View的定位]]></title>
-    <link href="http://swuzjb.github.io/14595674718251.html"/>
-    <updated>2016-04-02T11:24:31+08:00</updated>
-    <id>http://swuzjb.github.io/14595674718251.html</id>
-    <content type="html"><![CDATA[
-<p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
-UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
-
-<h2 id="toc_0">View的层次</h2>
-
-<p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
-上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
-
-<h2 id="toc_1">UIKit坐标系</h2>
-
-<p>-CGPoint{x,y}用于描述坐标<br/>
--CGSize{width,height}用于描述宽和高<br/>
--CGRect{origin,size}描述一个矩形区域<br/>
-坐标系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
-
-<h2 id="toc_2">View的定位-Frame</h2>
-
-<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
-
-<pre><code>-(CGRect)frame{
-    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
-
-<h2 id="toc_3">View的定位-Bounds</h2>
-
-<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
-
-<pre><code>-(CGRect)bounds{
-    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
-
-<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
-
-<h2 id="toc_4">View的定位-Center</h2>
-
-<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
-
-<h2 id="toc_5">Demo展示</h2>
-
-<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
-[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
-view1.backgroundColor = [UIColor redColor];  
-[self.view addSubview:view1];//添加到self.view  
-NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
-  
-UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
-view2.backgroundColor = [UIColor yellowColor];  
-[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
-NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
 
 ]]></content>
   </entry>

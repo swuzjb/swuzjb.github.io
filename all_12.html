@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,117 +99,222 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14604722520928.html">
+                <a class="clearlink" href="14610540983936.html">
                 
-                  <h1>GeekBand.iOS-UIScrollView的使用</h1>
+                  <h1>GeekBand.iOS-网络操作</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
+                        	<p>大部分应用程序都或多或少会牵扯到网络开发，例如说新浪微博、微信等，这些应用本身可能采用iOS开发，但是所有的数据支撑都是基于后台网络服务器的。如今，网络编程越来越普遍，孤立的应用通常是没有生命力的。今天就会给大家介绍这部分内容：</p>
 
-<h2 id="toc_0">什么是ScrollView</h2>
+<h2 id="toc_0">Web请求和响应</h2>
 
-<p>能Scroll的View。即UIScrollView可以用于显示多于一个屏幕的内容，超出屏幕范围的内容可以通过滑动进行查看。效果如图所示:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604727346930.jpg" alt=""/></p>
+<p>做过Web开发的朋友应该很清楚，Http是无连接的请求。每个请求request服务器都有一个对应的响应response，无论是asp.net、jsp、php都是基于这种机制开发的。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-19-220832008241526.png" alt=""/></p>
 
-<h2 id="toc_1">UIScrollView的创建方式</h2>
-
-<ol>
-<li>在Interface Builder里面拖</li>
-<li>使用代码创建:<code>scrollView = [[UIScrollView alloc] initWithFrame:rect];</code></li>
-</ol>
-
-<h2 id="toc_2">UIScrollView的尺寸</h2>
-
-<ol>
-<li>ScrollView自身的size，也就是自身的Frame，这个和其它View一样。</li>
-<li>ScrollView有一个特殊的size属性，称之为contentSize，也是它的内容的大小，这个是必须指定的一个属性，否则ScrollView无法进行滑动等操作。指定contentSize的方式也有两种：
-
-<ol>
-<li>使用代码指定<code>scrollView.contentSize = CGSizeMake(&lt;#CGFloat width#&gt;, &lt;#CGFloat height#&gt;);</code></li>
-<li>使用AutoLayout,约束必须可以计算出contentSize的大小才可以正常的往其内部添加子View。可以参考<a href="http://www.cocoachina.com/ios/20150104/10810.html">Storyboard中的UIScrollView使用自动布局，使其能够滚动</a>。</li>
-</ol></li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604733972117.jpg" alt=""/></p>
-
-<h2 id="toc_3">UIScrollView的滚动</h2>
-
-<p>设置完成ScrollView之后，我们的ScrollView就可以进行滚动。与滚动有几个相关的属性或方法，介绍如下：</p>
-
-<ol>
-<li><code>BOOL scrollEnable</code>是否可以滚动</li>
-<li><code>BOOL bounces</code>是否显示回弹效果</li>
-<li><code>BOOL showsHorizontalScrollIndicator</code> 是否显示垂直滚动条</li>
-<li><code>BOOL showsVerticalScrollIndicator</code>  是否显示水平滚动条</li>
-<li><code>.contentOffset</code>是一个CGPoint，表示偏移的点
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604737957967.jpg" alt=""/></li>
-</ol>
-
-<h2 id="toc_4">监听滚动</h2>
-
-<p>监听滚动需要对应的监听对象实现UIScrollViewDelegate协议。<br/>
-具体的监听方法如下：</p>
-
-<pre><code>// 只要 scrollView 滑动就会触发 ( 会触发多次 )
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView;                                               
-
-//只要 scrollView 缩放就会触发
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView 
-
-// 当将要拖拽 scrollView 时触发 , 手指接触 scrollView 并且将要滑动时触发
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
-// 当结束拖拽时触发 ( 手指将要离开屏幕 )
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset NS_AVAILABLE_IOS(5_0);
-
-// 当结束拖拽时触发 ( 手指已经离开屏幕 )
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
-
-//当 scrollView 滑动将要减速时触发 ( 将要停止 )
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView;   
-//当 scrollView 结束减速时触发 ( 停止滑动 )
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;    
-//当设置 scrollView的setContentOffset, 有一个动画效果时触发
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView; 
-//设置要缩放的 scrollView 上面的哪一个子视图 , 只能是子视图 , 不能是 scrollView 本身
-- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;     
-//当将要开始缩放时触发
-- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view NS_AVAILABLE_IOS(3_2); 
-//当结束缩放时触发
-- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale; 
-//只有当 scrollsToTop 属性设置为 YES 时 , 该方法才会触发 , 进一步询问点击状态条是否有效
-- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;  
-//当点击状态条并且 scrollView 滑动到顶端时触发
-- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;      
-
-</code></pre>
-
-<h2 id="toc_5">ScrollView缩放</h2>
-
-<p>除了要指定那个View具有缩放的效果，还需要指定两个属性，<code>scrollView.minimumZoomScale</code>、<code>scrollView.maximumZoomScale</code>。直接Zoom是位图缩放而非重绘</p>
-
-<h2 id="toc_6">ScrollView分页滚动</h2>
-
-<p>通过设置.pageEnable属性可以控制是否开启分页滚动，当开启后，scrollView不再显示滚动条，并整页切换显示内容。<br/>
-页面来源：</p>
+<p>在Web开发中主要的请求方法有如下几种:</p>
 
 <ul>
-<li>一个巨大的View，简单但是浪费资源</li>
-<li>每页一个View，通过Delegate实现View的复用</li>
+<li>GET请求：get是获取数据的意思，数据以明文在URL中传递，受限于URL长度，所以传输数据量比较小。</li>
+<li>POST请求：post是向服务器提交数据的意思，提交的数据以实际内容形式存放到消息头中进行传递，无法在浏览器url中查看到，大小没有限制。</li>
+<li>HEAD请求：请求头信息，并不返回请求数据体，而只返回请求头信息，常用用于在文件下载中取得文件大小、类型等信息。
+在开发中往往数据存储在服务器端，而客户端（iOS应用）往往通过向服务器端发送请求从服务器端获得数据。要模拟这个过程首先当然是建立服务器端应用，应用的形式没有限制，你可以采用任何Web技术进行开发。</li>
 </ul>
 
-<h3 id="toc_7">ScrollView和PageControl结合</h3>
+<h2 id="toc_1">原生网络访问</h2>
 
-<p>这两个View结合起来可以实现图片轮播的效果，通过实现PageControl的delegate可以控制currentPage属性进行显示</p>
+<p>iOS原生为我们提供了网络访问的能力。我们今天只研究NSURLSession的使用方法。该方法适用于iOS7以后的设备。它提供如下功能：</p>
 
-<h4 id="toc_8">无限轮播</h4>
+<ol>
+<li>通过URL将数据下载到内存</li>
+<li>通过URL将数据下载到文件系统</li>
+<li>将数据上传到指定URL</li>
+<li>在后台完成上述功能</li>
+</ol>
 
-<p>为了保证轮播图像首尾相接，无限循环，有两个思路：<br/>
-1. 在第一张图片前加最后一张图片，在最后一张图片后加第一张图片，在delegate中判断，如果到达这两个特殊位置，在程序中进行跳转。举例：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
-如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
-2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
+<h3 id="toc_2">NSURLSession基本用法</h3>
+
+<ol>
+<li>根据Session类型选择NSURLSessionConfiguration</li>
+<li>设置Configuration，如指定NSURLCache等</li>
+<li><p>用Configuration创建Session</p>
+
+<pre><code>+[NSURLSession sessionWithConfiguration:delegate:delegateQueue:];
++[NSURLSession sessionWithConfiguration];
+</code></pre></li>
+<li><p>在Session里创建网络访问任务</p></li>
+<li><p>启动任务<code>-[NSURLSessionTask resume]</code></p></li>
+</ol>
+
+<h3 id="toc_3">访问Demo</h3>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                         completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [task resume];
+</code></pre>
+
+<p>Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL：</p>
+
+<pre><code>NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+ NSData *data = ...;
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request
+                                                            fromData:data
+                                                   completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [uploadTask resume];
+</code></pre>
+
+<p>Download task 也需要一个 request，不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/file.zip&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
+                                                         completionHandler:
+    ^(NSURL *location, NSURLResponse *response, NSError *error) {
+        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:documentsPath];
+        NSURL *newFileLocation = [documentsDirectoryURL URLByAppendingPathComponent:[[response URL] lastPathComponent]];
+        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+    }];
+
+ [downloadTask resume];
+</code></pre>
+
+<h2 id="toc_4">NSURLSessionConfiguration</h2>
+
+<p>NSURLSessionConfiguration 对象用于对 NSURLSession 对象进行初始化。NSURLSessionConfiguration 对以前 NSMutableURLRequest 所提供的网络请求层的设置选项进行了扩充，提供给我们相当大的灵活性和控制权。从指定可用网络，到 cookie，安全性，缓存策略，再到使用自定义协议，启动事件的设置，以及用于移动设备优化的几个新属性，你会发现使用 NSURLSessionConfiguration 可以找到几乎任何你想要进行配置的选项。<br/>
+NSURLSession 在初始化时会把配置它的 NSURLSessionConfiguration 对象进行一次 copy，并保存到自己的 configuration 属性中，而且这个属性是只读的。因此之后再修改最初配置 session 的那个 configuration 对象对于 session 是没有影响的。也就是说，configuration 只在初始化时被读取一次，之后都是不会变化的。</p>
+
+<h3 id="toc_5">NSURLSessionConfiguration 的工厂方法</h3>
+
+<p>NSURLSessionConfiguration 有三个类工厂方法，这很好地说明了 NSURLSession 设计时所考虑的不同的使用场景。</p>
+
+<ul>
+<li>+defaultSessionConfiguration 返回一个标准的 configuration，这个配置实际上与 NSURLConnection 的网络堆栈（networking stack）是一样的，具有相同的共享 NSHTTPCookieStorage，共享 NSURLCache 和共享 NSURLCredentialStorage。</li>
+<li>+ephemeralSessionConfiguration 返回一个预设配置，这个配置中不会对缓存，Cookie 和证书进行持久性的存储。这对于实现像秘密浏览这种功能来说是很理想的。</li>
+<li>+backgroundSessionConfiguration:(NSString *)identifier 的独特之处在于，它会创建一个后台 session。后台 session 不同于常规的，普通的 session，它甚至可以在应用程序挂起，退出或者崩溃的情况下运行上传和下载任务。初始化时指定的标识符，被用于向任何可能在进程外恢复后台传输的守护进程（daemon）提供上下文。
+###更多内容
+关于NSURLSession的更多信息可以参考<a href="http://objccn.io/issue-5-4/">从 NSURLConnection 到 NSURLSession</a></li>
+</ul>
+
+<h2 id="toc_6">优秀的第三方网络访问库 AFNetworking</h2>
+
+<p>AFNetworking是由Mattt Thompson开发的一个开源的网络访问组件。地址<a href="https://github.com/AFNetworking/AFNetworking">AFNetworking</a><br/>
+从3.0版本开始AFNetworking开始使用NSURLSession进行实现。</p>
+
+<h3 id="toc_7">用法</h3>
+
+<p><code>AFURLSessionManager</code> 创建并管理一个<code>NSURLSession</code>对象 基于指定的<code>NSURLSessionConfiguration</code>对象, 并遵从一下协议 <NSURLSessionTaskDelegate>, <NSURLSessionDataDelegate>, <NSURLSessionDownloadDelegate>, and <NSURLSessionDelegate>.</p>
+
+<h4 id="toc_8">Creating a Download Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/download.zip&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+    return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
+} completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+    NSLog(@&quot;File downloaded to: %@&quot;, filePath);
+}];
+[downloadTask resume];
+</code></pre>
+
+<h4 id="toc_9">Creating an Upload Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURL *filePath = [NSURL fileURLWithPath:@&quot;file://path/to/image.png&quot;];
+NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithRequest:request fromFile:filePath progress:nil completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;Success: %@ %@&quot;, response, responseObject);
+    }
+}];
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_10">Creating an Upload Task for a Multi-Part Request, with Progress</h4>
+
+<pre><code>NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@&quot;POST&quot; URLString:@&quot;http://example.com/upload&quot; parameters:nil constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+        [formData appendPartWithFileURL:[NSURL fileURLWithPath:@&quot;file://path/to/image.jpg&quot;] name:@&quot;file&quot; fileName:@&quot;filename.jpg&quot; mimeType:@&quot;image/jpeg&quot; error:nil];
+    } error:nil];
+
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+
+NSURLSessionUploadTask *uploadTask;
+uploadTask = [manager
+              uploadTaskWithStreamedRequest:request
+              progress:^(NSProgress * _Nonnull uploadProgress) {
+                  // This is not called back on the main queue.
+                  // You are responsible for dispatching to the main queue for UI updates
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      //Update the progress view
+                      [progressView setProgress:uploadProgress.fractionCompleted];
+                  });
+              }
+              completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+                  if (error) {
+                      NSLog(@&quot;Error: %@&quot;, error);
+                  } else {
+                      NSLog(@&quot;%@ %@&quot;, response, responseObject);
+                  }
+              }];
+
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_11">Creating a Data Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://httpbin.org/get&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDataTask *dataTask = [manager dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;%@ %@&quot;, response, responseObject);
+    }
+}];
+[dataTask resume];
+</code></pre>
+
+<h4 id="toc_12">Another way</h4>
+
+<pre><code>NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfiguration:config];
+[manger GET:url parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        //do somthing
+    } failure:nil];
+</code></pre>
 
                         
                       </div>
@@ -216,7 +323,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/12</span>
+                    <span class="date">2016/4/19</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -227,7 +334,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14604722520928.html" data-count-type="comments" href="14604722520928.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610540983936.html" data-count-type="comments" href="14610540983936.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -286,6 +393,8 @@
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -316,6 +425,18 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -329,18 +450,6 @@
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

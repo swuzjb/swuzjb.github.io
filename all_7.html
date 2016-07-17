@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,107 +99,144 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14626379454584.html">
+                <a class="clearlink" href="14628720930939.html">
                 
-                  <h1>GeekBand.Swift-第一周作业</h1>
+                  <h1>GeekBand.Swift-下标与操作符</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
-心中有沟壑<br/>
-原谅我。。英语拼错了。。。</p>
+                        	<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
 </blockquote>
 
-<h2 id="toc_0">设计方式一</h2>
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
 
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
 }
-class  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
 }
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_1">设计方式二</h2>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
- 
-class Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_2">设计方式三</h2>
-
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
-}
- 
-struct  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
+for i in 0..&lt;10{
+    print(datas[i])
 }
 </code></pre>
 
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+<h2 id="toc_1">操作符</h2>
 
-<h2 id="toc_3">设计方式四</h2>
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
 
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-} 
-struct Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
 }
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
 </code></pre>
 
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+<h3 id="toc_3">相等操作符</h3>
 
-<h2 id="toc_4">Swift中struct和class的区别</h2>
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
 
-<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
 
-<ol>
-<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
-<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
-</ol>
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
 
-<h3 id="toc_5">使用情景</h3>
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
 
-<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
 
-<ol>
-<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
-<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
-<li>不需要继承。这个是面向对象的基本特性。</li>
-</ol>
+var c5=c3
 
-<h2 id="toc_6">结论</h2>
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
 
-<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
+</code></pre>
 
                         
                       </div>
@@ -206,7 +245,7 @@ struct Rectangle{
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/8</span>
+                    <span class="date">2016/5/10</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -217,7 +256,7 @@ struct Rectangle{
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14626379454584.html" data-count-type="comments" href="14626379454584.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -276,6 +315,8 @@ struct Rectangle{
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -306,6 +347,18 @@ struct Rectangle{
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -319,18 +372,6 @@ struct Rectangle{
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

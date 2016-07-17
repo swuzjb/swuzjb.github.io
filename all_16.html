@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,84 +99,107 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14603532939876.html">
+                <a class="clearlink" href="14603791205821.html">
                 
-                  <h1>GeekBand.iOS-xcode的工程管理</h1>
+                  <h1>GeekBand.iOS-事件处理</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
+<p>暂时无感，先做归纳</p>
 </blockquote>
 
-<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
+<h2 id="toc_0">什么是事件</h2>
 
-<h2 id="toc_0">Xcode的工程结构</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
-
-<h2 id="toc_1">Workspace</h2>
-
-<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
-其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
+<p>Events:objects sent to an app informing user action<br/>
+在iOS中，事件分为三类：</p>
 
 <ul>
-<li>这些项目将使用同一个位置
+<li>触控事件（单点、多点触控以及各种手势操作）</li>
+<li>传感器事件（重力、加速度传感器等）</li>
+<li>远程控制事件（远程遥控iOS设备多媒体播放等）</li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603801710492.jpg" alt=""/></p>
+
+<h2 id="toc_1">事件的分发</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603809132422.jpg" alt=""/></p>
+
+<h3 id="toc_2">NSRunLoop</h3>
+
+<p>线程附属对象，监听一组事件源<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603810622282.jpg" alt=""/></p>
+
+<h2 id="toc_3">事件响应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-06022409-75bfb59830bb45c3899de47f77721214.png" alt=""/></p>
+
+<p>处理原理如下：</p>
 
 <ul>
-<li>保存项目状态</li>
-<li>保存构造出来的产品</li>
-<li>自动可以相互引用</li>
+<li>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</li>
+<li>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</li>
+<li>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</li>
+</ul>
+
+<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
+
+<ul>
+<li>hitTest:withEvent:方法大致处理流程是这样的：
+
+<ul>
+<li>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
+
+<ul>
+<li>若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</li>
+<li>若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</li>
 </ul></li>
-<li>Xcode自动为独立的项目提供Workspace</li>
-<li>Workspace中的Project仍然可以独立打开</li>
-</ul>
-
-<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
-
-<h2 id="toc_2">Project</h2>
-
-<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
-
-<ul>
-<li>组织工程用到的文件</li>
-<li>管理构建目标Traget</li>
-<li>告诉Xcode当前构建和执行目标
-
-<ul>
-<li>通过Scheme选择</li>
+<li>若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</li>
+<li>若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</li>
+<li>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理。</li>
 </ul></li>
 </ul>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
+<p>拿到这个UIView后，就调用该UIView的touches系列方法。<br/>
+消息处理过程，在找到的那个视图里处理，处理完后根据需要，利用响应链nextResponder可将消息往下一个响应者传递。<br/>
+UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- UIView</p>
 
-<h3 id="toc_3">Group vs. Floder Reference</h3>
+<p>【关键】：1、iOS判断哪个界面能接受消息是从View层级结构的父View向子View传递，即树状结构的根节点向叶子节点递归传递。2、hitTest和pointInside成对，且hitTest会调用pointInside。3、iOS的消息处理是，当消息被人处理后默认不再向父层传递</p>
 
-<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
-Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
+<h3 id="toc_4">事件沿Responder Chain传递</h3>
 
-<h2 id="toc_4">Traget</h2>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603818809422.jpg" alt="事件沿Responder Chain传递"/></p>
 
-<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
-- 定义如何构造一个产品（product）<br/>
-    - 指定用到的文件子集<br/>
-    - 定义依赖关系<br/>
-    - 提供构建过程的规则与参数<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
+<h2 id="toc_5">在自定义类里响应触摸事件</h2>
 
-<h3 id="toc_5">Traget与Project区别</h3>
+<pre><code>-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+</code></pre>
 
-<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
-建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
-
-<h2 id="toc_6">Scheme和Destination</h2>
+<p>UITouch:</p>
 
 <ul>
-<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
-<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
+<li>previousLocationInView 前一次的点击坐标</li>
+<li>locationInView 点击的坐标</li>
+<li>timestamp 时间戳</li>
+<li>type(iOS9+) 防误触，可以判断触摸的是手还是笔</li>
+<li>force(iOS9+) 压力信息</li>
 </ul>
+
+<p>UIEvent:</p>
+
+<ul>
+<li>type:UIEventTypeTouches(Motion/RemoteControl/Press)</li>
+<li>timestamp 时间戳</li>
+</ul>
+
+<h3 id="toc_6">多点触摸</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
 
                         
                       </div>
@@ -194,7 +219,7 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603791205821.html" data-count-type="comments" href="14603791205821.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -253,6 +278,8 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -283,6 +310,18 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -296,18 +335,6 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

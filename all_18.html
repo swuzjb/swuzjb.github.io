@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,86 +99,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14595830611425.html">
+                <a class="clearlink" href="14603532939876.html">
                 
-                  <h1>GeekBand.iOS-Autoresizing</h1>
+                  <h1>GeekBand.iOS-xcode的工程管理</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
-为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
+                        	<blockquote>
+<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
+</blockquote>
 
-<h2 id="toc_0">界面布局过程</h2>
+<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
+
+<h2 id="toc_0">Xcode的工程结构</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
+
+<h2 id="toc_1">Workspace</h2>
+
+<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
+其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
 
 <ul>
-<li>super view
+<li>这些项目将使用同一个位置
 
 <ul>
-<li>layoutSubviews
-
-<ul>
-<li>iOS5.1- 实现是空的</li>
-<li>后续的版本实现了autoLayout的支持</li>
+<li>保存项目状态</li>
+<li>保存构造出来的产品</li>
+<li>自动可以相互引用</li>
 </ul></li>
-<li>setNeedsLayout
+<li>Xcode自动为独立的项目提供Workspace</li>
+<li>Workspace中的Project仍然可以独立打开</li>
+</ul>
+
+<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
+
+<h2 id="toc_2">Project</h2>
+
+<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
 
 <ul>
-<li>下次绘制之前需要重新推算布局</li>
-</ul></li>
-<li>layoutIfNeeded
+<li>组织工程用到的文件</li>
+<li>管理构建目标Traget</li>
+<li>告诉Xcode当前构建和执行目标
 
 <ul>
-<li>立即重新推算布局
-##对布局的需求的分析
-实现布局主要是计算界面元素之间的间距</li>
-</ul></li>
-<li>固定间距
-用struts（柱子）表示</li>
-<li>弹性间距
-根据界面尺寸比例调整的间距，用springs（弹簧）表示
-##UIView的AutoresizingMask</li>
-</ul></li>
-<li>Fixed vs Flexible
-
-<ul>
-<li>未指定flexible 就是 fixed</li>
-<li>UIViewAutoResizing
-
-<ul>
-<li>None</li>
-<li>FlexibleLeftMargin</li>
-<li>FlexibleWidth</li>
-<li>FlexibleRightMargin</li>
-<li>FlexibleTopMargin</li>
-<li>FlexibleHeight</li>
-<li>FlexibleBottomMargin</li>
-</ul></li>
-<li>Size
-
-<ul>
-<li>width</li>
-<li>height</li>
-</ul></li>
-<li>Margin
-
-<ul>
-<li>left</li>
-<li>right</li>
-<li>Top</li>
-<li>bottom</li>
-</ul></li>
+<li>通过Scheme选择</li>
 </ul></li>
 </ul>
 
-<h2 id="toc_1">在Xcode中设置autoresizing</h2>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
 
-<ol>
-<li>将View的autoLayout关闭掉
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
-<li>在Xcode中设置autoresizing
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
-</ol>
+<h3 id="toc_3">Group vs. Floder Reference</h3>
+
+<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
+Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
+
+<h2 id="toc_4">Traget</h2>
+
+<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
+- 定义如何构造一个产品（product）<br/>
+    - 指定用到的文件子集<br/>
+    - 定义依赖关系<br/>
+    - 提供构建过程的规则与参数<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
+
+<h3 id="toc_5">Traget与Project区别</h3>
+
+<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
+建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
+
+<h2 id="toc_6">Scheme和Destination</h2>
+
+<ul>
+<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
+<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
+</ul>
 
                         
                       </div>
@@ -185,7 +185,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/2</span>
+                    <span class="date">2016/4/11</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -196,7 +196,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595830611425.html" data-count-type="comments" href="14595830611425.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -255,6 +255,8 @@
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -285,6 +287,18 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -298,18 +312,6 @@
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,109 +99,98 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14596904523529.html">
+                <a class="clearlink" href="14603730042058.html">
                 
-                  <h1>GeekBand.iOS-AutoLayout</h1>
+                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
-在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
+                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
 
-<h2 id="toc_0">什么是AutoLayout</h2>
+<h2 id="toc_0">什么是UIView</h2>
 
-<ul>
-<li>AutoLayout是一种布局技术，专门用于布局UI界面。用来取代Frame布局无法适应屏幕分辨率多重多样的不足。</li>
-<li>AutoLayout自iOS6开始引入，由于Xcode4的不给力，当时并没有获得大的推广</li>
-<li>在iOS7（Xcode5）开始，Autolayout的开发效率得到很大的提升</li>
-</ul>
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
 
-<p>ps.苹果官方也推荐开发者尽量使用Autolayout来布局UI界面<br/>
-Autolayout能轻松的解决屏幕适配的问题</p>
+<h2 id="toc_1">屏幕对象UIScreen</h2>
 
-<h2 id="toc_1">开始使用AutoLayout</h2>
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
 
-<p>自从Xcode6之后，你会看到我们新建一个Single Application，会发现一个ViewController的View非常大，跟任何一个iPhone/iPad的尺寸都不一样，这些都是假象、假象、假象。Apple 把尺寸抽象为了一个正方形，到真正的设备上才是真正的布局。</p>
-
-<h3 id="toc_2">AutoLayout概念</h3>
-
-<ul>
-<li>Pin(相对处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325788323184.png" alt="Pin"/>
-
-<ol>
-<li>边缘距离。最上面的四个虚线表示某个View的距离上、下、左、右多少像素。参考位置一般为对应方向离得最近的View。</li>
-<li>限制View的宽高属性值，或者在宽高中加入一次计算关系。</li>
-<li>那个蓝色的Constrain To Margin 是iPhone6出现之后新增的。Apple 觉得更大的分辨率有点间距好看，默认为8，如果这个勾上了，这个View距离四周的值就变成了你输入的值+8。可以根据实际需求确定是否勾选。</li>
-</ol></li>
-<li>Align(对齐处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325765517581.png" alt="Align"/>
-
-<ol>
-<li>Leading Edges：左对齐</li>
-<li>Trailing Edges：右对齐</li>
-<li>Top Edges：上对齐</li>
-<li>Bottom Edges：下对齐</li>
-<li>Horizontal Centers：水平中心对齐</li>
-<li>Vertical Centers：竖向中心对齐</li>
-<li>Baselines：基线对齐</li>
-<li>Horizontal Center in Container：对齐容器中的水平中心</li>
-<li>Vertical Center in Container：对齐容器中的竖向中心</li>
-</ol></li>
-</ul>
-
-<h3 id="toc_3">Autolayout使用</h3>
-
-<p>本单元中使用Demo对AutoLayout的各种约束进行讲解，讲解Demo主要来自文章开头提到的来源。AutoLayout的核心是参照，也就是基本上任何一个View都可以参照另一个View。</p>
-
-<h4 id="toc_4">Demo0-准备</h4>
-
-<p>我们开始Demo前先想想我们在Frame时代，布局需要什么：</p>
-
-<pre><code>{
-    original：{x,y}
-    size:{width,height}
-}
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
 </code></pre>
 
-<p>在iOS中布局是绝对定位的（大致这么理解吧）。所以我们需要某个View的X，Y，W，H。我们从基本的入门 ，我们无论添加多少约束，都是需要定位好某个View的X，Y，W，H。少了不行，多了更不行。</p>
+<h3 id="toc_2">iOS8+</h3>
 
-<h4 id="toc_5">Demo1-某个View距离父View上下左右间距全部为20。</h4>
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
+</code></pre>
 
-<p>对该View添加如下约束：<br/>
-    <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324481117197.png" alt=""/><br/>
-这里有几条注意事项：<br/>
-    1.请注意我这里把距离下面的，也就是BottomLayoutGuide的约束改成了距离控制器的View，为什么？因为BottomLayoutGuide是晚于View加载的，如果参考这个，会造成进入页面会卡一下。尽量不要直接参考下面 TopLayoutGuide 则没事。<br/>
-    2.加完约束你会发现貌似并没有什么效果？不是的，屏幕中出现的黄色的线条 ，这是IB在提升我们你所添加的约束 。和真实的尺寸不一样，怎么修改？在Resolve Auto Layout Issue中选择Update Frame。参考动图。<br/>
-动图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324514982324.gif" alt="demo1"/></p>
+<h3 id="toc_3">截图</h3>
 
-<h4 id="toc_6">Demo2-某个View距离在父View的左侧20，白色View，上20，宽高为100。</h4>
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324604147373.gif" alt="Demo2"/></p>
+<h2 id="toc_4">UIWindow</h2>
 
-<h4 id="toc_7">Demo3-添加一个白色View，距上20，左20，宽高和demo2中的一致</h4>
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo3"/></p>
+<h2 id="toc_5">UIView</h2>
 
-<h4 id="toc_8">Demo4-AspectRatio比例。假设某个假设某个View距离父View右上角20,20 宽高比2:1宽100。</h4>
+<h3 id="toc_6">UIView的树状层次</h3>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo4"/><br/>
-AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*Multiplier+Constant</code>,注意比例是支持表达式的如2:3、relation是支持great than,less than.具体的值由系统自动计算。</p>
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
 
-<h4 id="toc_9">Demo5-某个View距离在父View的右侧20，demo4中白色View上20，宽高和Demo4中的宽高一样，并且有对齐。</h4>
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324807851881.gif" alt="Demo5"/></p>
+<ul>
+<li><p>增加(Create)</p>
 
-<h2 id="toc_10">参考资料</h2>
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
 
-<blockquote>
-<ol>
-<li><a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a></li>
-<li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
-</ol>
-</blockquote>
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
+</code></pre></li>
+</ul>
+
+<h3 id="toc_8">UIView的重要属性</h3>
+
+<ul>
+<li>定位
+
+<ul>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
+</ul></li>
+<li>视觉
+
+<ul>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li>访问
+.tag =&gt; -viewWithTag</li>
+</ul>
 
                         
                       </div>
@@ -208,7 +199,7 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/3</span>
+                    <span class="date">2016/4/11</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -219,7 +210,7 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -278,6 +269,8 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -308,6 +301,18 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -321,18 +326,6 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

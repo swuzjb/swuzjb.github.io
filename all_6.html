@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,328 +99,91 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14628652524688.html">
+                <a class="clearlink" href="14633830220167.html">
                 
-                  <h1>GeekBand.Swift-属性与方法</h1>
+                  <h1>GeekBand.Swift-结构与枚举</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>属性表达实例状态或类型状态<br/>
-方法是成员函数，表达行为可用于:struct,enum,class</p>
+<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
 </blockquote>
 
-<h2 id="toc_0">属性</h2>
-
-<h3 id="toc_1">属性类别</h3>
-
-<p>根据读写性划分</p>
+<h2 id="toc_0">Struct结构</h2>
 
 <ul>
-<li>存储属性</li>
-<li>计算属性</li>
+<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
+<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
+<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
+<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
 </ul>
 
-<p>根据可变性划分</p>
-
-<ul>
-<li>变量属性</li>
-<li>常量属性</li>
-</ul>
-
-<p>根据归属权划分</p>
-
-<ul>
-<li>实例属性</li>
-<li>类属性(在struct和enum中用static声明，class中用class声明)</li>
-</ul>
-
-<h3 id="toc_2">存储属性的本质</h3>
-
-<p>一个存储变量，同时编译器会给该变量自动添加get和set访问器方法。</p>
-
-<h3 id="toc_3">计算属性的本质</h3>
-
-<p>一个get方法。（可以添加set）。</p>
-
-<pre><code class="language-swift">class Rectangle{
-
-    //常量属性
-    let name:&quot;矩形&quot;;
-    
-    //存储属性(变量属性)
-    var width:Int;
-    var height:Int;
-    //计算属性
-    var area:Int{
-        get{
-            return width*height;
-        }
-        set{
-            self.width = newValue / height;
-        }
-    }
-    
-    
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
 }
 </code></pre>
 
-<h3 id="toc_4">属性监视器</h3>
-
-<p>属性监视器是swift的一个特殊功能，可以在属性值修改之前和之后完成对应动作。</p>
-
-<pre><code class="language-swift">var name:String = &quot;coder&quot;{
-    willSet{
-        doSomthing();
-    }
-    didSet{
-        doSomthing();
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">注意</h3>
-
-<p><em>实例属性在使用之前必须初始化！</em></p>
-
-<h2 id="toc_6">方法</h2>
-
-<h3 id="toc_7">方法的类别</h3>
-
-<p>方法根据归属不同可以分为:</p>
+<h3 id="toc_1">Struct和Class</h3>
 
 <ul>
-<li>实例方法</li>
-<li>类型方法</li>
-</ul>
-
-<h3 id="toc_8">方法的声明</h3>
-
-<p>声明代码：<code>func name(参数1,参数2)-&gt;返回值{}</code></p>
-
-<p>说明：</p>
-
-<ul>
-<li>参数形式：外部参数名 本地参数名:类型</li>
-<li>声明时可以省略外部参数名,这时外部参数名默认使用本地参数名</li>
-<li>调用时，第一个参数名可忽略，但后面的参数名必须显示标明。如果在声明时加<code>_</code>，调用时也可忽略</li>
-<li>方法可以没有参数和返回值</li>
-<li>参数传递默认为传值</li>
-</ul>
-
-<h4 id="toc_9">更多参数和返回值功能</h4>
-
-<ul>
-<li>提供参数默认值</li>
-<li>常量参数与变量参数</li>
-<li>可变长参数</li>
-<li>inout参数，可以改变外部实参</li>
-<li>返回元组(Tuple)</li>
-</ul>
-
-<pre><code class="language-swift">
-class MyClass{
-    var instanceData=100;
-    static var typeData=10000;
- 
-    //实例方法
-    func instanceMethod(){
-        ++instanceData
-        ++MyClass.typeData
-        instanceMethod2()
-        MyClass.typeMethod()
-    }
-    
-    //静态方法
-    static func typeMethod(){
-        ++typeData
-        //++instanceData
-        typeMethod2()
-        //instanceMethod()
-    }
-    
-    func instanceMethod2(){
-        print(instanceData)
-    }
-    static func typeMethod2(){
-        print(typeData)
-    }
-
-    //显式内部参数名，省略外部参数名
-    func sayGreeting(name:String, _ words:String)-&gt;String{
-        return words+&quot;! &quot;+name
-    }
-    func sayGreeting(){
-        print(&quot;Hello!&quot;)
-    }
-    func sayGreeting(name:String)-&gt;String {
-        return &quot;Hello! &quot;+name
-    }
-    //显式内部参数名，显式外部参数名
-    func sayGreeting(person name:String,greeting words:String)-&gt;String{
-        return words+&quot;! &quot;+name
-    }
-    
-    //可变数目参数
-    func averageNumber(numbers:Double...)-&gt;Double{
-    
-        var sum=0.0
-        for item in numbers {
-            sum+=item
-        }
-        return sum / Double(numbers.count)
-    }
-    
-    //常量参数 VS. 变量参数
-    func changeParameter(data1:Int, var data2:Int){
-        var dataTemp=data1
-        data2++
-        dataTemp++
-    }
-
-    //inout参数
-    func swap(inout a:Int,inout b:Int){
-        let tempA=a
-        a=b
-        b=tempA
-    }
-    
-    //返回Tuple类型
-    func minMax(array: [Int]) -&gt; (min: Int, max: Int){
-        var currentMin = array[0]
-        var currentMax = array[0]
-        for value in array[1..&lt;array.count] {
-            if value &lt; currentMin {
-                currentMin = value
-            } else if value &gt; currentMax {
-                currentMax = value
-            }
-        }
-        return (currentMin, currentMax)
-    }
-}
-
-var myObject=MyClass()
-//调用实例方法
-myObject.instanceMethod()
-//调用类型方法
-MyClass.typeMethod()
-myObject.sayGreeting()
-myObject.sayGreeting(&quot;Jason&quot;)
-myObject.sayGreeting(&quot;Jason&quot;,&quot;Welcome&quot;)
-myObject.sayGreeting(person:&quot;Jason&quot;, greeting:&quot;You are welcome&quot;)
-myObject.averageNumber(10,90,30,80,50,100)
-var data1=100
-var data2=200
-myObject.swap(&amp;data1,b: &amp;data2)
-let range=myObject.minMax([3,-9,23,15,-45,7])
-print(&quot;max=\(range.max), min=\(range.min)&quot;)
-</code></pre>
-
-<h3 id="toc_10">特殊的方法</h3>
-
-<h4 id="toc_11">初始化器</h4>
-
-<blockquote>
-<p>初始化器用于初始化类型实例，是一个特殊的函数，无返回值。</p>
-</blockquote>
-
-<h5 id="toc_12">初始化过程</h5>
+<li>相同点：
 
 <ol>
-<li>分配内存</li>
-<li>调用初始化器初始化内存</li>
-</ol>
+<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
+<li>都支持类型扩展、协议</li>
+</ol></li>
+<li>不同点：
 
-<h5 id="toc_13">应用范围</h5>
-
-<ul>
-<li>class</li>
-<li>struct</li>
-<li>enum</li>
+<ol>
+<li>类支持继承和多态，结构不支持</li>
+<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
+<li>类支持析构器，结构不支持</li>
+<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
+<li>类支持引用比较。结构不支持。</li>
+</ol></li>
 </ul>
 
-<h5 id="toc_14">作用</h5>
+<h2 id="toc_2">Enum枚举</h2>
 
 <ul>
-<li>初始化器主要用于初始化实例储存属性，可以使用默认初始化器或自定义的初始化器。</li>
-<li>所有储存属性必须被初始化
-
-<ul>
-<li>实例储存属性要么指定默认值，要么在初始化器内初始化</li>
-<li>类型存储属性必须指定默认值</li>
-</ul></li>
-<li>可选属性类型可以不初始化。(声明时用<code>？</code>修饰)</li>
-<li>属性被初始化时，不会调用属性观察者</li>
+<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
+<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
+<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
+<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
+<li>还可定义:计算属性、方法、初始化器</li>
 </ul>
 
-<h5 id="toc_15">默认初始化器</h5>
-
-<ul>
-<li>一个类可以有多个初始化器，但至少有一个初始化器</li>
-<li>如果一个类没有人为提供初始化器，编译器会自动生成一个默认的初始化器</li>
-<li>默认初始化器，无参形式init();</li>
-</ul>
-
-<h5 id="toc_16">便捷初始化器</h5>
-
-<ul>
-<li>指定初始化器为类的主初始化器，负责初始化所有属性，默认调用父类的主初始化器</li>
-<li>便捷初始化器为类的辅助初始化器。必须调用同的指定初始化器。用<code>convenience</code>修饰</li>
-</ul>
-
-<pre><code class="language-swift">class Point3D{
-    var x:Int
-    var y:Int
-    var z:Int
-    
-    init(x:Int, y:Int, z:Int){
-        self.x=x
-        self.y=y
-        self.z=z
-        
-        //other processing
-        print(&quot;other task&quot;)
-    }
-    
-    convenience init(x:Int, y:Int){
-        
-        self.init(x:x,y:y,z:0)
-    }
-    
-    convenience init(){
-        
-        self.init(x:0,y:0,z:0)
-    }
+<pre><code class="language-swift">//定义枚举类型
+enum Color {
+    case Red
+    case Green
+    case Blue
 }
 
-</code></pre>
+enum ComplexColor{
+    case Red,Green,Blue,Alpha
+}
 
-<h4 id="toc_17">析构器</h4>
+var c1=Color.Red
+var c2:Color
+c2 = Color.Green
+c1 = .Blue
+var c3=c1
 
-<blockquote>
-<p>析构器(deinit),在实例内存被释放前调用，用于释放实例使用的非内存资源。</p>
-</blockquote>
 
-<ul>
-<li>析构器仅可以定义于class，且只能定义一个。</li>
-<li>只有实例析构器，没有类型析构器</li>
-<li>析构器运行根据ARC的释放规则，自动调用，程序员无法手动调用</li>
-</ul>
-
-<pre><code>class FileStream{
-    init(){
-        print(&quot;open file...&quot;)
+func print(color: Color){
+    
+    switch color {
+    case .Red:
+        print(&quot;Red Color!&quot;)
+    case .Green:
+        print(&quot;Green Color!&quot;)
+    case .Blue:
+        print(&quot;Blue Color!&quot;)
     }
     
-    func process(){
-        print(&quot;process file...&quot;)
-    }
-       
-    deinit{
-        print(&quot;close file...&quot;)
-    }
 }
 
 </code></pre>
@@ -430,7 +195,7 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/10</span>
+                    <span class="date">2016/5/16</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -441,7 +206,7 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628652524688.html" data-count-type="comments" href="14628652524688.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -500,6 +265,8 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -530,6 +297,18 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -543,18 +322,6 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  

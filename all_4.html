@@ -75,6 +75,8 @@
 
         
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
          
 
       </ul>
@@ -97,94 +99,124 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633830220167.html">
+                <a class="clearlink" href="14634889513152.html">
                 
-                  <h1>GeekBand.Swift-结构与枚举</h1>
+                  <h1>GeekBand.Swift-协议</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
 </blockquote>
 
-<h2 id="toc_0">Struct结构</h2>
+<h2 id="toc_0">协议的成员</h2>
 
-<ul>
-<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
-<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
-<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
-<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
-</ul>
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
 
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
-</code></pre>
+<h2 id="toc_1">协议的使用</h2>
 
-<h3 id="toc_1">Struct和Class</h3>
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
 
-<ul>
-<li>相同点：
-
-<ol>
-<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
-<li>都支持类型扩展、协议</li>
-</ol></li>
-<li>不同点：
-
-<ol>
-<li>类支持继承和多态，结构不支持</li>
-<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
-<li>类支持析构器，结构不支持</li>
-<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
-<li>类支持引用比较。结构不支持。</li>
-</ol></li>
-</ul>
-
-<h2 id="toc_2">Enum枚举</h2>
-
-<ul>
-<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
-<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
-<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
-<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
-<li>还可定义:计算属性、方法、初始化器</li>
-</ul>
-
-<pre><code class="language-swift">//定义枚举类型
-enum Color {
-    case Red
-    case Green
-    case Blue
-}
-
-enum ComplexColor{
-    case Red,Green,Blue,Alpha
-}
-
-var c1=Color.Red
-var c2:Color
-c2 = Color.Green
-c1 = .Blue
-var c3=c1
-
-
-func print(color: Color){
-    
-    switch color {
-    case .Red:
-        print(&quot;Red Color!&quot;)
-    case .Green:
-        print(&quot;Green Color!&quot;)
-    case .Blue:
-        print(&quot;Blue Color!&quot;)
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
     }
-    
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
 }
-
+class Image :Drawable{
+    var description:String{
+        get{
+            return self.description;
+        }
+    }
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
+}
 </code></pre>
+
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
+
+<ul>
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
+
+<ul>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
+
+<ol>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
+</ol>
+
+<h3 id="toc_4">协议中的方法</h3>
+
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
+
+<ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
+
+<ul>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
+</ul></li>
+</ul>
 
                         
                       </div>
@@ -193,10 +225,8 @@ func print(color: Color){
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+                    <span class="date">2016/5/17</span>
+                    
           				   
                   </div>
                   <div class="more-right right">
@@ -204,7 +234,7 @@ func print(color: Color){
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -263,6 +293,8 @@ func print(color: Color){
       	<p class="cat-list">
         
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
          
         </p>
 
@@ -293,6 +325,18 @@ func print(color: Color){
 	      
 		      
 			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
@@ -306,18 +350,6 @@ func print(color: Color){
 		      
 			      <li class="post">
 			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633841095158.html">GeekBand.Swift-面向对象</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14633830220167.html">GeekBand.Swift-结构与枚举</a>
 			      </li>
 		     
 		  
