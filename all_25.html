@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
+<<<<<<< HEAD
   CobberZhan's Blog
+=======
+  展镜博的个人博客
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   
   </title>
   
   
+<<<<<<< HEAD
   <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+=======
+  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -60,7 +68,11 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+<<<<<<< HEAD
     <span> &nbsp; CobberZhan's Blog</span>
+=======
+    <span> &nbsp; 展镜博的个人博客</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   </a>
 </nav>
 
@@ -99,13 +111,20 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+<<<<<<< HEAD
                 <a class="clearlink" href="14591709450392.html">
                 
                   <h1>GeekBand.iOS-UILocalized​Indexed​Collation</h1>
+=======
+                <a class="clearlink" href="14590829108890.html">
+                
+                  <h1>GeekBand.iOS-UITableView</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
+<<<<<<< HEAD
                         	<p>tableView中区域索引标题（section index titles）。它们是在列表右边纵向排列的字母，你可以在电话本联系人界面和音乐曲库界面中看到它们。<br/>
 <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591711593577.jpg" alt="Section Index Titles Example"/><br/>
 当用户在那个列表里向下移动手指时，列表会在对应的区域间跳动。这会使得冗长的列表视图变得超级好用。<br/>
@@ -206,6 +225,153 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
 }
 </code></pre>
 
+=======
+                        	<p>第三周的课程终于迎来了大杀器——tableView。table这个view可能是使用面最广泛的一个数据展示方法了吧。本文就简要的介绍一下tableview在iOS开发过程中的使用。</p>
+
+<h2 id="toc_0">建立</h2>
+
+<p>一个tableView要想顺利的现实在iOS的VC当中，必须要实现两个协议，他们分别是：UITableViewDataSource，UITableViewDelegate。<br/>
+其中UITableViewDataSource负责Table的数据供应，UITableViewDelegate负责对Table的各种事件进行相应。<br/>
+Table主要由两个部分组成section和cell（或者称为row）。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591617617364.jpg" alt=""/></p>
+
+<ol>
+<li><p>UITableViewDataSource</p>
+
+<pre><code>//在UITableViewDataSource中有两个方法是必须实现的
+
+//返回某个section中的行数，应由数据进行指定
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+
+//根据indexPath（包括section和row）来返回对应的cell实例
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath; 
+
+//非必须
+
+//返回表格的section数量，下标从0开始计算，默认为1
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView; 
+
+// cell是否可以进入编辑模式，默认为true
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath;
+//返回section的索引，主要用于通讯录类表格(e.g. &quot;ABCD...Z#&quot;)
+- (nullable NSArray&lt;NSString *&gt; *)sectionIndexTitlesForTableView:(UITableView *)tableView ；
+//返回对应section的编号
+- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index;  
+
+// Data manipulation - insert and delete support
+// After a row has the minus or plus button invoked (based on the UITableViewCellEditingStyle for the cell), the dataSource must commit the change
+// Not called for edit actions using UITableViewRowAction - the action&#39;s handler will be invoked instead
+-(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
+
+</code></pre></li>
+<li><p>UITableViewDelegate</p>
+
+<pre><code>//在delegate中没有必须实现的方法，但是有几个非常常用的方法
+//设置section的header和footer的view
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section; 
+//点击操作响应方法
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre>
+
+<p>delegate中对table的各项操作定义了非常详细的操作，在这里仅简要介绍。</p></li>
+</ol>
+
+<h2 id="toc_1">Cell定制</h2>
+
+<p>在tableView中，最重要的就是定制cell，用于显示数据。在这里简要的说明几种cell的产生方法。</p>
+
+<ol>
+<li><p>使用系统预定义的cell</p>
+
+<pre><code>//先根据Identifier取对象实例,实现复用
+UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@&quot;&quot;]; 
+//如果为空进行创建
+if(cell == nil){
+    cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@&quot;Default&quot;];
+}
+
+</code></pre>
+
+<p>initWithStyle:UITableViewCellStyle的几种值：</p>
+
+<ol>
+<li><p>UITableViewCellStyleDefault<br/>
+该格式提供了一个简单的左对齐的文本标签textLabel和一个可选的图像imageView。如果显示图像，那么图像将在最左边。这种格式虽然可以设置detailTextLabel，但是不会显示该标签。</p></li>
+<li><p>UITableViewCellStyleSubtitle<br/>
+该格式与前一种相比，增加了对detailTextLabel的支持，该标签将会显示在textLabel标签的下面，字体相对较小。</p></li>
+<li><p>UITableViewCellStyleValue1<br/>
+该格式居左显示textLabel，居右显示detailTextLabel，且字体较小</p></li>
+<li><p>UITableViewCellStyleValue2<br/>
+该格式居左现实一个小型蓝色主标签textLabel，在其右边显示一个小型黑色副标题详细标签detailTextLabel。该格式不支持图像.<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591626918504.jpg" alt=""/></p></li>
+</ol></li>
+<li><p>自定义Cell</p>
+
+<ol>
+<li><p>使用StoryBoard绘制<br/>
+在SB中使用IB对cell进行绘制，并指定identifier，内部的view指定tag.</p>
+
+<pre><code>UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@&quot;&quot;]; 
+UIView* view =(UIView *) [cell viewWithTag:int];
+</code></pre></li>
+<li><p>xib方式<br/>
+创建一个XibCell继承UITableViewCell，并创建xib文件，在xib中对cell进行绘制</p>
+
+<pre><code>//0.覆盖initWithStyle方法,手工加载xib
+//1.在VC的viewDidLoad方法中对xib进行注册
+//2.使用Identifier创建Cell实例
+</code></pre></li>
+<li><p>使用UITableViewController设计静态表格<br/>
+对类似于系统设置这些界面，使用静态表格直接完成设计</p></li>
+</ol></li>
+</ol>
+
+<h2 id="toc_2">TableView交互</h2>
+
+<ul>
+<li><p>选中<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591667830172.jpg" alt=""/></p></li>
+<li><p>控制表格滚动<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591668374304.jpg" alt=""/></p></li>
+<li><p>刷新table</p>
+
+<pre><code>//重载所有数据
+[tableView reloadData];
+//刷新行
+[tableView reloadRowsAtIndexPaths:withRowAnimation];
+//刷新组
+[tableView reloadSections:WithAnimation];
+//刷新组索引
+[tableView reloadSectionIndexTitles];
+</code></pre></li>
+<li><p>编辑模式<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591672893977.jpg" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591673261962.jpg" alt=""/></p></li>
+<li><p>表格与搜索<br/>
+搜索并非表格的一部分，但实际使用中经常联系在一起。</p>
+
+<ul>
+<li><p>UISearchBar（iOS2+）<br/>
+<code>[tableView setTableViewHeaderView:searchBar];</code></p></li>
+<li><p>UISearchDisplayController(iOS7)</p></li>
+<li><p>UISearchController(iOS8)</p></li>
+</ul></li>
+<li><p>高亮与菜单<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591676374088.jpg" alt=""/></p></li>
+<li><p>表格索引<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591676858863.jpg" alt=""/></p></li>
+</ul>
+
+<h2 id="toc_3">UITableViewController</h2>
+
+<p>该类主要用于实现静态表格，以及封装了下拉刷新等操作。</p>
+
+<h2 id="toc_4">数据传递</h2>
+
+<p>和其它VC一样使用segue或delegate</p>
+
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                         
                       </div>
                   </div>
@@ -213,7 +379,11 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
+<<<<<<< HEAD
                     <span class="date">2016/3/28</span>
+=======
+                    <span class="date">2016/3/27</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -224,7 +394,11 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
                       
 
                       
+<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14591709450392.html" data-count-type="comments" href="14591709450392.html#ds-thread"></a>
+=======
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14590829108890.html" data-count-type="comments" href="14590829108890.html#ds-thread"></a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -256,7 +430,11 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
+<<<<<<< HEAD
                 <h1>CobberZhan's Blog</h1>
+=======
+                <h1>展镜博的个人博客</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -315,31 +493,51 @@ UILocalizedIndexedCollation 的首要任务就是决定对于当前地区区域�
 	      
 		      
 			      <li class="post">
+<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
+=======
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+=======
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+=======
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+=======
+			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+=======
+			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  

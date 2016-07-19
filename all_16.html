@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
+<<<<<<< HEAD
   CobberZhan's Blog
+=======
+  展镜博的个人博客
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   
   </title>
   
   
+<<<<<<< HEAD
   <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+=======
+  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -60,7 +68,11 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+<<<<<<< HEAD
     <span> &nbsp; CobberZhan's Blog</span>
+=======
+    <span> &nbsp; 展镜博的个人博客</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   </a>
 </nav>
 
@@ -99,13 +111,20 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+<<<<<<< HEAD
                 <a class="clearlink" href="14604722520928.html">
                 
                   <h1>GeekBand.iOS-UIScrollView的使用</h1>
+=======
+                <a class="clearlink" href="14603791205821.html">
+                
+                  <h1>GeekBand.iOS-事件处理</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
+<<<<<<< HEAD
                         	<p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
 
 <h2 id="toc_0">什么是ScrollView</h2>
@@ -210,6 +229,102 @@
 <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
 如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
 2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
+=======
+                        	<blockquote>
+<p>暂时无感，先做归纳</p>
+</blockquote>
+
+<h2 id="toc_0">什么是事件</h2>
+
+<p>Events:objects sent to an app informing user action<br/>
+在iOS中，事件分为三类：</p>
+
+<ul>
+<li>触控事件（单点、多点触控以及各种手势操作）</li>
+<li>传感器事件（重力、加速度传感器等）</li>
+<li>远程控制事件（远程遥控iOS设备多媒体播放等）</li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603801710492.jpg" alt=""/></p>
+
+<h2 id="toc_1">事件的分发</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603809132422.jpg" alt=""/></p>
+
+<h3 id="toc_2">NSRunLoop</h3>
+
+<p>线程附属对象，监听一组事件源<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603810622282.jpg" alt=""/></p>
+
+<h2 id="toc_3">事件响应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-06022409-75bfb59830bb45c3899de47f77721214.png" alt=""/></p>
+
+<p>处理原理如下：</p>
+
+<ul>
+<li>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</li>
+<li>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</li>
+<li>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</li>
+</ul>
+
+<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
+
+<ul>
+<li>hitTest:withEvent:方法大致处理流程是这样的：
+
+<ul>
+<li>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
+
+<ul>
+<li>若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</li>
+<li>若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</li>
+</ul></li>
+<li>若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</li>
+<li>若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</li>
+<li>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理。</li>
+</ul></li>
+</ul>
+
+<p>拿到这个UIView后，就调用该UIView的touches系列方法。<br/>
+消息处理过程，在找到的那个视图里处理，处理完后根据需要，利用响应链nextResponder可将消息往下一个响应者传递。<br/>
+UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- UIView</p>
+
+<p>【关键】：1、iOS判断哪个界面能接受消息是从View层级结构的父View向子View传递，即树状结构的根节点向叶子节点递归传递。2、hitTest和pointInside成对，且hitTest会调用pointInside。3、iOS的消息处理是，当消息被人处理后默认不再向父层传递</p>
+
+<h3 id="toc_4">事件沿Responder Chain传递</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603818809422.jpg" alt="事件沿Responder Chain传递"/></p>
+
+<h2 id="toc_5">在自定义类里响应触摸事件</h2>
+
+<pre><code>-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+</code></pre>
+
+<p>UITouch:</p>
+
+<ul>
+<li>previousLocationInView 前一次的点击坐标</li>
+<li>locationInView 点击的坐标</li>
+<li>timestamp 时间戳</li>
+<li>type(iOS9+) 防误触，可以判断触摸的是手还是笔</li>
+<li>force(iOS9+) 压力信息</li>
+</ul>
+
+<p>UIEvent:</p>
+
+<ul>
+<li>type:UIEventTypeTouches(Motion/RemoteControl/Press)</li>
+<li>timestamp 时间戳</li>
+</ul>
+
+<h3 id="toc_6">多点触摸</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 
                         
                       </div>
@@ -218,7 +333,11 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
+<<<<<<< HEAD
                     <span class="date">2016/4/12</span>
+=======
+                    <span class="date">2016/4/11</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -229,7 +348,11 @@
                       
 
                       
+<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14604722520928.html" data-count-type="comments" href="14604722520928.html#ds-thread"></a>
+=======
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603791205821.html" data-count-type="comments" href="14603791205821.html#ds-thread"></a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -261,7 +384,11 @@
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
+<<<<<<< HEAD
                 <h1>CobberZhan's Blog</h1>
+=======
+                <h1>展镜博的个人博客</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -320,31 +447,51 @@
 	      
 		      
 			      <li class="post">
+<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
+=======
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+=======
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+=======
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+=======
+			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+=======
+			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  

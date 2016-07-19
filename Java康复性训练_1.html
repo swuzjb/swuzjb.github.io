@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
+<<<<<<< HEAD
   Java康复性训练 - CobberZhan's Blog
+=======
+  Java康复性训练 - 展镜博的个人博客
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   
   </title>
   
   
+<<<<<<< HEAD
   <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+=======
+  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -60,7 +68,11 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+<<<<<<< HEAD
     <span> &nbsp; CobberZhan's Blog</span>
+=======
+    <span> &nbsp; 展镜博的个人博客</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   </a>
 </nav>
 
@@ -99,13 +111,20 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+<<<<<<< HEAD
                 <a class="clearlink" href="14687533604786.html">
                 
                   <h1>Java康复性训练——MyBatis3(1)</h1>
+=======
+                <a class="clearlink" href="14676190809439.html">
+                
+                  <h1>Java康复性训练——Java基础1</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
+<<<<<<< HEAD
                         	<h2 id="toc_0">MyBatis</h2>
 
 <blockquote>
@@ -337,6 +356,139 @@ public interface UserMapper {
 </code></pre>
 
 <p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
+=======
+                        	<h2 id="toc_0">开发环境搭建</h2>
+
+<h3 id="toc_1">JDK的安装与配置</h3>
+
+<ol>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
+
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_2">开发工具eclipse</h3>
+
+<p>下载地址：<a href="http://eclipse.org"></a></p>
+
+<h2 id="toc_3">Hello Java</h2>
+
+<pre><code class="language-java">
+public class Hello {
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_4">输入</h2>
+
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 
                         
                       </div>
@@ -345,7 +497,11 @@ public interface UserMapper {
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
+<<<<<<< HEAD
                     <span class="date">2016/7/17</span>
+=======
+                    <span class="date">2016/7/4</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
@@ -356,7 +512,11 @@ public interface UserMapper {
                       
 
                       
+<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14687533604786.html" data-count-type="comments" href="14687533604786.html#ds-thread"></a>
+=======
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -374,7 +534,11 @@ public interface UserMapper {
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
+<<<<<<< HEAD
 			 <a href="Java康复性训练_2.html">&raquo; Next Page</a> 
+=======
+			
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			</p>
 			  </div>
 			</div>
@@ -388,7 +552,11 @@ public interface UserMapper {
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
+<<<<<<< HEAD
                 <h1>CobberZhan's Blog</h1>
+=======
+                <h1>展镜博的个人博客</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -447,31 +615,51 @@ public interface UserMapper {
 	      
 		      
 			      <li class="post">
+<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
+=======
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+=======
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+=======
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+=======
+			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+=======
+			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  

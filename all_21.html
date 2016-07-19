@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
+<<<<<<< HEAD
   CobberZhan's Blog
+=======
+  展镜博的个人博客
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   
   </title>
   
   
+<<<<<<< HEAD
   <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+=======
+  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -60,7 +68,11 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+<<<<<<< HEAD
     <span> &nbsp; CobberZhan's Blog</span>
+=======
+    <span> &nbsp; 展镜博的个人博客</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
   </a>
 </nav>
 
@@ -99,13 +111,20 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+<<<<<<< HEAD
                 <a class="clearlink" href="14596904523529.html">
                 
                   <h1>GeekBand.iOS-AutoLayout</h1>
+=======
+                <a class="clearlink" href="14595674718251.html">
+                
+                  <h1>GeekBand.iOS-View的定位</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
+<<<<<<< HEAD
                         	<p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
 在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
 
@@ -202,6 +221,65 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 <li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
 </ol>
 </blockquote>
+=======
+                        	<p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
+UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+
+<h2 id="toc_0">View的层次</h2>
+
+<p>View的层次结构是一个树状结构：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
+上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+
+<h2 id="toc_1">UIKit坐标系</h2>
+
+<p>-CGPoint{x,y}用于描述坐标<br/>
+-CGSize{width,height}用于描述宽和高<br/>
+-CGRect{origin,size}描述一个矩形区域<br/>
+坐标系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+
+<h2 id="toc_2">View的定位-Frame</h2>
+
+<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
+
+<pre><code>-(CGRect)frame{
+    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<h2 id="toc_3">View的定位-Bounds</h2>
+
+<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
+
+<pre><code>-(CGRect)bounds{
+    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
+
+<h2 id="toc_4">View的定位-Center</h2>
+
+<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
+
+<h2 id="toc_5">Demo展示</h2>
+
+<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
+[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
+view1.backgroundColor = [UIColor redColor];  
+[self.view addSubview:view1];//添加到self.view  
+NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
+  
+UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
+view2.backgroundColor = [UIColor yellowColor];  
+[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
+NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 
                         
                       </div>
@@ -210,7 +288,11 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
+<<<<<<< HEAD
                     <span class="date">2016/4/3</span>
+=======
+                    <span class="date">2016/4/2</span>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -221,7 +303,11 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
                       
 
                       
+<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
+=======
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -253,7 +339,11 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
+<<<<<<< HEAD
                 <h1>CobberZhan's Blog</h1>
+=======
+                <h1>展镜博的个人博客</h1>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -312,31 +402,51 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
 	      
 		      
 			      <li class="post">
+<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
+=======
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+=======
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+=======
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+=======
+			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+<<<<<<< HEAD
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+=======
+			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
+>>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
