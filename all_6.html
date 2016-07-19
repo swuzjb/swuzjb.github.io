@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-<<<<<<< HEAD
-  CobberZhan's Blog
-=======
-  展镜博的个人博客
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+  Zhan's Blog
   
   </title>
   
   
-<<<<<<< HEAD
-  <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
-=======
-  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+  <link href="atom.xml" rel="alternate" title="Zhan's Blog" type="application/atom+xml">
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -68,11 +60,7 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
-<<<<<<< HEAD
-    <span> &nbsp; CobberZhan's Blog</span>
-=======
-    <span> &nbsp; 展镜博的个人博客</span>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+    <span> &nbsp; Zhan's Blog</span>
   </a>
 </nav>
 
@@ -111,21 +99,14 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-<<<<<<< HEAD
                 <a class="clearlink" href="14634889513152.html">
                 
                   <h1>GeekBand.Swift-协议</h1>
-=======
-                <a class="clearlink" href="14633830220167.html">
-                
-                  <h1>GeekBand.Swift-结构与枚举</h1>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<<<<<<< HEAD
 <p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
 协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
 </blockquote>
@@ -236,88 +217,6 @@ class Image :Drawable{
 <li>可选协议必须标明@objc特性</li>
 </ul></li>
 </ul>
-=======
-<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
-</blockquote>
-
-<h2 id="toc_0">Struct结构</h2>
-
-<ul>
-<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
-<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
-<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
-<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
-</ul>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
-</code></pre>
-
-<h3 id="toc_1">Struct和Class</h3>
-
-<ul>
-<li>相同点：
-
-<ol>
-<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
-<li>都支持类型扩展、协议</li>
-</ol></li>
-<li>不同点：
-
-<ol>
-<li>类支持继承和多态，结构不支持</li>
-<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
-<li>类支持析构器，结构不支持</li>
-<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
-<li>类支持引用比较。结构不支持。</li>
-</ol></li>
-</ul>
-
-<h2 id="toc_2">Enum枚举</h2>
-
-<ul>
-<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
-<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
-<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
-<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
-<li>还可定义:计算属性、方法、初始化器</li>
-</ul>
-
-<pre><code class="language-swift">//定义枚举类型
-enum Color {
-    case Red
-    case Green
-    case Blue
-}
-
-enum ComplexColor{
-    case Red,Green,Blue,Alpha
-}
-
-var c1=Color.Red
-var c2:Color
-c2 = Color.Green
-c1 = .Blue
-var c3=c1
-
-
-func print(color: Color){
-    
-    switch color {
-    case .Red:
-        print(&quot;Red Color!&quot;)
-    case .Green:
-        print(&quot;Green Color!&quot;)
-    case .Blue:
-        print(&quot;Blue Color!&quot;)
-    }
-    
-}
-
-</code></pre>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 
                         
                       </div>
@@ -326,15 +225,8 @@ func print(color: Color){
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-<<<<<<< HEAD
                     <span class="date">2016/5/17</span>
                     
-=======
-                    <span class="date">2016/5/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
           				   
                   </div>
                   <div class="more-right right">
@@ -342,11 +234,7 @@ func print(color: Color){
                       
 
                       
-<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
-=======
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -378,11 +266,7 @@ func print(color: Color){
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
-<<<<<<< HEAD
-                <h1>CobberZhan's Blog</h1>
-=======
-                <h1>展镜博的个人博客</h1>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+                <h1>Zhan's Blog</h1>
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -441,51 +325,31 @@ func print(color: Color){
 	      
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-=======
-			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-=======
-			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
-=======
-			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
-=======
-			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
-=======
-			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  

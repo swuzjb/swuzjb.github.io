@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-<<<<<<< HEAD
-  CobberZhan's Blog
-=======
-  展镜博的个人博客
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+  Zhan's Blog
   
   </title>
   
   
-<<<<<<< HEAD
-  <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
-=======
-  <link href="atom.xml" rel="alternate" title="展镜博的个人博客" type="application/atom+xml">
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+  <link href="atom.xml" rel="alternate" title="Zhan's Blog" type="application/atom+xml">
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
     <script src="asset/js/vendor/modernizr.js"></script>
@@ -68,11 +60,7 @@
 
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
-<<<<<<< HEAD
-    <span> &nbsp; CobberZhan's Blog</span>
-=======
-    <span> &nbsp; 展镜博的个人博客</span>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+    <span> &nbsp; Zhan's Blog</span>
   </a>
 </nav>
 
@@ -111,95 +99,14 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-<<<<<<< HEAD
                 <a class="clearlink" href="14586526599234.html">
                 
                   <h1>GeekBand.iOS-UIKIT继承关系</h1>
-=======
-                <a class="clearlink" href="14585643199431.html">
-                
-                  <h1>GeekBand.iOS-UIViewController</h1>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-<<<<<<< HEAD
                         	<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-22-uikit_classes.jpg-Watermark.jpeg" alt="UIKIT继承关系"/></p>
-=======
-                        	<p>UIViewController是一个普通的ObjC对象，它的主要功能是管理View、传递数据、响应用户操作、内存管理（状态保持）、适应适配。</p>
-
-<h2 id="toc_0">iOS设计模式</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-cocoa_mvc.gif" alt="iOS设计模式"/></p>
-
-<h2 id="toc_1">UIViewController调用顺序</h2>
-
-<p>ViewController生命周期会经历初始化、加载视图、销毁视图、生命结束等过程。</p>
-
-<ol>
-<li>init方法
-初始化ViewController本身。</li>
-<li>loadView方法
-当view需要被展示而它却是nil时，viewController会调用该方法，如果代码构建View的话需要重写此方法。</li>
-<li>viewDidLoad方法
-执行完loadView后继续执行viewDidLoad，loadView时还没有view，而viewDidLoad时view已经创建好了。</li>
-<li>viewDidUnload方法
-当系统内存吃紧的时候会调用该方法。</li>
-<li>dealloc
-释放其他资源或内存。</li>
-</ol>
-
-<p>View Controller的生命周期如下图所示：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-UIViewController%20Class%20Reference_2x.png" alt="UIViewController生命周期"/></p>
-
-<h2 id="toc_2">rootViewController的过程</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585714986064.jpg" alt="rootViewController"/></p>
-
-<p>使用代码指定rootViewController</p>
-
-<pre><code>- (void) tryNibName {
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
-  UIViewController * rootVC = [[UIViewController alloc] initWithNibName:@&quot;rootVC&quot; bundle:nil];
-  self.window.rootViewController = rootVC;
-
-  [self.window makeKeyAndVisible];
-}
-
-- (void) tryNibOfUserVCName {
-  // xib can be MyViewController or MyView
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  UIViewController * rootVC = [[MyViewController alloc] init];
-  self.window.rootViewController = rootVC;
-
-  [self.window makeKeyAndVisible];
-}
-
-- (void) tryNibOfVCName {
-  // UI prefix in class name means system class, which will bypass xib lookup!
-  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  UIViewController * rootVC = [[UIViewController alloc] init];
-  self.window.rootViewController = rootVC;
-
-  [self.window makeKeyAndVisible];
-}
-
-</code></pre>
-
-<h2 id="toc_3">多个ViewController的替换</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585720269718.jpg" alt=""/></p>
-
-<h2 id="toc_4">ViewController传值</h2>
-
-<ol>
-<li>使用属性进行传值</li>
-<li>使用delegate进行回调进行传值</li>
-<li>使用segue进行传值</li>
-</ol>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 
                         
                       </div>
@@ -208,11 +115,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-<<<<<<< HEAD
                     <span class="date">2016/3/22</span>
-=======
-                    <span class="date">2016/3/21</span>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -223,11 +126,7 @@
                       
 
                       
-<<<<<<< HEAD
                         &nbsp;<a  class="ds-thread-count" data-thread-key="14586526599234.html" data-count-type="comments" href="14586526599234.html#ds-thread"></a>
-=======
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585643199431.html" data-count-type="comments" href="14585643199431.html#ds-thread"></a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
                        
                   </span>
                   </div>
@@ -259,11 +158,7 @@
             
                 <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
             
-<<<<<<< HEAD
-                <h1>CobberZhan's Blog</h1>
-=======
-                <h1>展镜博的个人博客</h1>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
+                <h1>Zhan's Blog</h1>
                 <div class="site-des">展镜博的个人博客</div>
                 <div class="social">
 
@@ -322,51 +217,31 @@
 	      
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-=======
-			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
-=======
-			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
-=======
-			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
-=======
-			        <a href="14635750426080.html">GeekBand.Swift-集合类型</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-<<<<<<< HEAD
 			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
-=======
-			        <a href="14634889513152.html">GeekBand.Swift-协议</a>
->>>>>>> b1a5f6fb7ce4115c85994b71f48f0f4cc10e6a64
 			      </li>
 		     
 		  
