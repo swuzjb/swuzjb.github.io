@@ -1,0 +1,602 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  Java康复性训练——MyBatis3(1) - CobberZhan's Blog
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:swuzjb.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        <li id="menu_item_index"><a href="index.html">HOME</a></li>
+        <li id="menu_item_archives"><a href="archives.html">Archives</a></li>
+        <li id="menu_item_about"><a href="about.html">ABOUT</a></li>
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; CobberZhan's Blog</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Java康复性训练——MyBatis3(1)</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/7/17</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14687533604786.html" data-count-type="comments" href="14687533604786.html#ds-thread"></a>
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <h2 id="toc_0">MyBatis</h2>
+
+<blockquote>
+<p>MyBatis是一个支持普通SQL查询，存储过程和高级映射的优秀持久层框架。MyBatis消除了几乎所有的JDBC代码和参数的手工设置以及对结果集的检索封装。MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。</p>
+</blockquote>
+
+<h2 id="toc_1">MyBatis3使用-Hell,World项目</h2>
+
+<p>MyBatis3的使用比较简单。新建一个基本的Mybatis项目需要如下步骤：</p>
+
+<ol>
+<li>新建一个Java项目（这句是废话）。</li>
+<li>导入相关Jar包。
+
+<ol>
+<li>JDBC相关包：mysql-connector-java-5.1.39-bin.jar</li>
+<li>MyBatis核心包：mybatis-3.4.1.jar</li>
+</ol></li>
+<li><p>创建Mybatis配置文件：mybatis-config.xml 位于src目录下</p>
+
+<pre><code class="language-xml">    &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+    &lt;!DOCTYPE configuration
+      PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;
+      &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;
+    &lt;configuration&gt;
+
+      &lt;!--  引入相关JDBC配置文件 --&gt;
+      &lt;properties  resource=&quot;jdbc.properties&quot;/&gt;
+
+      &lt;!-- 配置Mybatis运行的数据库环境 --&gt;
+      &lt;environments default=&quot;development&quot;&gt;
+            &lt;environment id=&quot;development&quot;&gt;
+                  &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+                  &lt;dataSource type=&quot;POOLED&quot;&gt;
+                    &lt;property name=&quot;driver&quot; value=&quot;${jdbc.driverClassName}&quot;/&gt;
+                    &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                    &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                    &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+                  &lt;/dataSource&gt;
+            &lt;/environment&gt;
+      &lt;/environments&gt;
+
+      &lt;!-- 对象与数据库映射文件 --&gt;
+      &lt;mappers&gt;
+        &lt;mapper resource=&quot;site/zhanjingbo/mapper/UserMapper.xml&quot;/&gt;
+      &lt;/mappers&gt;
+    &lt;/configuration&gt;
+</code></pre></li>
+<li><p>创建JDBC配置文件:jdbc.properties。（也可直接在上文配置）</p>
+
+<pre><code class="language-txt">jdbc.dirverClassName=com.mysql.jdbc.Dirver
+jdbc.url=jdbc:mysql://localhost:3307/user
+jdbc.username=root
+jdbc.password=
+
+</code></pre></li>
+<li><p>创建MyBatis的连接工厂类:</p>
+
+<pre><code class="language-Java">package site.zhanjingbo.util;
+import java.io.IOException;
+import java.io.InputStream;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+public class SqlSessionFactoryUtil {
+    private static SqlSessionFactory sqlSessionFactory; 
+    private static SqlSessionFactory getSqlSessionFactory(){
+
+        if(sqlSessionFactory == null){
+            InputStream is = null;
+            try {
+                is = Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);
+                sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                System.out.println(&quot;配置文件加载失败&quot;);
+                e.printStackTrace();
+            }
+        }
+        return sqlSessionFactory;
+    }
+    public static SqlSession openSession(){
+        return getSqlSessionFactory().openSession();
+    }
+}
+</code></pre></li>
+<li><p>创建实体数据库访问<em>接口</em>：</p>
+
+<pre><code class="language-java">package site.zhanjingbo.dao;
+import site.zhanjingbo.model.User;
+public interface UserMapper {
+    public int addUser(User user);
+}
+</code></pre></li>
+<li><p>创建映射Mapper配置文件</p>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;
+    &lt;insert id=&quot;addUser&quot; parameterType=&quot;site.zhanjingbo.model.User&quot;&gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>创建测试类 </p>
+
+<pre><code class="language-java"> package site.zhanjingbo.test;
+ import org.apache.ibatis.session.SqlSession;
+ import site.zhanjingbo.mapper.UserMapper;
+ import site.zhanjingbo.model.User;
+ import site.zhanjingbo.util.SqlSessionFactoryUtil;
+ public class MyBatisTest {
+    public static void main(String[] args) {
+        //获取SqlSession实例
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSession();
+        //根据sqlSession生成对应的Mapper对象
+        UserMapper userDao = sqlSession.getMapper(UserMapper.class);
+
+        User user = new User(&quot;test&quot;, &quot;123&quot;);
+        int flag = userDao.addUser(user);
+
+        if(flag &gt; 0){
+            System.out.println(&quot;添加成功&quot;);
+        }
+
+        //提交事务
+        sqlSession.commit();
+        //关闭SQLSession
+        sqlSession.close();
+
+    }
+}
+</code></pre></li>
+</ol>
+
+<h2 id="toc_2">Mybatis-Config.xml配置文件</h2>
+
+<p>本部分简要描述一下Mybatis-config配置文件的各项内容。<br/>
+<code>&lt;configuration&gt;&lt;/configuration&gt;</code>是配置文件xml的根节点，所有配置项都其中。主要包含以下几项：</p>
+
+<h3 id="toc_3">properties参数配置</h3>
+
+<ul>
+<li>properties主要包含各类配置信息，可以直接引入properties文件。也可以直接设置键值对。</li>
+<li><code>&lt;properties  resource=&quot;jdbc.properties&quot;/&gt;</code> 通过resource来指定配置文件</li>
+<li><p>直接写入键值对，写法</p>
+
+<pre><code class="language-xml">&lt;properties&gt;
+    &lt;property name=&quot;jdbc.dirverCLassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;
+ &lt;/properties&gt;
+</code></pre></li>
+</ul>
+
+<h3 id="toc_4">environments 环境配置</h3>
+
+<p>MyBatis支持多环境配置。可以同时配置多个数据库信息。用<code>&lt;environment&gt;</code>标签表示。</p>
+
+<h4 id="toc_5">environment标签</h4>
+
+<p>每一对<code>&lt;environment&gt;&lt;/environment&gt;</code>标签标示一个数据库环境信息。包含transactionManager、dataSource两个子节点。<br/>
+样例代码：</p>
+
+<pre><code class="language-xml">&lt;environments default=&quot;development&quot;&gt;
+        &lt;environment id=&quot;development&quot;&gt;
+              &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+              &lt;dataSource type=&quot;POOLED&quot;&gt;
+                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
+                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+              &lt;/dataSource&gt;
+        &lt;/environment&gt;
+        &lt;environment id=&quot;test&quot;&gt;
+            &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+            &lt;dataSource type=&quot;POOLED&quot;&gt;
+                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
+                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+              &lt;/dataSource&gt;
+        &lt;/environment&gt;
+ &lt;/environments&gt;
+</code></pre>
+
+<h5 id="toc_6">transactionManager事务管理方式</h5>
+
+<p>MyBatis支持两种类型的事务管理器：JDBC和MANAGED(托管)：</p>
+
+<ul>
+<li>JDBC：应用程序负责管理数据库连接的声明周期</li>
+<li>MANAGED：由应用服务器管理数据库连接的声明周期。（一般商业服务器才有此功能，如JBOSS，WebLogic）</li>
+<li><code>&lt;transactionManager type=&quot;JDBC&quot;/&gt;</code></li>
+</ul>
+
+<h5 id="toc_7">dataSource数据源</h5>
+
+<p>用来配置数据库数据源信息。类型分为：UNPOOLED,POOLED,JNDI：</p>
+
+<ul>
+<li>UNPOOLED：没有连接池，每次数据库操作MyBatis都会新建一个数据库连接，用完后，关闭。适合小并发项目。</li>
+<li>POOLED：启用连接池</li>
+<li>JNDI：使用服务器配置JNDI数据源获取数据库连接</li>
+</ul>
+
+<h3 id="toc_8">typeAliases</h3>
+
+<p>类型别名，通过设置该项目可以给类的完整限定名取别名，方便使用。<br/>
+如在上面部分 UserMapper.xml中addUser的参数类别写为<code>site.zhanjingbo.model.User</code>。不方便使用。我们可以在Mybatis-config.xml中加入如下代码：</p>
+
+<pre><code class="language-xml">&lt;typeAliases&gt;
+    &lt;typeAlias type=&quot;site.zhanjingbo.model.User&quot; alias=&quot;User&quot;/&gt;
+&lt;/typeAliases&gt;
+</code></pre>
+
+<p>便可以使用<em>User</em>来指代<em>site.zhanjingbo.model.User</em>。</p>
+
+<h3 id="toc_9">Mappers映射</h3>
+
+<p>用于引入Mapper映射文件。有三种比较推荐的配置方式，如下代码：</p>
+
+<pre><code class="language-xml">  &lt;mappers&gt;
+    &lt;mapper resource=&quot;site/zhanjingbo/dao/UserMapper.xml&quot;/&gt;
+    &lt;mapper class=&quot;site.zhanjingbo.dao.UserMapper&quot;/&gt;
+    &lt;!-- 包含这个包下的所有 --&gt;
+    &lt;package name=&quot;site.zhanjingbo.dao&quot;/&gt;
+  &lt;/mappers&gt;
+</code></pre>
+
+<p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14689148951216.html" 
+          title="Previous Post: Java康复性训练——MyBatis3(2)">&laquo; Java康复性训练——MyBatis3(2)</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14686724239639.html" 
+          title="Next Post: Java康复性训练-JDBC">Java康复性训练-JDBC &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="14687533604786.html" data-url="http://swuzjb.github.io/14687533604786.html" data-title="Java康复性训练——MyBatis3(1)"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>CobberZhan's Blog</h1>
+                <div class="site-des">展镜博的个人博客</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a class="github" target="_blank" href="https://github.com/swuzjb" title="GitHub">GitHub</a>
+<a class="email" href="mailto:412008196@qq.com" title="Email">Email</a>
+  <a class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>BookList</h2>
+                </div>
+                <div class="side-content">
+
+                <p class="cat-list">
+                
+                    <a href="bookList.html"><strong>待读书单</strong></a>
+                
+                </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+                <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>FRIEND LINKS</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+                  <li class="post">
+                    <a href="https://guxinyan.github.io">顾鑫燕的博客</a>
+                    
+                  </li>
+                  <li class="post">
+                    <a href="http://ranchu.win">CD'S Blog</a>
+                  </li>
+                  <li class="post">
+                    <a href="https://hran.me">Hran's Blog</a>
+                  </li>
+          </ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2016 swuzjb
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+
+
+<script type="text/javascript">
+var duoshuoQuery = {short_name:'zhanjingbo'};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?0fb9ecff8c9a2c820ce81c18ff77c1e8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+  </body>
+</html>

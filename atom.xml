@@ -1,0 +1,3557 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[CobberZhan's Blog]]></title>
+  <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
+  <link href="http://swuzjb.github.io/"/>
+  <updated>2016-07-18T11:05:57+08:00</updated>
+  <id>http://swuzjb.github.io/</id>
+  <author>
+    <name><![CDATA[]]></name>
+    
+  </author>
+  <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练——MyBatis3(2)]]></title>
+    <link href="http://swuzjb.github.io/14689148951216.html"/>
+    <updated>2016-07-19T15:54:55+08:00</updated>
+    <id>http://swuzjb.github.io/14689148951216.html</id>
+    <content type="html"><![CDATA[
+<p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<h2 id="toc_0">Mapper的XML配置</h2>
+
+<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import java.util.List;
+
+import site.zhanjingbo.model.User;
+
+public interface UserMapper {
+    public int addUser(User user);
+    public int updateUser(User user);
+    public int deleteUser(Integer id);
+    
+    public User getUserById(Integer id);
+    public List&lt;User&gt; getAllUser();
+    
+}
+</code></pre>
+
+<h3 id="toc_1">添加XML配置</h3>
+
+<p>配置文件如下：</p>
+
+<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+</code></pre>
+
+<h3 id="toc_2">修改XML配置</h3>
+
+<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+</code></pre>
+
+<h3 id="toc_3">删除XML配置</h3>
+
+<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+</code></pre>
+
+<h3 id="toc_4">查询XML配置</h3>
+
+<ol>
+<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
+    select * from user where id=#{id}
+&lt;/select&gt;
+</code></pre></li>
+<li><p>返回结构List。</p>
+
+<ol>
+<li><p>先声明一个返回类型</p>
+
+<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+&lt;/resultMap&gt;
+</code></pre></li>
+<li><p>声明SQL语句映射</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
+    select * from user
+&lt;/select&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h2 id="toc_5">关系映射</h2>
+
+<h3 id="toc_6">一对一关系</h3>
+
+<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
+
+<ol>
+<li><p>建立Role的POJO对象</p>
+
+<pre><code class="language-java">package site.zhanjingbo.model;
+public class Role {
+    private Integer id;
+    private String roleName;
+
+    public Role(){
+        super();
+    }
+    public Role(Integer id, String roleName) {
+        super();
+        this.id = id;
+        this.roleName = roleName;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    public String getRoleName() {
+        return roleName;
+    }
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
+    }
+}
+</code></pre></li>
+<li><p>建立Role的Mapper接口</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import site.zhanjingbo.model.Role;
+
+public interface RoleMapper {
+    public Role getRoleById(Integer id);
+}
+</code></pre></li>
+<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
+        select * from role where id=#{id}
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
+    &lt;/resultMap&gt;
+
+    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user where id=#{id}
+    &lt;/select&gt;
+    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练——MyBatis3(1)]]></title>
+    <link href="http://swuzjb.github.io/14687533604786.html"/>
+    <updated>2016-07-17T19:02:40+08:00</updated>
+    <id>http://swuzjb.github.io/14687533604786.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">MyBatis</h2>
+
+<blockquote>
+<p>MyBatis是一个支持普通SQL查询，存储过程和高级映射的优秀持久层框架。MyBatis消除了几乎所有的JDBC代码和参数的手工设置以及对结果集的检索封装。MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。</p>
+</blockquote>
+
+<h2 id="toc_1">MyBatis3使用-Hell,World项目</h2>
+
+<p>MyBatis3的使用比较简单。新建一个基本的Mybatis项目需要如下步骤：</p>
+
+<ol>
+<li>新建一个Java项目（这句是废话）。</li>
+<li>导入相关Jar包。
+
+<ol>
+<li>JDBC相关包：mysql-connector-java-5.1.39-bin.jar</li>
+<li>MyBatis核心包：mybatis-3.4.1.jar</li>
+</ol></li>
+<li><p>创建Mybatis配置文件：mybatis-config.xml 位于src目录下</p>
+
+<pre><code class="language-xml">    &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+    &lt;!DOCTYPE configuration
+      PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;
+      &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;
+    &lt;configuration&gt;
+
+      &lt;!--  引入相关JDBC配置文件 --&gt;
+      &lt;properties  resource=&quot;jdbc.properties&quot;/&gt;
+
+      &lt;!-- 配置Mybatis运行的数据库环境 --&gt;
+      &lt;environments default=&quot;development&quot;&gt;
+            &lt;environment id=&quot;development&quot;&gt;
+                  &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+                  &lt;dataSource type=&quot;POOLED&quot;&gt;
+                    &lt;property name=&quot;driver&quot; value=&quot;${jdbc.driverClassName}&quot;/&gt;
+                    &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                    &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                    &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+                  &lt;/dataSource&gt;
+            &lt;/environment&gt;
+      &lt;/environments&gt;
+
+      &lt;!-- 对象与数据库映射文件 --&gt;
+      &lt;mappers&gt;
+        &lt;mapper resource=&quot;site/zhanjingbo/mapper/UserMapper.xml&quot;/&gt;
+      &lt;/mappers&gt;
+    &lt;/configuration&gt;
+</code></pre></li>
+<li><p>创建JDBC配置文件:jdbc.properties。（也可直接在上文配置）</p>
+
+<pre><code class="language-txt">jdbc.dirverClassName=com.mysql.jdbc.Dirver
+jdbc.url=jdbc:mysql://localhost:3307/user
+jdbc.username=root
+jdbc.password=
+
+</code></pre></li>
+<li><p>创建MyBatis的连接工厂类:</p>
+
+<pre><code class="language-Java">package site.zhanjingbo.util;
+import java.io.IOException;
+import java.io.InputStream;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+public class SqlSessionFactoryUtil {
+    private static SqlSessionFactory sqlSessionFactory; 
+    private static SqlSessionFactory getSqlSessionFactory(){
+
+        if(sqlSessionFactory == null){
+            InputStream is = null;
+            try {
+                is = Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);
+                sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                System.out.println(&quot;配置文件加载失败&quot;);
+                e.printStackTrace();
+            }
+        }
+        return sqlSessionFactory;
+    }
+    public static SqlSession openSession(){
+        return getSqlSessionFactory().openSession();
+    }
+}
+</code></pre></li>
+<li><p>创建实体数据库访问<em>接口</em>：</p>
+
+<pre><code class="language-java">package site.zhanjingbo.dao;
+import site.zhanjingbo.model.User;
+public interface UserMapper {
+    public int addUser(User user);
+}
+</code></pre></li>
+<li><p>创建映射Mapper配置文件</p>
+
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;
+    &lt;insert id=&quot;addUser&quot; parameterType=&quot;site.zhanjingbo.model.User&quot;&gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>创建测试类 </p>
+
+<pre><code class="language-java"> package site.zhanjingbo.test;
+ import org.apache.ibatis.session.SqlSession;
+ import site.zhanjingbo.mapper.UserMapper;
+ import site.zhanjingbo.model.User;
+ import site.zhanjingbo.util.SqlSessionFactoryUtil;
+ public class MyBatisTest {
+    public static void main(String[] args) {
+        //获取SqlSession实例
+        SqlSession sqlSession = SqlSessionFactoryUtil.openSession();
+        //根据sqlSession生成对应的Mapper对象
+        UserMapper userDao = sqlSession.getMapper(UserMapper.class);
+
+        User user = new User(&quot;test&quot;, &quot;123&quot;);
+        int flag = userDao.addUser(user);
+
+        if(flag &gt; 0){
+            System.out.println(&quot;添加成功&quot;);
+        }
+
+        //提交事务
+        sqlSession.commit();
+        //关闭SQLSession
+        sqlSession.close();
+
+    }
+}
+</code></pre></li>
+</ol>
+
+<h2 id="toc_2">Mybatis-Config.xml配置文件</h2>
+
+<p>本部分简要描述一下Mybatis-config配置文件的各项内容。<br/>
+<code>&lt;configuration&gt;&lt;/configuration&gt;</code>是配置文件xml的根节点，所有配置项都其中。主要包含以下几项：</p>
+
+<h3 id="toc_3">properties参数配置</h3>
+
+<ul>
+<li>properties主要包含各类配置信息，可以直接引入properties文件。也可以直接设置键值对。</li>
+<li><code>&lt;properties  resource=&quot;jdbc.properties&quot;/&gt;</code> 通过resource来指定配置文件</li>
+<li><p>直接写入键值对，写法</p>
+
+<pre><code class="language-xml">&lt;properties&gt;
+    &lt;property name=&quot;jdbc.dirverCLassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;
+ &lt;/properties&gt;
+</code></pre></li>
+</ul>
+
+<h3 id="toc_4">environments 环境配置</h3>
+
+<p>MyBatis支持多环境配置。可以同时配置多个数据库信息。用<code>&lt;environment&gt;</code>标签表示。</p>
+
+<h4 id="toc_5">environment标签</h4>
+
+<p>每一对<code>&lt;environment&gt;&lt;/environment&gt;</code>标签标示一个数据库环境信息。包含transactionManager、dataSource两个子节点。<br/>
+样例代码：</p>
+
+<pre><code class="language-xml">&lt;environments default=&quot;development&quot;&gt;
+        &lt;environment id=&quot;development&quot;&gt;
+              &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+              &lt;dataSource type=&quot;POOLED&quot;&gt;
+                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
+                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+              &lt;/dataSource&gt;
+        &lt;/environment&gt;
+        &lt;environment id=&quot;test&quot;&gt;
+            &lt;transactionManager type=&quot;JDBC&quot;/&gt;
+            &lt;dataSource type=&quot;POOLED&quot;&gt;
+                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
+                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
+                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
+                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
+              &lt;/dataSource&gt;
+        &lt;/environment&gt;
+ &lt;/environments&gt;
+</code></pre>
+
+<h5 id="toc_6">transactionManager事务管理方式</h5>
+
+<p>MyBatis支持两种类型的事务管理器：JDBC和MANAGED(托管)：</p>
+
+<ul>
+<li>JDBC：应用程序负责管理数据库连接的声明周期</li>
+<li>MANAGED：由应用服务器管理数据库连接的声明周期。（一般商业服务器才有此功能，如JBOSS，WebLogic）</li>
+<li><code>&lt;transactionManager type=&quot;JDBC&quot;/&gt;</code></li>
+</ul>
+
+<h5 id="toc_7">dataSource数据源</h5>
+
+<p>用来配置数据库数据源信息。类型分为：UNPOOLED,POOLED,JNDI：</p>
+
+<ul>
+<li>UNPOOLED：没有连接池，每次数据库操作MyBatis都会新建一个数据库连接，用完后，关闭。适合小并发项目。</li>
+<li>POOLED：启用连接池</li>
+<li>JNDI：使用服务器配置JNDI数据源获取数据库连接</li>
+</ul>
+
+<h3 id="toc_8">typeAliases</h3>
+
+<p>类型别名，通过设置该项目可以给类的完整限定名取别名，方便使用。<br/>
+如在上面部分 UserMapper.xml中addUser的参数类别写为<code>site.zhanjingbo.model.User</code>。不方便使用。我们可以在Mybatis-config.xml中加入如下代码：</p>
+
+<pre><code class="language-xml">&lt;typeAliases&gt;
+    &lt;typeAlias type=&quot;site.zhanjingbo.model.User&quot; alias=&quot;User&quot;/&gt;
+&lt;/typeAliases&gt;
+</code></pre>
+
+<p>便可以使用<em>User</em>来指代<em>site.zhanjingbo.model.User</em>。</p>
+
+<h3 id="toc_9">Mappers映射</h3>
+
+<p>用于引入Mapper映射文件。有三种比较推荐的配置方式，如下代码：</p>
+
+<pre><code class="language-xml">  &lt;mappers&gt;
+    &lt;mapper resource=&quot;site/zhanjingbo/dao/UserMapper.xml&quot;/&gt;
+    &lt;mapper class=&quot;site.zhanjingbo.dao.UserMapper&quot;/&gt;
+    &lt;!-- 包含这个包下的所有 --&gt;
+    &lt;package name=&quot;site.zhanjingbo.dao&quot;/&gt;
+  &lt;/mappers&gt;
+</code></pre>
+
+<p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练-JDBC]]></title>
+    <link href="http://swuzjb.github.io/14686724239639.html"/>
+    <updated>2016-07-16T20:33:43+08:00</updated>
+    <id>http://swuzjb.github.io/14686724239639.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">什么是JDBC</h2>
+
+<blockquote>
+<p>JDBC(Java Data Base Connectivity，Java数据库链接)是一种用于执行SQL语句的Java API。可以为多种关系数据库提供统一的访问，它由一组Java语言编写的类和接口组成。JDBC提供了一种标准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
+</blockquote>
+
+<h3 id="toc_1">JDBC原理</h3>
+
+<p>JDBC原理：JDBC是以前SUN公司定义的一套访问数据库的接口（没有具体实现），具体实现是由各大数据库厂商自己实现的。每个数据库厂商都有自己的JDBC实现，也被称为JDBC驱动实现类。Java应用程序连接指定数据库，需要使用厂家提供的JDBC驱动才能连接。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-16-14686740816527.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">JDBC链接数据库步骤</h2>
+
+<ol>
+<li>加载驱动</li>
+<li>链接数据库</li>
+<li>使用语句操作数据库</li>
+<li>关闭数据库，释放资源</li>
+</ol>
+
+<h3 id="toc_3">在项目中配置数据库驱动（Eclipse）</h3>
+
+<p>右击项目-&gt;Build Path-&gt;Configure Build Path-&gt; Add External JARS</p>
+
+<h3 id="toc_4">加载JDBC驱动</h3>
+
+<p>MySQL JDBC 驱动名称：<em>com.mysql.jdbc.Driver</em><br/>
+加载方式：<code>Class.forName(&quot;驱动名&quot;);</code></p>
+
+<h3 id="toc_5">连接及关闭数据库</h3>
+
+<ol>
+<li><p>DriverManager 驱动管理类，主要负责一个数据的连接。<code>static Connection getConnection(String url, String user, String password)</code>试图建立到给定数据库 URL 的连接。</p></li>
+<li><p>Mysql 数据的连接地址格式：</p>
+
+<ul>
+<li>jdbc:mysql://127.0.0.1:3306/DataBaseName</li>
+<li>jdbc协议：JDBC URL 中的协议总是jdbc</li>
+<li>子协议： 驱动程序名称或数据库连接机制（这种驱动可由一个或多个驱动程序支持）的名称如：mysql</li>
+<li>子名称：一种标示数据库的方法。必须遵循<em>//主机名：端口/数据库</em>的标准URL命名约定，如：<code>//localhost:3306/test</code></li>
+</ul></li>
+<li><p>Connection接口：与特定的数据库的连接(也称为会话)。</p>
+
+<ul>
+<li><code>void close()</code>立即释放此Connection对象的数据库和JDBC资源，而不是等待自动释放</li>
+</ul></li>
+</ol>
+
+<h4 id="toc_6">Demo Code</h4>
+
+<p>封装一个用于获取和关闭连接的工具类DBTool。</p>
+
+<pre><code class="language-Java">package com.swu.JDBC;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DBTool {
+    public static Connection getConnection(){
+        String dbURL = &quot;jdbc:mysql://localhost:3306/test&quot;;
+        String username = &quot;root&quot;;
+        String password = &quot;&quot;;
+        Connection conn = null;
+        try {
+            //注册驱动类
+            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);
+            //获取连接
+            conn = DriverManager.getConnection(dbURL,username,password);
+            
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;加载驱动失败&quot;);
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println(&quot;连接失败&quot;);
+            e.printStackTrace();
+        }
+        return conn;
+    }
+    public static void closeConnection(Connection conn){
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;关闭失败&quot;);
+            e.printStackTrace();
+        }
+    }
+}
+
+</code></pre>
+
+<h2 id="toc_7">使用Statement接口实现数据的增、删、改、查</h2>
+
+<h3 id="toc_8">Statement接口</h3>
+
+<ul>
+<li>作用：用于执行静态SQL语句并返回它所产生的结果的对象。</li>
+<li><code>int executeUpdate(String sql)</code> 执行给定SQL语句。该语句可能为INSERT,UPDATE,DELETE语句或者不返回人格内容的SQL语句。</li>
+<li><code>void close()</code> 立即释放此Statement对象的数据库和JDBC资源，而不是等待对象自动关闭时发生此操作。</li>
+</ul>
+
+<h4 id="toc_9">Statement接口实现添加数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">public void addUser(String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;insert into user(username,password) values(&#39;&quot;+username+&quot;&#39;,&#39;&quot;+password+&quot;&#39;)&quot;;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_10">Statement接口实现修改数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;update user set username=&#39;&quot;+username+&quot;&#39;,password=&#39;&quot;+password+&quot;&#39; where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {              e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_11">Statement接口实现删除数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;delete from user where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+</code></pre>
+
+<h4 id="toc_12">Statment接口实现数据查询</h4>
+
+<p>demo如下（里面的ResultSet后面详细介绍）:</p>
+
+<pre><code class="language-java">public void getAllUser(){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;select * from user&quot;;
+        Statement stmt = null;
+        //保存查询返回结果
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally {
+            try {
+                rs.close();
+                stmt.close();
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+        }
+}
+</code></pre>
+
+<h3 id="toc_13">PreparedStatement接口</h3>
+
+<p>PreparedStatement是Statement的子接口，是一个SQL语句预处理Statement。与直接Statement不同的是PreparedStatement在操作时，是先在数据表中准备好了一条SQL语句，但是此SQL语句的内容暂时不设置，而是之后再进行设置。<em>实际开发过程中建议使用PreparedStatement，可以避免一定的SQL注入问题</em></p>
+
+<h4 id="toc_14">PreparedStatement接口实现数据添加</h4>
+
+<p>demo如下:</p>
+
+<pre><code class="language-java">    public void addUser(String username,String password) throws Exception{
+        //预处理SQL语句
+        String sql = &quot;insert into user(username,password) values(?,?)&quot;;
+        Connection conn = DBTool.getConnection();
+        //获得PreparedStatement对象
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        //设置预处理占位符的实际值
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        //执行添加
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_15">PreparedStatement接口实现数据修改</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password) throws SQLException{
+        String sql = &quot;update user set username=?,password=? where id=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        stmt.setInt(3, id);
+        
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+        
+    }
+</code></pre>
+
+<h3 id="toc_16">PreparedStatement接口实现数据删除</h3>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id) throws SQLException{
+        String sql = &quot;delete from user where id = ?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setInt(1, id);
+    
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_17">PreparedStatement接口实现数据查询</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void getUserByUsername(String username) throws SQLException{
+        String sql = &quot;select * from user where username=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+    
+        ResultSet rs = stmt.executeQuery();
+        
+        while(rs.next()){
+            System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+        }
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h3 id="toc_18">ResultSet结果集</h3>
+
+<blockquote>
+<p>当我们对数据库的数据进行查询的时候，返回的是一个二维的结果集。我们这个时候需要使用ResultSet来遍历结果集，获取每一行的数据。</p>
+</blockquote>
+
+<h4 id="toc_19">获取数据</h4>
+
+<ul>
+<li><code>boolean next()</code>将光标从当前位置向前移动一行</li>
+<li><code>String getString(int columnIndex)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+<li><code>String getString(String columnLabel)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+</ul>
+
+<h4 id="toc_20">使用例子</h4>
+
+<p>见上方实现的数据查询。</p>
+
+<h3 id="toc_21">处理大数据对象</h3>
+
+<blockquote>
+<p>大数据对象处理主要有CLOB(character large object)和BLOB(binary large object)两种类型的字段。在CLOB中可以存储大字符数据对象，比如长篇小说;在BLOB中可以存放二进制大数据对象，比如图片、电影、音乐</p>
+</blockquote>
+
+<h4 id="toc_22">处理CLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setAsciiStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getClob(String columnLabel);</code>获得一个Clob对象，然后可以转为字符串对象。</li>
+</ul>
+
+<h4 id="toc_23">处理BLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setBinaryStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getBlob(String columnLabel);</code>获得一个Blob对象，然后可以转为目标对象。</li>
+</ul>
+
+<h3 id="toc_24">使用CallableStatement接口调用存储过程</h3>
+
+<blockquote>
+<p>CallableStatement 主要是调用数据库中的存储过程,CallableStatement 也是 Statement 接口的子接口。在使用 CallableStatement 时可以接收存储过程的返回值。 </p>
+</blockquote>
+
+<h3 id="toc_25">使用DatabaseMetaData分析数据库</h3>
+
+<blockquote>
+<p>DatabaseMetaData可以得到数据库的一些基本信息,包括数据库的名称、版本,以及得到表的信息。 </p>
+</blockquote>
+
+<ul>
+<li><code>String getDatabaseProductName()</code> 获取此数据库产品的名称。</li>
+<li><code>int getDriverMajorVersion()</code>获取此 JDBC 驱动程序的主版本号。</li>
+<li><code>int getDriverMinorVersion()</code> 获取此 JDBC 驱动程序的次版本号。 </li>
+</ul>
+
+<h3 id="toc_26">使用 ResultSetMetaData 获取 ResultSet 对象中的信息</h3>
+
+<blockquote>
+<p>ResultSetMetaData 可获取关于 ResultSet 对象中列的基本信息;</p>
+</blockquote>
+
+<ul>
+<li><code>int getColumnCount()</code> 返回此 ResultSet 对象中的列数。</li>
+<li><code>String getColumnName(int column)</code> 获取指定列的名称。 </li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练——Java基础1]]></title>
+    <link href="http://swuzjb.github.io/14676190809439.html"/>
+    <updated>2016-07-04T15:58:00+08:00</updated>
+    <id>http://swuzjb.github.io/14676190809439.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">开发环境搭建</h2>
+
+<h3 id="toc_1">JDK的安装与配置</h3>
+
+<ol>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
+
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_2">开发工具eclipse</h3>
+
+<p>下载地址：<a href="http://eclipse.org"></a></p>
+
+<h2 id="toc_3">Hello Java</h2>
+
+<pre><code class="language-java">
+public class Hello {
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
+
+}
+
+</code></pre>
+
+<h2 id="toc_4">输入</h2>
+
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-Homework13]]></title>
+    <link href="http://swuzjb.github.io/14640741638557.html"/>
+    <updated>2016-05-24T15:16:03+08:00</updated>
+    <id>http://swuzjb.github.io/14640741638557.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">题目</h2>
+
+<p>请说出下面代码存在的问题，以及改进方式。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">回答</h2>
+
+<h3 id="toc_2">问题分析</h3>
+
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
+
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+</code></pre>
+
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-集合类型]]></title>
+    <link href="http://swuzjb.github.io/14635750426080.html"/>
+    <updated>2016-05-18T20:37:22+08:00</updated>
+    <id>http://swuzjb.github.io/14635750426080.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">数组(Array)</h2>
+
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+
+<h3 id="toc_1">内存模型</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
+
+<h3 id="toc_2">使用数组</h3>
+
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
+
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
+
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
+</code></pre>
+
+<h4 id="toc_3">数组遍历</h4>
+
+<ul>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
+</ul>
+
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
+
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
+
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
+</code></pre>
+
+<h4 id="toc_4">缓存容量与增长</h4>
+
+<ul>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
+</ul>
+
+<h4 id="toc_5">copy-on-write共享技术</h4>
+
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
+
+<h2 id="toc_6">集合类型(Set)</h2>
+
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
+
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
+
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-协议]]></title>
+    <link href="http://swuzjb.github.io/14634889513152.html"/>
+    <updated>2016-05-17T20:42:31+08:00</updated>
+    <id>http://swuzjb.github.io/14634889513152.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
+</blockquote>
+
+<h2 id="toc_0">协议的成员</h2>
+
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
+
+<h2 id="toc_1">协议的使用</h2>
+
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
+
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
+    }
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
+}
+class Image :Drawable{
+    var description:String{
+        get{
+            return self.description;
+        }
+    }
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
+}
+</code></pre>
+
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
+
+<ul>
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
+
+<ul>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
+
+<ol>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
+</ol>
+
+<h3 id="toc_4">协议中的方法</h3>
+
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
+
+<ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
+
+<ul>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
+</ul></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-面向对象]]></title>
+    <link href="http://swuzjb.github.io/14633841095158.html"/>
+    <updated>2016-05-16T15:35:09+08:00</updated>
+    <id>http://swuzjb.github.io/14633841095158.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>面向对象三大特性：封装、继承、多态</p>
+</blockquote>
+
+<h2 id="toc_0">封装</h2>
+
+<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
+通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+
+<h3 id="toc_1">访问控制符</h3>
+
+<ol>
+<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
+<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
+<li>public —— 可以被任何人使用</li>
+</ol>
+
+<h3 id="toc_2">一个例子</h3>
+
+<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+
+<pre><code class="language-swift">class Circle {
+    private var area: Double = 0;
+    private var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures();
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius;
+        calculateFigures();
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius;
+        diameter = 2 * M_PI * radius;
+    }
+
+    func getArea() -&gt; Double {
+        return self.area;
+    }
+
+    func getDiameter() -&gt; Double {
+        return self.diameter;
+    } 
+}
+</code></pre>
+
+<p>Swift还为我们提供了简便方法。<br/>
+通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
+
+<pre><code class="language-swift">class Circle {
+    private(set) var area: Double = 0;
+    private(set) var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures()
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius
+        calculateFigures()
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius
+        diameter = 2 * M_PI * radius
+    }
+}
+</code></pre>
+
+<p>当然也可以为属性设置公有的getter方法：</p>
+
+<pre><code class="language-switf">public private(set) var area: Double = 0
+public private(set) var diameter: Double = 0
+</code></pre>
+
+<h2 id="toc_3">继承</h2>
+
+<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
+在Swift中，子类继承父类的属性、方法、下标。</p>
+
+<h3 id="toc_4">一个例子</h3>
+
+<pre><code class="language-swift">struct Point{
+    var x=0;
+    var y=0;
+}
+class Shape{
+    var no=0;
+    func move() {
+        print(&quot;NO: \(no) Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    var leftUp=Point();
+    var width=0;
+    var height=0;
+    
+}
+class Circle: Shape{
+    var center=Point();
+    var radius=0;
+}
+</code></pre>
+
+<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
+
+<h3 id="toc_5">方法重写</h3>
+
+<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
+
+<pre><code class="language-swift">class Shape{
+    var no=0;
+    //用final关键字修饰，子类无法重写
+    final func show(){
+        print(&quot;Shape.show&quot;);
+    }
+    func move() {
+        print(&quot;Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    //重写父类的no属性
+    override var no: Int {
+        get{
+            print(&quot;Rectangle.no.get()&quot;);
+            return super.no;
+        }
+        set{
+            print(&quot;Rectangle.no.set()&quot;);
+            super.no=newValue;
+        }
+    }
+    override func move() {
+        print(&quot;Rectangle.move&quot;);
+    }
+    
+}
+class Circle: Shape{
+    override func move() {
+        print(&quot;Circle.move&quot;);
+    }
+}
+</code></pre>
+
+<h3 id="toc_6">继承中的初始化器和析构器</h3>
+
+<h4 id="toc_7">初始化器</h4>
+
+<ul>
+<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
+<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
+<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
+<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+</ul>
+
+<h4 id="toc_8">析构器</h4>
+
+<ul>
+<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
+<li>子类析构器执行完毕后，会自动调用父类析构器</li>
+<li>子类析构器自动具有多态性</li>
+</ul>
+
+<h2 id="toc_9">多态</h2>
+
+<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+
+<pre><code class="language-swift">//如下代码是没有问题的
+var rect:Shape;
+rect = Rectangle();
+//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
+rect.move();
+
+</code></pre>
+
+<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-结构与枚举]]></title>
+    <link href="http://swuzjb.github.io/14633830220167.html"/>
+    <updated>2016-05-16T15:17:02+08:00</updated>
+    <id>http://swuzjb.github.io/14633830220167.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+</blockquote>
+
+<h2 id="toc_0">Struct结构</h2>
+
+<ul>
+<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
+<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
+<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
+<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
+</ul>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+</code></pre>
+
+<h3 id="toc_1">Struct和Class</h3>
+
+<ul>
+<li>相同点：
+
+<ol>
+<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
+<li>都支持类型扩展、协议</li>
+</ol></li>
+<li>不同点：
+
+<ol>
+<li>类支持继承和多态，结构不支持</li>
+<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
+<li>类支持析构器，结构不支持</li>
+<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
+<li>类支持引用比较。结构不支持。</li>
+</ol></li>
+</ul>
+
+<h2 id="toc_2">Enum枚举</h2>
+
+<ul>
+<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
+<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
+<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
+<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
+<li>还可定义:计算属性、方法、初始化器</li>
+</ul>
+
+<pre><code class="language-swift">//定义枚举类型
+enum Color {
+    case Red
+    case Green
+    case Blue
+}
+
+enum ComplexColor{
+    case Red,Green,Blue,Alpha
+}
+
+var c1=Color.Red
+var c2:Color
+c2 = Color.Green
+c1 = .Blue
+var c3=c1
+
+
+func print(color: Color){
+    
+    switch color {
+    case .Red:
+        print(&quot;Red Color!&quot;)
+    case .Green:
+        print(&quot;Green Color!&quot;)
+    case .Blue:
+        print(&quot;Blue Color!&quot;)
+    }
+    
+}
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-下标与操作符]]></title>
+    <link href="http://swuzjb.github.io/14628720930939.html"/>
+    <updated>2016-05-10T17:21:33+08:00</updated>
+    <id>http://swuzjb.github.io/14628720930939.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+</blockquote>
+
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
+
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
+}
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
+}
+for i in 0..&lt;10{
+    print(datas[i])
+}
+</code></pre>
+
+<h2 id="toc_1">操作符</h2>
+
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
+
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
+}
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
+</code></pre>
+
+<h3 id="toc_3">相等操作符</h3>
+
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
+
+
+var c5=c3
+
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-属性与方法]]></title>
+    <link href="http://swuzjb.github.io/14628652524688.html"/>
+    <updated>2016-05-10T15:27:32+08:00</updated>
+    <id>http://swuzjb.github.io/14628652524688.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>属性表达实例状态或类型状态<br/>
+方法是成员函数，表达行为可用于:struct,enum,class</p>
+</blockquote>
+
+<h2 id="toc_0">属性</h2>
+
+<h3 id="toc_1">属性类别</h3>
+
+<p>根据读写性划分</p>
+
+<ul>
+<li>存储属性</li>
+<li>计算属性</li>
+</ul>
+
+<p>根据可变性划分</p>
+
+<ul>
+<li>变量属性</li>
+<li>常量属性</li>
+</ul>
+
+<p>根据归属权划分</p>
+
+<ul>
+<li>实例属性</li>
+<li>类属性(在struct和enum中用static声明，class中用class声明)</li>
+</ul>
+
+<h3 id="toc_2">存储属性的本质</h3>
+
+<p>一个存储变量，同时编译器会给该变量自动添加get和set访问器方法。</p>
+
+<h3 id="toc_3">计算属性的本质</h3>
+
+<p>一个get方法。（可以添加set）。</p>
+
+<pre><code class="language-swift">class Rectangle{
+
+    //常量属性
+    let name:&quot;矩形&quot;;
+    
+    //存储属性(变量属性)
+    var width:Int;
+    var height:Int;
+    //计算属性
+    var area:Int{
+        get{
+            return width*height;
+        }
+        set{
+            self.width = newValue / height;
+        }
+    }
+    
+    
+}
+</code></pre>
+
+<h3 id="toc_4">属性监视器</h3>
+
+<p>属性监视器是swift的一个特殊功能，可以在属性值修改之前和之后完成对应动作。</p>
+
+<pre><code class="language-swift">var name:String = &quot;coder&quot;{
+    willSet{
+        doSomthing();
+    }
+    didSet{
+        doSomthing();
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">注意</h3>
+
+<p><em>实例属性在使用之前必须初始化！</em></p>
+
+<h2 id="toc_6">方法</h2>
+
+<h3 id="toc_7">方法的类别</h3>
+
+<p>方法根据归属不同可以分为:</p>
+
+<ul>
+<li>实例方法</li>
+<li>类型方法</li>
+</ul>
+
+<h3 id="toc_8">方法的声明</h3>
+
+<p>声明代码：<code>func name(参数1,参数2)-&gt;返回值{}</code></p>
+
+<p>说明：</p>
+
+<ul>
+<li>参数形式：外部参数名 本地参数名:类型</li>
+<li>声明时可以省略外部参数名,这时外部参数名默认使用本地参数名</li>
+<li>调用时，第一个参数名可忽略，但后面的参数名必须显示标明。如果在声明时加<code>_</code>，调用时也可忽略</li>
+<li>方法可以没有参数和返回值</li>
+<li>参数传递默认为传值</li>
+</ul>
+
+<h4 id="toc_9">更多参数和返回值功能</h4>
+
+<ul>
+<li>提供参数默认值</li>
+<li>常量参数与变量参数</li>
+<li>可变长参数</li>
+<li>inout参数，可以改变外部实参</li>
+<li>返回元组(Tuple)</li>
+</ul>
+
+<pre><code class="language-swift">
+class MyClass{
+    var instanceData=100;
+    static var typeData=10000;
+ 
+    //实例方法
+    func instanceMethod(){
+        ++instanceData
+        ++MyClass.typeData
+        instanceMethod2()
+        MyClass.typeMethod()
+    }
+    
+    //静态方法
+    static func typeMethod(){
+        ++typeData
+        //++instanceData
+        typeMethod2()
+        //instanceMethod()
+    }
+    
+    func instanceMethod2(){
+        print(instanceData)
+    }
+    static func typeMethod2(){
+        print(typeData)
+    }
+
+    //显式内部参数名，省略外部参数名
+    func sayGreeting(name:String, _ words:String)-&gt;String{
+        return words+&quot;! &quot;+name
+    }
+    func sayGreeting(){
+        print(&quot;Hello!&quot;)
+    }
+    func sayGreeting(name:String)-&gt;String {
+        return &quot;Hello! &quot;+name
+    }
+    //显式内部参数名，显式外部参数名
+    func sayGreeting(person name:String,greeting words:String)-&gt;String{
+        return words+&quot;! &quot;+name
+    }
+    
+    //可变数目参数
+    func averageNumber(numbers:Double...)-&gt;Double{
+    
+        var sum=0.0
+        for item in numbers {
+            sum+=item
+        }
+        return sum / Double(numbers.count)
+    }
+    
+    //常量参数 VS. 变量参数
+    func changeParameter(data1:Int, var data2:Int){
+        var dataTemp=data1
+        data2++
+        dataTemp++
+    }
+
+    //inout参数
+    func swap(inout a:Int,inout b:Int){
+        let tempA=a
+        a=b
+        b=tempA
+    }
+    
+    //返回Tuple类型
+    func minMax(array: [Int]) -&gt; (min: Int, max: Int){
+        var currentMin = array[0]
+        var currentMax = array[0]
+        for value in array[1..&lt;array.count] {
+            if value &lt; currentMin {
+                currentMin = value
+            } else if value &gt; currentMax {
+                currentMax = value
+            }
+        }
+        return (currentMin, currentMax)
+    }
+}
+
+var myObject=MyClass()
+//调用实例方法
+myObject.instanceMethod()
+//调用类型方法
+MyClass.typeMethod()
+myObject.sayGreeting()
+myObject.sayGreeting(&quot;Jason&quot;)
+myObject.sayGreeting(&quot;Jason&quot;,&quot;Welcome&quot;)
+myObject.sayGreeting(person:&quot;Jason&quot;, greeting:&quot;You are welcome&quot;)
+myObject.averageNumber(10,90,30,80,50,100)
+var data1=100
+var data2=200
+myObject.swap(&amp;data1,b: &amp;data2)
+let range=myObject.minMax([3,-9,23,15,-45,7])
+print(&quot;max=\(range.max), min=\(range.min)&quot;)
+</code></pre>
+
+<h3 id="toc_10">特殊的方法</h3>
+
+<h4 id="toc_11">初始化器</h4>
+
+<blockquote>
+<p>初始化器用于初始化类型实例，是一个特殊的函数，无返回值。</p>
+</blockquote>
+
+<h5 id="toc_12">初始化过程</h5>
+
+<ol>
+<li>分配内存</li>
+<li>调用初始化器初始化内存</li>
+</ol>
+
+<h5 id="toc_13">应用范围</h5>
+
+<ul>
+<li>class</li>
+<li>struct</li>
+<li>enum</li>
+</ul>
+
+<h5 id="toc_14">作用</h5>
+
+<ul>
+<li>初始化器主要用于初始化实例储存属性，可以使用默认初始化器或自定义的初始化器。</li>
+<li>所有储存属性必须被初始化
+
+<ul>
+<li>实例储存属性要么指定默认值，要么在初始化器内初始化</li>
+<li>类型存储属性必须指定默认值</li>
+</ul></li>
+<li>可选属性类型可以不初始化。(声明时用<code>？</code>修饰)</li>
+<li>属性被初始化时，不会调用属性观察者</li>
+</ul>
+
+<h5 id="toc_15">默认初始化器</h5>
+
+<ul>
+<li>一个类可以有多个初始化器，但至少有一个初始化器</li>
+<li>如果一个类没有人为提供初始化器，编译器会自动生成一个默认的初始化器</li>
+<li>默认初始化器，无参形式init();</li>
+</ul>
+
+<h5 id="toc_16">便捷初始化器</h5>
+
+<ul>
+<li>指定初始化器为类的主初始化器，负责初始化所有属性，默认调用父类的主初始化器</li>
+<li>便捷初始化器为类的辅助初始化器。必须调用同的指定初始化器。用<code>convenience</code>修饰</li>
+</ul>
+
+<pre><code class="language-swift">class Point3D{
+    var x:Int
+    var y:Int
+    var z:Int
+    
+    init(x:Int, y:Int, z:Int){
+        self.x=x
+        self.y=y
+        self.z=z
+        
+        //other processing
+        print(&quot;other task&quot;)
+    }
+    
+    convenience init(x:Int, y:Int){
+        
+        self.init(x:x,y:y,z:0)
+    }
+    
+    convenience init(){
+        
+        self.init(x:0,y:0,z:0)
+    }
+}
+
+</code></pre>
+
+<h4 id="toc_17">析构器</h4>
+
+<blockquote>
+<p>析构器(deinit),在实例内存被释放前调用，用于释放实例使用的非内存资源。</p>
+</blockquote>
+
+<ul>
+<li>析构器仅可以定义于class，且只能定义一个。</li>
+<li>只有实例析构器，没有类型析构器</li>
+<li>析构器运行根据ARC的释放规则，自动调用，程序员无法手动调用</li>
+</ul>
+
+<pre><code>class FileStream{
+    init(){
+        print(&quot;open file...&quot;)
+    }
+    
+    func process(){
+        print(&quot;process file...&quot;)
+    }
+       
+    deinit{
+        print(&quot;close file...&quot;)
+    }
+}
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.Swift-第一周作业]]></title>
+    <link href="http://swuzjb.github.io/14626379454584.html"/>
+    <updated>2016-05-08T00:19:05+08:00</updated>
+    <id>http://swuzjb.github.io/14626379454584.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
+心中有沟壑<br/>
+原谅我。。英语拼错了。。。</p>
+</blockquote>
+
+<h2 id="toc_0">设计方式一</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+class  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">设计方式二</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+class Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">设计方式三</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+struct  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_3">设计方式四</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+} 
+struct Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_4">Swift中struct和class的区别</h2>
+
+<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
+
+<ol>
+<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
+<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
+</ol>
+
+<h3 id="toc_5">使用情景</h3>
+
+<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
+
+<ol>
+<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
+<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
+<li>不需要继承。这个是面向对象的基本特性。</li>
+</ol>
+
+<h2 id="toc_6">结论</h2>
+
+<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-数据持久化]]></title>
+    <link href="http://swuzjb.github.io/14623728039466.html"/>
+    <updated>2016-05-04T22:40:03+08:00</updated>
+    <id>http://swuzjb.github.io/14623728039466.html</id>
+    <content type="html"><![CDATA[
+<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
+
+<blockquote>
+<ul>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
+</ul>
+</blockquote>
+
+<h2 id="toc_0">文件存储</h2>
+
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+
+<ul>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+</ul>
+
+<h3 id="toc_2">APP Bundle</h3>
+
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
+
+<ol>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
+</ol>
+
+<p>纯C语言API</p>
+
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
+
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
+
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
+
+
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
+    }
+}
+sqlite3_finalize(stmt);
+
+//关闭SQLite
+sqlite3_close(db);
+</code></pre>
+
+<h3 id="toc_7">FMDB</h3>
+
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
+
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
+
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
+
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
+</code></pre>
+
+<h2 id="toc_8">CoreData简介</h2>
+
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
+
+<ol>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+</ol>
+
+<h4 id="toc_11">简单使用</h4>
+
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
+
+//保存
+NSError* error = nil;
+[context save:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
+}
+
+//删除
+[context deleteObject:managedObject];
+
+</code></pre>
+
+<h4 id="toc_12">参考资料</h4>
+
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-多线程编程]]></title>
+    <link href="http://swuzjb.github.io/14614801701186.html"/>
+    <updated>2016-04-24T14:42:50+08:00</updated>
+    <id>http://swuzjb.github.io/14614801701186.html</id>
+    <content type="html"><![CDATA[
+<p>程序都是按部就班的一步一步执行，可是我们现在却可以在听歌的过程中同时做很多事情。cpu为了提高性能也变成双核、四核、八核等等。这些都是多线程技术的应用。今天我们就来总结一下iOS中的多线程编程。</p>
+
+<h2 id="toc_0">进程与线程</h2>
+
+<ol>
+<li><p>什么是进程？</p>
+
+<p>进程是指在系统中正在运行的一个应用程序。每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805198291.png" alt=""/><br/>
+比如同时打开QQ、Xcode，系统就会分别启动2个进程。通过“活动监视器”可以查看Mac系统中所开启的进程。</p></li>
+<li><p>什么是线程？</p>
+
+<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）<br/>
+线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行<br/>
+比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805962966.png" alt=""/></p></li>
+<li><p>线程的串行</p>
+
+<p>1个线程中任务的执行是串行的。如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务。也就是说，在同一时间内，1个线程只能执行1个任务。比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614806779748.png" alt=""/></p></li>
+</ol>
+
+<h2 id="toc_1">多线程</h2>
+
+<ol>
+<li><p>什么是多线程？</p>
+
+<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务<br/>
+进程 -&gt;车间，线程-&gt;车间工人<br/>
+多线程技术可以提高程序的执行效率<br/>
+比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614808579347.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614809045254.png" alt=""/></p></li>
+<li><p>多线程的优缺点<br/>
+优点：</p>
+
+<ul>
+<li>能适当提高程序的执行效率</li>
+<li>能适当提高资源利用率</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+<li>启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</li>
+<li>线程越多，CPU在调度线程上的开销就越大</li>
+<li>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</li>
+</ul></li>
+<li><p>多线程在iOS开发中的应用<br/>
+主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”<br/>
+主线程的主要作用：显示\刷新UI界面、处理UI事件（比如点击事件、滚动事件、拖拽事件等）。<br/>
+主线程的使用注意:别将比较耗时的操作放到主线程中。<br/>
+耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验。</p></li>
+</ol>
+
+<h2 id="toc_2">iOS中的多线程开发</h2>
+
+<p>iOS中目前主流的多线程实现方案有三种，分别是：</p>
+
+<blockquote>
+<ul>
+<li>NSThread</li>
+<li>GCD</li>
+<li>NSOperation &amp; NSOperationQueue</li>
+</ul>
+</blockquote>
+
+<h3 id="toc_3">NSThread</h3>
+
+<p>这是一套经过苹果封装后的，面向对象的多线程操作方案。利用它可以直接操控线程对象，但是在生命周期管理以及代码复用上并不是很好，所以使用并不是很多。</p>
+
+<h4 id="toc_4">创建并启动</h4>
+
+<ol>
+<li><p>先创建线程类，再启动</p>
+
+<pre><code>// 创建
+NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:nil];
+// 启动
+[thread start];
+</code></pre></li>
+<li><p>创建并自动启动</p>
+
+<pre><code>[NSThread detachNewThreadSelector:@selector(run:) toTarget:self withObject:nil];
+</code></pre>
+
+<h4 id="toc_5">其他方法</h4>
+
+<p>NSThread虽然不常用，但是很多方法在我们编程的时候还是比较有价值的。</p></li>
+</ol>
+
+<pre><code>//取消线程
+- (void)cancel;
+
+//启动线程
+- (void)start;
+
+//判断某个线程的状态的属性
+@property (readonly, getter=isExecuting) BOOL executing;
+@property (readonly, getter=isFinished) BOOL finished;
+@property (readonly, getter=isCancelled) BOOL cancelled;
+
+//设置和获取线程名字
+-(void)setName:(NSString *)n;
+-(NSString *)name;
+
+//获取当前线程信息
++ (NSThread *)currentThread;
+
+//获取主线程信息
++ (NSThread *)mainThread;
+
+//使当前线程暂停一段时间，或者暂停到某个时刻
++ (void)sleepForTimeInterval:(NSTimeInterval)time;
++ (void)sleepUntilDate:(NSDate *)date;
+</code></pre>
+
+<h3 id="toc_6">GCD</h3>
+
+<p>GCD(Grand Central Dispatch)，名字霸气。他是苹果为多核的并行运算提出的解决方案，所以会自动合理地利用更多的CPU内核（比如双核、四核），最重要的是它会自动管理线程的生命周期（创建线程、调度任务、销毁线程），完全不需要我们管理，我们只需要告诉干什么就行。同时它使用的也是c语言API，不过由于使用了Block，使得使用起来更加方便，而且灵活。所以基本上大家都使用 GCD 这套方案。</p>
+
+<h4 id="toc_7">任务和队列</h4>
+
+<p>在GCD中，加入了两个非常重要的概念：任务和队列。</p>
+
+<ul>
+<li><p>任务:即操作，你想要干什么，说白了就是一段代码，在GCD中就是一个Block，所以添加任务十分方便。任务有两种执行方式：同步执行和异步执行。</p>
+
+<ul>
+<li>同步（sync）执行：它会阻塞当前线程并等待Block中的代码执行完毕，然后当前线程才会继续往下运行。不具备开启新线程的能力。</li>
+<li>异步（async）执行：当前线程会直接往下执行，并不会阻塞当前线程。具备开启新线程的能力。</li>
+</ul></li>
+<li><p>队列：用于存放任务。在GCD中有两种队列：串行队列和并行队列。</p>
+
+<ul>
+<li>串行队列：队列中的任务会根据队列的先进先出的顺序执行，一个接一个的执行。</li>
+<li>并行队列：放到并行队列的任务，GCD 也会FIFO（先进先出）的取出来，但不同的是，它取出来一个就会放到别的线程，然后再取出来一个又放到另一个的线程。这样由于取的动作很快，忽略不计，看起来，所有的任务都是一起执行的。不过需要注意，GCD 会根据系统资源控制并行的数量，所以如果任务很多，它并不会让所有任务同时执行。</li>
+</ul></li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14615060017180.jpg" alt=""/></p>
+
+<h4 id="toc_8">队列的创建</h4>
+
+<ul>
+<li><p><strong>主队列</strong>：这是一个特殊的<em>串行队列</em>。主队列，就是APP的主线程，放在这个队列中的任务会在主线程中运行。主要用于刷新UI，所以一般耗时的任务都应该放在别的线程中执行，防止主线程阻塞。</p>
+
+<pre><code>dispatch_queue_t queue = dispatch_get_main_queue();
+
+</code></pre></li>
+<li><p><strong>自建队列</strong>：自己创建的队列可以是串行队列，也可以是并行队列。创建的方法为<code>dispatch_queue_create</code>。这个方法有两个参数，第一个参数是标识符，用于DEBUG的时候表示唯一的队列，可以为空，一般命名方式为域名的反写。第二个参数声明创建的队列的参数的类型。</p>
+
+<pre><code>//串行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, NULL);
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_SERIAL);
+//并行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_CONCURRENT);
+</code></pre></li>
+<li><p><strong>全局并行队列</strong>：一个全局的并行队列，系统提供。一般并行任务都加入这个队列中。</p>
+
+<pre><code>dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+</code></pre>
+
+<h4 id="toc_9">创建任务</h4></li>
+<li><p>同步任务</p>
+
+<pre><code>dispatch_sync(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+<li><p>异步任务</p>
+
+<pre><code>dispatch_async(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre>
+
+<h4 id="toc_10">队列组</h4>
+
+<p>队列组可以将很多队列添加到一个组里，这样做的好处是，当这个组里所有的任务都执行完了，队列组会通过一个方法通知我们。下面是使用方法，这是一个很实用的功能。</p>
+
+<pre><code>//1.创建队列组
+dispatch_group_t group = dispatch_group_create();
+//2.创建队列
+dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+
+//3.多次使用队列组的方法执行任务, 只有异步方法
+//3.1.执行3次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 3; i++) {
+        NSLog(@&quot;group-01 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//3.2.主队列执行8次循环
+dispatch_group_async(group, dispatch_get_main_queue(), ^{
+    for (NSInteger i = 0; i &lt; 8; i++) {
+        NSLog(@&quot;group-02 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//3.3.执行5次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        NSLog(@&quot;group-03 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//4.都完成后会自动通知
+dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+    NSLog(@&quot;完成 - %@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+</ul>
+
+<h3 id="toc_11">NSOperation和NSOperationQueue</h3>
+
+<p><code>NSOperation</code>是苹果公司对<code>GCD</code>的封装，完全面向对象，所以使用起来更好理解。 大家可以看到<code>NSOperation</code>和<code>NSOperationQueue</code> 分别对应 <code>GCD</code>的任务和队列。操作步骤也很好理解：</p>
+
+<pre><code>1. 将要执行的任务封装为一个NSOperation对象
+2. 将这个任务添加到一个NSOperationQueue对象中。
+</code></pre>
+
+<h3 id="toc_12">添加任务</h3>
+
+<p>值得说明的是，<code>NSOperation</code> 只是一个抽象类，所以不能封装任务。但它有 2个子类用于封装任务。分别是：<code>NSInvocationOperation</code> 和 <code>NSBlockOperation</code> 。创建一个 Operation 后，需要调用 start 方法来启动任务，它会默认在当前队列同步执行。当然你也可以在中途取消一个任务，只需要调用其cancel方法即可。</p>
+
+<ul>
+<li>NSInvocationOperation</li>
+</ul>
+
+<pre><code>//1.创建NSInvocationOperation对象
+NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(run) object:nil];
+
+//2.开始执行
+[operation start];
+</code></pre>
+
+<ul>
+<li>NSBlockOperation</li>
+</ul>
+
+<pre><code>    //1.创建NSBlockOperation对象
+  NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+      NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+  }];
+
+  //2.开始任务
+  [operation start];
+</code></pre>
+
+<p>之前说过这样的任务，默认会在当前线程执行。但是 NSBlockOperation 还有一个方法：<code>addExecutionBlock:</code>，通过这个方法可以给 Operation 添加多个执行 Block。这样 Operation 中的任务会并发执行，它会在主线程和其它的多个线程执行这些任务。</p>
+
+<ul>
+<li>自定义Operation
+除了上面的两种 Operation 以外，我们还可以自定义 Operation。自定义 Operation 需要继承 NSOperation 类，并实现其 main() 方法，因为在调用 start() 方法的时候，内部会调用 main() 方法完成相关逻辑。所以如果以上的两个类无法满足你的欲望的时候，你就需要自定义了。你想要实现什么功能都可以写在里面。除此之外，你还需要实现 cancel() 在内的各种方法。所以这个功能提供给高级玩家，我在这里就不说了，等我需要用到时在研究它，到时候可能会再做更新。</li>
+</ul>
+
+<h4 id="toc_13">创建队列</h4>
+
+<p>看过上面的内容就知道，我们可以调用一个 NSOperation 对象的 start() 方法来启动这个任务，但是这样做他们默认是同步执行的。就算是 <code>addExecutionBlock</code>方法，也会在 当前线程和其他线程中执行，也就是说还是会占用当前线程。这是就要用到队列 NSOperationQueue 了。而且，按类型来说的话一共有两种类型：主队列、其他队列。只要添加到队列，会自动调用任务的 start() 方法。</p>
+
+<ul>
+<li>主队列</li>
+</ul>
+
+<p>细心的同学就会发现，每套多线程方案都会有一个主线程（当然啦，说的是iOS中，像 pthread 这种多系统的方案并没有，因为 UI线程 理论需要每种操作系统自己定制）。这是一个特殊的线程，必须串行。所以添加到主队列的任务都会一个接一个地排着队在主线程处理。</p>
+
+<p><code>NSOperationQueue *queue = [NSOperationQueue mainQueue];</code></p>
+
+<ul>
+<li>其它队列</li>
+</ul>
+
+<p>因为主队列比较特殊，所以会单独有一个类方法来获得主队列。那么通过初始化产生的队列就是其他队列了，因为只有这两种队列，除了主队列，其他队列就不需要名字了。</p>
+
+<pre><code>    //1.创建一个其他队列    
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    
+    //2.创建NSBlockOperation对象
+    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+    }];
+    
+    //3.添加多个Block
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        [operation addExecutionBlock:^{
+            NSLog(@&quot;第%ld次：%@&quot;, i, [NSThread currentThread]);
+        }];
+    }
+    
+    //4.队列添加任务
+    [queue addOperation:operation];
+</code></pre>
+
+<p>OK, 这时应该发问了，大家将 NSOperationQueue 与 GCD的队列 相比较就会发现，这里没有串行队列，那如果我想要10个任务在其他线程串行的执行怎么办？</p>
+
+<p>这就是苹果封装的妙处，你不用管串行、并行、同步、异步这些名词。NSOperationQueue 有一个参数 maxConcurrentOperationCount 最大并发数，用来设置最多可以让多少个任务同时执行。当你把它设置为 1 的时候，他不就是串行了嘛！</p>
+
+<p>NSOperationQueue 还有一个添加任务的方法，- (void)addOperationWithBlock:(void (<sup>)(void))block;</sup> ，这是不是和 GCD 差不多？这样就可以添加一个任务到队列中了，十分方便。<br/>
+NSOperation 有一个非常实用的功能，那就是添加依赖。比如有 3 个任务：A: 从服务器上下载一张图片，B：给这张图片加个水印，C：把图片返回给服务器。这时就可以用到依赖了:</p>
+
+<pre><code>//1.任务一：下载图片
+NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;下载图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//2.任务二：打水印
+NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;打水印   - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//3.任务三：上传图片
+NSBlockOperation *operation3 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;上传图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//4.设置依赖
+[operation2 addDependency:operation1];      //任务二依赖任务一
+[operation3 addDependency:operation2];      //任务三依赖任务二
+
+//5.创建队列并加入任务
+NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+[queue addOperations:@[operation3, operation2, operation1] waitUntilFinished:NO];
+</code></pre>
+
+<h4 id="toc_14">其它方法</h4>
+
+<ul>
+<li><p>NSOperation</p>
+
+<pre><code>BOOL executing; //判断任务是否正在执行
+
+BOOL finished; //判断任务是否完成
+
+void (^completionBlock)(void); //用来设置完成后需要执行的操作
+
+- (void)cancel; //取消任务
+
+- (void)waitUntilFinished; //阻塞当前线程直到此任务执行完毕
+</code></pre></li>
+<li><p>NSOperationQueue</p>
+
+<pre><code>NSUInteger operationCount; //获取队列的任务数
+
+-(void)cancelAllOperations; //取消队列中所有的任务
+
+-(void)waitUntilAllOperationsAreFinished; //阻塞当前线程直到此队列中的所有任务执行完毕
+
+[queue setSuspended:YES]; // 暂停queue
+
+[queue setSuspended:NO]; // 继续queue
+</code></pre></li>
+</ul>
+
+<h2 id="toc_15">更多内容</h2>
+
+<p>参考<a href="http://www.jianshu.com/p/0b0d9b1f1f19">关于iOS多线程，你看我就够了</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-网络操作]]></title>
+    <link href="http://swuzjb.github.io/14610540983936.html"/>
+    <updated>2016-04-19T16:21:38+08:00</updated>
+    <id>http://swuzjb.github.io/14610540983936.html</id>
+    <content type="html"><![CDATA[
+<p>大部分应用程序都或多或少会牵扯到网络开发，例如说新浪微博、微信等，这些应用本身可能采用iOS开发，但是所有的数据支撑都是基于后台网络服务器的。如今，网络编程越来越普遍，孤立的应用通常是没有生命力的。今天就会给大家介绍这部分内容：</p>
+
+<h2 id="toc_0">Web请求和响应</h2>
+
+<p>做过Web开发的朋友应该很清楚，Http是无连接的请求。每个请求request服务器都有一个对应的响应response，无论是asp.net、jsp、php都是基于这种机制开发的。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-19-220832008241526.png" alt=""/></p>
+
+<p>在Web开发中主要的请求方法有如下几种:</p>
+
+<ul>
+<li>GET请求：get是获取数据的意思，数据以明文在URL中传递，受限于URL长度，所以传输数据量比较小。</li>
+<li>POST请求：post是向服务器提交数据的意思，提交的数据以实际内容形式存放到消息头中进行传递，无法在浏览器url中查看到，大小没有限制。</li>
+<li>HEAD请求：请求头信息，并不返回请求数据体，而只返回请求头信息，常用用于在文件下载中取得文件大小、类型等信息。
+在开发中往往数据存储在服务器端，而客户端（iOS应用）往往通过向服务器端发送请求从服务器端获得数据。要模拟这个过程首先当然是建立服务器端应用，应用的形式没有限制，你可以采用任何Web技术进行开发。</li>
+</ul>
+
+<h2 id="toc_1">原生网络访问</h2>
+
+<p>iOS原生为我们提供了网络访问的能力。我们今天只研究NSURLSession的使用方法。该方法适用于iOS7以后的设备。它提供如下功能：</p>
+
+<ol>
+<li>通过URL将数据下载到内存</li>
+<li>通过URL将数据下载到文件系统</li>
+<li>将数据上传到指定URL</li>
+<li>在后台完成上述功能</li>
+</ol>
+
+<h3 id="toc_2">NSURLSession基本用法</h3>
+
+<ol>
+<li>根据Session类型选择NSURLSessionConfiguration</li>
+<li>设置Configuration，如指定NSURLCache等</li>
+<li><p>用Configuration创建Session</p>
+
+<pre><code>+[NSURLSession sessionWithConfiguration:delegate:delegateQueue:];
++[NSURLSession sessionWithConfiguration];
+</code></pre></li>
+<li><p>在Session里创建网络访问任务</p></li>
+<li><p>启动任务<code>-[NSURLSessionTask resume]</code></p></li>
+</ol>
+
+<h3 id="toc_3">访问Demo</h3>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                         completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [task resume];
+</code></pre>
+
+<p>Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL：</p>
+
+<pre><code>NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+ NSData *data = ...;
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request
+                                                            fromData:data
+                                                   completionHandler:
+     ^(NSData *data, NSURLResponse *response, NSError *error) {
+         // ...
+     }];
+
+ [uploadTask resume];
+</code></pre>
+
+<p>Download task 也需要一个 request，不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件。所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来：</p>
+
+<pre><code> NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/file.zip&quot;];
+ NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+ NSURLSession *session = [NSURLSession sharedSession];
+ NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
+                                                         completionHandler:
+    ^(NSURL *location, NSURLResponse *response, NSError *error) {
+        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:documentsPath];
+        NSURL *newFileLocation = [documentsDirectoryURL URLByAppendingPathComponent:[[response URL] lastPathComponent]];
+        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+    }];
+
+ [downloadTask resume];
+</code></pre>
+
+<h2 id="toc_4">NSURLSessionConfiguration</h2>
+
+<p>NSURLSessionConfiguration 对象用于对 NSURLSession 对象进行初始化。NSURLSessionConfiguration 对以前 NSMutableURLRequest 所提供的网络请求层的设置选项进行了扩充，提供给我们相当大的灵活性和控制权。从指定可用网络，到 cookie，安全性，缓存策略，再到使用自定义协议，启动事件的设置，以及用于移动设备优化的几个新属性，你会发现使用 NSURLSessionConfiguration 可以找到几乎任何你想要进行配置的选项。<br/>
+NSURLSession 在初始化时会把配置它的 NSURLSessionConfiguration 对象进行一次 copy，并保存到自己的 configuration 属性中，而且这个属性是只读的。因此之后再修改最初配置 session 的那个 configuration 对象对于 session 是没有影响的。也就是说，configuration 只在初始化时被读取一次，之后都是不会变化的。</p>
+
+<h3 id="toc_5">NSURLSessionConfiguration 的工厂方法</h3>
+
+<p>NSURLSessionConfiguration 有三个类工厂方法，这很好地说明了 NSURLSession 设计时所考虑的不同的使用场景。</p>
+
+<ul>
+<li>+defaultSessionConfiguration 返回一个标准的 configuration，这个配置实际上与 NSURLConnection 的网络堆栈（networking stack）是一样的，具有相同的共享 NSHTTPCookieStorage，共享 NSURLCache 和共享 NSURLCredentialStorage。</li>
+<li>+ephemeralSessionConfiguration 返回一个预设配置，这个配置中不会对缓存，Cookie 和证书进行持久性的存储。这对于实现像秘密浏览这种功能来说是很理想的。</li>
+<li>+backgroundSessionConfiguration:(NSString *)identifier 的独特之处在于，它会创建一个后台 session。后台 session 不同于常规的，普通的 session，它甚至可以在应用程序挂起，退出或者崩溃的情况下运行上传和下载任务。初始化时指定的标识符，被用于向任何可能在进程外恢复后台传输的守护进程（daemon）提供上下文。
+###更多内容
+关于NSURLSession的更多信息可以参考<a href="http://objccn.io/issue-5-4/">从 NSURLConnection 到 NSURLSession</a></li>
+</ul>
+
+<h2 id="toc_6">优秀的第三方网络访问库 AFNetworking</h2>
+
+<p>AFNetworking是由Mattt Thompson开发的一个开源的网络访问组件。地址<a href="https://github.com/AFNetworking/AFNetworking">AFNetworking</a><br/>
+从3.0版本开始AFNetworking开始使用NSURLSession进行实现。</p>
+
+<h3 id="toc_7">用法</h3>
+
+<p><code>AFURLSessionManager</code> 创建并管理一个<code>NSURLSession</code>对象 基于指定的<code>NSURLSessionConfiguration</code>对象, 并遵从一下协议 <NSURLSessionTaskDelegate>, <NSURLSessionDataDelegate>, <NSURLSessionDownloadDelegate>, and <NSURLSessionDelegate>.</p>
+
+<h4 id="toc_8">Creating a Download Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/download.zip&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+    return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
+} completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+    NSLog(@&quot;File downloaded to: %@&quot;, filePath);
+}];
+[downloadTask resume];
+</code></pre>
+
+<h4 id="toc_9">Creating an Upload Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://example.com/upload&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURL *filePath = [NSURL fileURLWithPath:@&quot;file://path/to/image.png&quot;];
+NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithRequest:request fromFile:filePath progress:nil completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;Success: %@ %@&quot;, response, responseObject);
+    }
+}];
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_10">Creating an Upload Task for a Multi-Part Request, with Progress</h4>
+
+<pre><code>NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@&quot;POST&quot; URLString:@&quot;http://example.com/upload&quot; parameters:nil constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+        [formData appendPartWithFileURL:[NSURL fileURLWithPath:@&quot;file://path/to/image.jpg&quot;] name:@&quot;file&quot; fileName:@&quot;filename.jpg&quot; mimeType:@&quot;image/jpeg&quot; error:nil];
+    } error:nil];
+
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+
+NSURLSessionUploadTask *uploadTask;
+uploadTask = [manager
+              uploadTaskWithStreamedRequest:request
+              progress:^(NSProgress * _Nonnull uploadProgress) {
+                  // This is not called back on the main queue.
+                  // You are responsible for dispatching to the main queue for UI updates
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      //Update the progress view
+                      [progressView setProgress:uploadProgress.fractionCompleted];
+                  });
+              }
+              completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+                  if (error) {
+                      NSLog(@&quot;Error: %@&quot;, error);
+                  } else {
+                      NSLog(@&quot;%@ %@&quot;, response, responseObject);
+                  }
+              }];
+
+[uploadTask resume];
+</code></pre>
+
+<h4 id="toc_11">Creating a Data Task</h4>
+
+<pre><code>NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+
+NSURL *URL = [NSURL URLWithString:@&quot;http://httpbin.org/get&quot;];
+NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+
+NSURLSessionDataTask *dataTask = [manager dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+    if (error) {
+        NSLog(@&quot;Error: %@&quot;, error);
+    } else {
+        NSLog(@&quot;%@ %@&quot;, response, responseObject);
+    }
+}];
+[dataTask resume];
+</code></pre>
+
+<h4 id="toc_12">Another way</h4>
+
+<pre><code>NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfiguration:config];
+[manger GET:url parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        //do somthing
+    } failure:nil];
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-UIView动画]]></title>
+    <link href="http://swuzjb.github.io/14610365861382.html"/>
+    <updated>2016-04-19T11:29:46+08:00</updated>
+    <id>http://swuzjb.github.io/14610365861382.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>这周的两个课程安排都是大坑啊，一周怎么够！</p>
+</blockquote>
+
+<p>先安利：<br/>
+- <a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a><br/>
+- <a href="http://transitiontreasury.com">http://transitiontreasury.com</a><br/>
+- <a href="https://github.com/sxyx2008/awesome-ios-animation">awesome-ios-animation</a></p>
+
+<p>课程知识汇总：</p>
+
+<h2 id="toc_0">UIKit提供的动画支持</h2>
+
+<p>苹果给UIView已经做好了简单的动画操作方法，可以自动的给一些属性的变化添加关键帧，生成动画效果。支持的属性包括：</p>
+
+<ul>
+<li>frame</li>
+<li>bounds</li>
+<li>center</li>
+<li>transform</li>
+<li>alpha</li>
+<li>backgroundColor</li>
+<li>contentStretch</li>
+</ul>
+
+<p>动画方法：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void));
+</code></pre>
+
+<p>其中可以观察到，duration表述动画的时间，在animation这个block中修改view的可动画属性，系统就会自动添加动画。option是系统提供的各种配置常量，用于不同的动画效果。</p>
+
+<h3 id="toc_1">keyFrame动画支持</h3>
+
+<p>上述的动画操作虽然展示了一些动画效果，但是都比较简单。不能满足我们的日常需要。如果我们需要某个动画，先完成一部分，再完成另一部分。比如将一个view 先从A点移到B点再移到C点，用上面的方法就比较困难。这个时候我们就可以借助。UIView的animateKeyFrame方法。</p>
+
+<pre><code>+(void)animateKeyframesWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewKeyFrameAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished))
+//需要在上述方法的animation中加入
++(void)addKeyFrameWithRelativeStartTime:(double) relativeDuration:(double) animations:(void(^)(void))
+</code></pre>
+
+<p>ps.这里的开始时间，持续时间都是百分比。</p>
+
+<h3 id="toc_2">Spring Animation</h3>
+
+<p>Spring Animation是iOS7.0之后系统新启用的一个动画模式。这里上一篇大神blog作为参考：<a href="https://renfei.org/blog/ios-8-spring-animation.html">ios-8-spring-animation</a>.<br/>
+调用方法如下：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval)duration
+        delay:(NSTimeInterval)delay
+        usingSpringWithDamping:(CGFloat)dampingRatio //阻尼值[0,1.0]
+        initialSpringVelocity:(CGFloat)velocity//初速度
+        options:(UIViewAnimationOptions)options
+        animations:(void(^)(void))animations
+        completion:(void(^)(BOOL finished))completion       
+</code></pre>
+
+<h3 id="toc_3">AutoLayout环境下的动画</h3>
+
+<p>在使用AutoLayout之后，我们对view的frame的属性操作就会失效。这个时候，我们制作动画就应该修改的是view的constraint。步骤如下：<br/>
+1. 修改constraint<br/>
+2. -[view setNeedsUpdateConstraints]//设置约束<br/>
+3. -[view layoutIfNeeded]//在 animation block中调用</p>
+
+<h2 id="toc_4">Transition动画</h2>
+
+<p>上一部分介绍了UIView自带的一些动画效果，但是还有一种动画过程没有介绍。那就是用动画过程完成界面切换。这就是View transition动画。</p>
+
+<h3 id="toc_5">小变化，子View发生变化</h3>
+
+<p>UIView API:</p>
+
+<pre><code>+transitionWithView:(UIView)view //父view
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    animations:(void(^)(void))animations
+    completion:(void(^)(BOOL finished))completion
+</code></pre>
+
+<h3 id="toc_6">大变化，场景转化</h3>
+
+<p>从formView切换到toView</p>
+
+<pre><code>+transitionFromView:(UIView)fromView
+    toView:(UIView)toView
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    completion:(void(^)(BOOL finished))completion           
+</code></pre>
+
+<h2 id="toc_7">UIViewAnimationOptions介绍</h2>
+
+<ul>
+<li>常规动画属性设置（可以同时选择多个进行设置）
+
+<ul>
+<li>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</li>
+<li>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</li>
+<li>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</li>
+<li>UIViewAnimationOptionRepeat：重复运行动画。</li>
+<li>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</li>
+<li>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</li>
+<li>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</li>
+<li>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  </li>
+<li>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</li>
+<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
+</ul></li>
+<li>动画速度控制（可从其中选择一个设置）
+
+<ul>
+<li>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</li>
+<li>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</li>
+<li>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</li>
+<li>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</li>
+</ul></li>
+<li>转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
+
+<ul>
+<li>UIViewAnimationOptionTransitionNone：没有转场动画效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_8">Core Animation</h2>
+
+<p>当进行复杂的动画效果时，需要使用Core Animation System系统进行操作。具体请参考：<a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-UIScrollView的使用]]></title>
+    <link href="http://swuzjb.github.io/14604722520928.html"/>
+    <updated>2016-04-12T22:44:12+08:00</updated>
+    <id>http://swuzjb.github.io/14604722520928.html</id>
+    <content type="html"><![CDATA[
+<p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
+
+<h2 id="toc_0">什么是ScrollView</h2>
+
+<p>能Scroll的View。即UIScrollView可以用于显示多于一个屏幕的内容，超出屏幕范围的内容可以通过滑动进行查看。效果如图所示:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604727346930.jpg" alt=""/></p>
+
+<h2 id="toc_1">UIScrollView的创建方式</h2>
+
+<ol>
+<li>在Interface Builder里面拖</li>
+<li>使用代码创建:<code>scrollView = [[UIScrollView alloc] initWithFrame:rect];</code></li>
+</ol>
+
+<h2 id="toc_2">UIScrollView的尺寸</h2>
+
+<ol>
+<li>ScrollView自身的size，也就是自身的Frame，这个和其它View一样。</li>
+<li>ScrollView有一个特殊的size属性，称之为contentSize，也是它的内容的大小，这个是必须指定的一个属性，否则ScrollView无法进行滑动等操作。指定contentSize的方式也有两种：
+
+<ol>
+<li>使用代码指定<code>scrollView.contentSize = CGSizeMake(&lt;#CGFloat width#&gt;, &lt;#CGFloat height#&gt;);</code></li>
+<li>使用AutoLayout,约束必须可以计算出contentSize的大小才可以正常的往其内部添加子View。可以参考<a href="http://www.cocoachina.com/ios/20150104/10810.html">Storyboard中的UIScrollView使用自动布局，使其能够滚动</a>。</li>
+</ol></li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604733972117.jpg" alt=""/></p>
+
+<h2 id="toc_3">UIScrollView的滚动</h2>
+
+<p>设置完成ScrollView之后，我们的ScrollView就可以进行滚动。与滚动有几个相关的属性或方法，介绍如下：</p>
+
+<ol>
+<li><code>BOOL scrollEnable</code>是否可以滚动</li>
+<li><code>BOOL bounces</code>是否显示回弹效果</li>
+<li><code>BOOL showsHorizontalScrollIndicator</code> 是否显示垂直滚动条</li>
+<li><code>BOOL showsVerticalScrollIndicator</code>  是否显示水平滚动条</li>
+<li><code>.contentOffset</code>是一个CGPoint，表示偏移的点
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604737957967.jpg" alt=""/></li>
+</ol>
+
+<h2 id="toc_4">监听滚动</h2>
+
+<p>监听滚动需要对应的监听对象实现UIScrollViewDelegate协议。<br/>
+具体的监听方法如下：</p>
+
+<pre><code>// 只要 scrollView 滑动就会触发 ( 会触发多次 )
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView;                                               
+
+//只要 scrollView 缩放就会触发
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView 
+
+// 当将要拖拽 scrollView 时触发 , 手指接触 scrollView 并且将要滑动时触发
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
+// 当结束拖拽时触发 ( 手指将要离开屏幕 )
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset NS_AVAILABLE_IOS(5_0);
+
+// 当结束拖拽时触发 ( 手指已经离开屏幕 )
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
+
+//当 scrollView 滑动将要减速时触发 ( 将要停止 )
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView;   
+//当 scrollView 结束减速时触发 ( 停止滑动 )
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;    
+//当设置 scrollView的setContentOffset, 有一个动画效果时触发
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView; 
+//设置要缩放的 scrollView 上面的哪一个子视图 , 只能是子视图 , 不能是 scrollView 本身
+- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;     
+//当将要开始缩放时触发
+- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view NS_AVAILABLE_IOS(3_2); 
+//当结束缩放时触发
+- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale; 
+//只有当 scrollsToTop 属性设置为 YES 时 , 该方法才会触发 , 进一步询问点击状态条是否有效
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;  
+//当点击状态条并且 scrollView 滑动到顶端时触发
+- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;      
+
+</code></pre>
+
+<h2 id="toc_5">ScrollView缩放</h2>
+
+<p>除了要指定那个View具有缩放的效果，还需要指定两个属性，<code>scrollView.minimumZoomScale</code>、<code>scrollView.maximumZoomScale</code>。直接Zoom是位图缩放而非重绘</p>
+
+<h2 id="toc_6">ScrollView分页滚动</h2>
+
+<p>通过设置.pageEnable属性可以控制是否开启分页滚动，当开启后，scrollView不再显示滚动条，并整页切换显示内容。<br/>
+页面来源：</p>
+
+<ul>
+<li>一个巨大的View，简单但是浪费资源</li>
+<li>每页一个View，通过Delegate实现View的复用</li>
+</ul>
+
+<h3 id="toc_7">ScrollView和PageControl结合</h3>
+
+<p>这两个View结合起来可以实现图片轮播的效果，通过实现PageControl的delegate可以控制currentPage属性进行显示</p>
+
+<h4 id="toc_8">无限轮播</h4>
+
+<p>为了保证轮播图像首尾相接，无限循环，有两个思路：<br/>
+1. 在第一张图片前加最后一张图片，在最后一张图片后加第一张图片，在delegate中判断，如果到达这两个特殊位置，在程序中进行跳转。举例：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
+如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
+2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-触摸手势]]></title>
+    <link href="http://swuzjb.github.io/14603833170565.html"/>
+    <updated>2016-04-11T22:01:57+08:00</updated>
+    <id>http://swuzjb.github.io/14603833170565.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">什么是手势</h2>
+
+<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
+
+<ul>
+<li>Tap 轻拍</li>
+<li>Swipe  单轴滑动</li>
+<li>Double tap  连续两次轻拍</li>
+<li>Long press  长按</li>
+<li>Pinch   捏合手指</li>
+<li>Two finger tap 双指轻拍 </li>
+<li>Rotate 旋转</li>
+</ul>
+
+<h2 id="toc_1">实现的原理</h2>
+
+<ol>
+<li>收集一些列的UITouch</li>
+<li>分析是否符合所需要的规律
+
+<ul>
+<li>符合：触发手势响应</li>
+<li>否则：转为普通触摸事件响应</li>
+</ul></li>
+</ol>
+
+<p>Some Example</p>
+
+<pre><code>//Double Tap
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    for(UITouch *aTouch in touches){
+        if(aTouch.tapCount &gt;= 2){
+            [self respondToDoubleTapFesture:aTouch];
+        }
+    }
+}
+
+//Drag
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    UITouch *aTouch = [touches anyObject];
+    CGPoint loc = [aTouch locationInView:self];
+    CGPpoint preloc= [aTouch previouslocationInView:self];
+    
+    CGRect myFrame = self.frame;
+    float deltaX = loc.x - preloc.x;
+    float deltaY = loc.y - preloc.y;
+    myFrame.orgin.x += deltaX;
+    myFrame.orgin.Y += deltaY;
+    [self setFrame:myFrame];
+    
+}
+</code></pre>
+
+<h2 id="toc_2">UIControl</h2>
+
+<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
+
+<ul>
+<li>UIControl：UIView：UIResponder</li>
+<li>Traget-Action</li>
+<li>UIControlEvents
+
+<ul>
+<li>TouchDown</li>
+<li>TouchDownRepeat</li>
+<li>TouchDragInside</li>
+<li>TouchDragOutside</li>
+<li>TouchDragEnter</li>
+<li>TouchUpInside</li>
+<li>TouchUpOutside</li>
+<li>TouchCancel</li>
+<li>ValueChanged</li>
+<li>PrimaryActionTriggered</li>
+<li>EditingDidBegin</li>
+<li>EditingChanged</li>
+<li>EditingDidEnd</li>
+<li>EditingDidEndOnExit</li>
+<li>AllTouchEvents</li>
+<li>AllEditingEvents</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_3">UIGestureRecongnizer</h2>
+
+<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
+<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
+<code>-[UIView addGestureRecognizer:]</code><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
+
+<h3 id="toc_4">离散手势与连续手势</h3>
+
+<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
+
+<h3 id="toc_5">手势识别状态</h3>
+
+<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
+如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
+
+<h3 id="toc_6">同时支持多种手势</h3>
+
+<ul>
+<li><p>用依赖关系改变触发顺序</p>
+
+<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
+b失败之前,a先等待</p></li>
+<li><p>使用UIGestureRecognizerDelegate控制</p>
+
+<ul>
+<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
+<li>-gestureRecognizerShouldBegin:是否可以响应</li>
+<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
+</ul></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-事件处理]]></title>
+    <link href="http://swuzjb.github.io/14603791205821.html"/>
+    <updated>2016-04-11T20:52:00+08:00</updated>
+    <id>http://swuzjb.github.io/14603791205821.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>暂时无感，先做归纳</p>
+</blockquote>
+
+<h2 id="toc_0">什么是事件</h2>
+
+<p>Events:objects sent to an app informing user action<br/>
+在iOS中，事件分为三类：</p>
+
+<ul>
+<li>触控事件（单点、多点触控以及各种手势操作）</li>
+<li>传感器事件（重力、加速度传感器等）</li>
+<li>远程控制事件（远程遥控iOS设备多媒体播放等）</li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603801710492.jpg" alt=""/></p>
+
+<h2 id="toc_1">事件的分发</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603809132422.jpg" alt=""/></p>
+
+<h3 id="toc_2">NSRunLoop</h3>
+
+<p>线程附属对象，监听一组事件源<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603810622282.jpg" alt=""/></p>
+
+<h2 id="toc_3">事件响应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-06022409-75bfb59830bb45c3899de47f77721214.png" alt=""/></p>
+
+<p>处理原理如下：</p>
+
+<ul>
+<li>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</li>
+<li>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</li>
+<li>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</li>
+</ul>
+
+<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
+
+<ul>
+<li>hitTest:withEvent:方法大致处理流程是这样的：
+
+<ul>
+<li>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
+
+<ul>
+<li>若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</li>
+<li>若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</li>
+</ul></li>
+<li>若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</li>
+<li>若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</li>
+<li>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理。</li>
+</ul></li>
+</ul>
+
+<p>拿到这个UIView后，就调用该UIView的touches系列方法。<br/>
+消息处理过程，在找到的那个视图里处理，处理完后根据需要，利用响应链nextResponder可将消息往下一个响应者传递。<br/>
+UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- UIView</p>
+
+<p>【关键】：1、iOS判断哪个界面能接受消息是从View层级结构的父View向子View传递，即树状结构的根节点向叶子节点递归传递。2、hitTest和pointInside成对，且hitTest会调用pointInside。3、iOS的消息处理是，当消息被人处理后默认不再向父层传递</p>
+
+<h3 id="toc_4">事件沿Responder Chain传递</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603818809422.jpg" alt="事件沿Responder Chain传递"/></p>
+
+<h2 id="toc_5">在自定义类里响应触摸事件</h2>
+
+<pre><code>-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+-(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+</code></pre>
+
+<p>UITouch:</p>
+
+<ul>
+<li>previousLocationInView 前一次的点击坐标</li>
+<li>locationInView 点击的坐标</li>
+<li>timestamp 时间戳</li>
+<li>type(iOS9+) 防误触，可以判断触摸的是手还是笔</li>
+<li>force(iOS9+) 压力信息</li>
+</ul>
+
+<p>UIEvent:</p>
+
+<ul>
+<li>type:UIEventTypeTouches(Motion/RemoteControl/Press)</li>
+<li>timestamp 时间戳</li>
+</ul>
+
+<h3 id="toc_6">多点触摸</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[GeekBand.iOS-View的层次结构与属性]]></title>
+    <link href="http://swuzjb.github.io/14603730042058.html"/>
+    <updated>2016-04-11T19:10:04+08:00</updated>
+    <id>http://swuzjb.github.io/14603730042058.html</id>
+    <content type="html"><![CDATA[
+<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+
+<h2 id="toc_0">什么是UIView</h2>
+
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
+
+<h2 id="toc_1">屏幕对象UIScreen</h2>
+
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
+
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
+</code></pre>
+
+<h3 id="toc_2">iOS8+</h3>
+
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
+</code></pre>
+
+<h3 id="toc_3">截图</h3>
+
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
+
+<h2 id="toc_4">UIWindow</h2>
+
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
+
+<h2 id="toc_5">UIView</h2>
+
+<h3 id="toc_6">UIView的树状层次</h3>
+
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
+
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+
+<ul>
+<li><p>增加(Create)</p>
+
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
+
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
+</code></pre></li>
+</ul>
+
+<h3 id="toc_8">UIView的重要属性</h3>
+
+<ul>
+<li>定位
+
+<ul>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
+</ul></li>
+<li>视觉
+
+<ul>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li>访问
+.tag =&gt; -viewWithTag</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

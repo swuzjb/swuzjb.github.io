@@ -1,0 +1,493 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  iOS学习笔记 - CobberZhan's Blog
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:swuzjb.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        <li id="menu_item_index"><a href="index.html">HOME</a></li>
+        <li id="menu_item_archives"><a href="archives.html">Archives</a></li>
+        <li id="menu_item_about"><a href="about.html">ABOUT</a></li>
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; CobberZhan's Blog</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14628720930939.html">
+                
+                  <h1>GeekBand.Swift-下标与操作符</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+</blockquote>
+
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
+
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
+}
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
+}
+for i in 0..&lt;10{
+    print(datas[i])
+}
+</code></pre>
+
+<h2 id="toc_1">操作符</h2>
+
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
+
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
+}
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
+</code></pre>
+
+<h3 id="toc_3">相等操作符</h3>
+
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
+
+
+var c5=c3
+
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="iOS学习笔记_3.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			 <a href="iOS学习笔记_5.html">&raquo; Next Page</a> 
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>CobberZhan's Blog</h1>
+                <div class="site-des">展镜博的个人博客</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a class="github" target="_blank" href="https://github.com/swuzjb" title="GitHub">GitHub</a>
+<a class="email" href="mailto:412008196@qq.com" title="Email">Email</a>
+  <a class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>BookList</h2>
+                </div>
+                <div class="side-content">
+
+                <p class="cat-list">
+                
+                    <a href="bookList.html"><strong>待读书单</strong></a>
+                
+                </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+                <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>FRIEND LINKS</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+                  <li class="post">
+                    <a href="https://guxinyan.github.io">顾鑫燕的博客</a>
+                    
+                  </li>
+                  <li class="post">
+                    <a href="http://ranchu.win">CD'S Blog</a>
+                  </li>
+                  <li class="post">
+                    <a href="https://hran.me">Hran's Blog</a>
+                  </li>
+          </ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2016 swuzjb
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+
+
+<script type="text/javascript">
+var duoshuoQuery = {short_name:'zhanjingbo'};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?0fb9ecff8c9a2c820ce81c18ff77c1e8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+  </body>
+</html>

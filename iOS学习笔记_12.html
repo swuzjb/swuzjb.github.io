@@ -1,0 +1,477 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  iOS学习笔记 - CobberZhan's Blog
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="CobberZhan's Blog" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:swuzjb.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        <li id="menu_item_index"><a href="index.html">HOME</a></li>
+        <li id="menu_item_archives"><a href="archives.html">Archives</a></li>
+        <li id="menu_item_about"><a href="about.html">ABOUT</a></li>
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; CobberZhan's Blog</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html">Java康复性训练</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14603833170565.html">
+                
+                  <h1>GeekBand.iOS-触摸手势</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">什么是手势</h2>
+
+<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
+
+<ul>
+<li>Tap 轻拍</li>
+<li>Swipe  单轴滑动</li>
+<li>Double tap  连续两次轻拍</li>
+<li>Long press  长按</li>
+<li>Pinch   捏合手指</li>
+<li>Two finger tap 双指轻拍 </li>
+<li>Rotate 旋转</li>
+</ul>
+
+<h2 id="toc_1">实现的原理</h2>
+
+<ol>
+<li>收集一些列的UITouch</li>
+<li>分析是否符合所需要的规律
+
+<ul>
+<li>符合：触发手势响应</li>
+<li>否则：转为普通触摸事件响应</li>
+</ul></li>
+</ol>
+
+<p>Some Example</p>
+
+<pre><code>//Double Tap
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    for(UITouch *aTouch in touches){
+        if(aTouch.tapCount &gt;= 2){
+            [self respondToDoubleTapFesture:aTouch];
+        }
+    }
+}
+
+//Drag
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    UITouch *aTouch = [touches anyObject];
+    CGPoint loc = [aTouch locationInView:self];
+    CGPpoint preloc= [aTouch previouslocationInView:self];
+    
+    CGRect myFrame = self.frame;
+    float deltaX = loc.x - preloc.x;
+    float deltaY = loc.y - preloc.y;
+    myFrame.orgin.x += deltaX;
+    myFrame.orgin.Y += deltaY;
+    [self setFrame:myFrame];
+    
+}
+</code></pre>
+
+<h2 id="toc_2">UIControl</h2>
+
+<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
+
+<ul>
+<li>UIControl：UIView：UIResponder</li>
+<li>Traget-Action</li>
+<li>UIControlEvents
+
+<ul>
+<li>TouchDown</li>
+<li>TouchDownRepeat</li>
+<li>TouchDragInside</li>
+<li>TouchDragOutside</li>
+<li>TouchDragEnter</li>
+<li>TouchUpInside</li>
+<li>TouchUpOutside</li>
+<li>TouchCancel</li>
+<li>ValueChanged</li>
+<li>PrimaryActionTriggered</li>
+<li>EditingDidBegin</li>
+<li>EditingChanged</li>
+<li>EditingDidEnd</li>
+<li>EditingDidEndOnExit</li>
+<li>AllTouchEvents</li>
+<li>AllEditingEvents</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_3">UIGestureRecongnizer</h2>
+
+<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
+<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
+<code>-[UIView addGestureRecognizer:]</code><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
+
+<h3 id="toc_4">离散手势与连续手势</h3>
+
+<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
+
+<h3 id="toc_5">手势识别状态</h3>
+
+<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
+如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
+
+<h3 id="toc_6">同时支持多种手势</h3>
+
+<ul>
+<li><p>用依赖关系改变触发顺序</p>
+
+<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
+b失败之前,a先等待</p></li>
+<li><p>使用UIGestureRecognizerDelegate控制</p>
+
+<ul>
+<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
+<li>-gestureRecognizerShouldBegin:是否可以响应</li>
+<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
+</ul></li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603833170565.html" data-count-type="comments" href="14603833170565.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="iOS学习笔记_11.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			 <a href="iOS学习笔记_13.html">&raquo; Next Page</a> 
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>CobberZhan's Blog</h1>
+                <div class="site-des">展镜博的个人博客</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a class="github" target="_blank" href="https://github.com/swuzjb" title="GitHub">GitHub</a>
+<a class="email" href="mailto:412008196@qq.com" title="Email">Email</a>
+  <a class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html"><strong>Java康复性训练</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>BookList</h2>
+                </div>
+                <div class="side-content">
+
+                <p class="cat-list">
+                
+                    <a href="bookList.html"><strong>待读书单</strong></a>
+                
+                </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+                <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>FRIEND LINKS</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+                  <li class="post">
+                    <a href="https://guxinyan.github.io">顾鑫燕的博客</a>
+                    
+                  </li>
+                  <li class="post">
+                    <a href="http://ranchu.win">CD'S Blog</a>
+                  </li>
+                  <li class="post">
+                    <a href="https://hran.me">Hran's Blog</a>
+                  </li>
+          </ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2016 swuzjb
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+
+
+<script type="text/javascript">
+var duoshuoQuery = {short_name:'zhanjingbo'};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"><div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?0fb9ecff8c9a2c820ce81c18ff77c1e8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+  </body>
+</html>
