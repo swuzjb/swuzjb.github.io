@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Zhan's Blog
+  Java康复性训练——MyBatis3(3) - Zhan's Blog
   
   </title>
   
@@ -90,242 +90,243 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14633841095158.html">
-                
-                  <h1>GeekBand.Swift-面向对象</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>面向对象三大特性：封装、继承、多态</p>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Java康复性训练——MyBatis3(3)</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/7/20</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14689923975384.html" data-count-type="comments" href="14689923975384.html#ds-thread"></a>
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
 </blockquote>
 
-<h2 id="toc_0">封装</h2>
+<h2 id="toc_0">动态SQL</h2>
 
-<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
-通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
 
-<h3 id="toc_1">访问控制符</h3>
+<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
+
+<h3 id="toc_1">IF标签</h3>
+
+<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
+以实现一个用户检索为例：</p>
 
 <ol>
-<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
-<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
-<li>public —— 可以被任何人使用</li>
+<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
+<li><p>在UserMapper.xml中对接口进行实现：</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+    select * from user where 1=1
+    &lt;if test=&quot;username!=null&quot;&gt;
+        and username like #{username}
+    &lt;/if&gt;
+    &lt;if test=&quot;id!=null&quot;&gt;
+        and id=#{id}
+    &lt;/if&gt;
+    &lt;if test=&quot;role!=null&quot;&gt;
+        and roleId=#{role.id}
+    &lt;/if&gt;
+&lt;/select&gt;
+</code></pre></li>
+<li><p>调用查询，传入查询条件的Map即可。</p>
+
+<pre><code class="language-java">public void testSearch(){
+    Role role = new Role();
+    role.setId(1);
+    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
+    map.put(&quot;role&quot;, role);  
+    List&lt;User&gt; userList = userMapper.searchUser(map);
+    for(User user:userList){
+        System.out.println(user);
+    }   
+}
+</code></pre></li>
 </ol>
 
-<h3 id="toc_2">一个例子</h3>
+<h3 id="toc_2">Choose、when和otherwise标签</h3>
 
-<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
+当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
 
-<pre><code class="language-swift">class Circle {
-    private var area: Double = 0;
-    private var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures();
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius;
-        calculateFigures();
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius;
-        diameter = 2 * M_PI * radius;
-    }
-
-    func getArea() -&gt; Double {
-        return self.area;
-    }
-
-    func getDiameter() -&gt; Double {
-        return self.diameter;
-    } 
-}
+<pre><code class="language-xml">&lt;choose&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;otherwise&gt;&lt;/otherwise&gt;
+&lt;/choose&gt;
 </code></pre>
 
-<p>Swift还为我们提供了简便方法。<br/>
-通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
+<h3 id="toc_3">where标签</h3>
 
-<pre><code class="language-swift">class Circle {
-    private(set) var area: Double = 0;
-    private(set) var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures()
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius
-        calculateFigures()
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius
-        diameter = 2 * M_PI * radius
-    }
-}
+<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user 
+        &lt;where&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                and username like #{username}
+            &lt;/if&gt;
+            &lt;if test=&quot;id!=null&quot;&gt;
+                and id=#{id}
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                and roleId=#{role.id}
+            &lt;/if&gt;
+        &lt;/where&gt;
+    &lt;/select&gt;
 </code></pre>
 
-<p>当然也可以为属性设置公有的getter方法：</p>
+<h3 id="toc_4">trim标签</h3>
 
-<pre><code class="language-switf">public private(set) var area: Double = 0
-public private(set) var diameter: Double = 0
+<p>与where语句类似，给语句增加前后缀。</p>
+
+<h3 id="toc_5">Foreach标签</h3>
+
+<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
+
+<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
+#{itemName}
+&lt;/foreach&gt;
 </code></pre>
 
-<h2 id="toc_3">继承</h2>
+<h3 id="toc_6">set标签</h3>
 
-<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
-在Swift中，子类继承父类的属性、方法、下标。</p>
+<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
 
-<h3 id="toc_4">一个例子</h3>
-
-<pre><code class="language-swift">struct Point{
-    var x=0;
-    var y=0;
-}
-class Shape{
-    var no=0;
-    func move() {
-        print(&quot;NO: \(no) Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    var leftUp=Point();
-    var width=0;
-    var height=0;
-    
-}
-class Circle: Shape{
-    var center=Point();
-    var radius=0;
-}
+<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user 
+        &lt;set&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                username=#{username},
+            &lt;/if&gt;
+            &lt;if test=&quot;password!=null&quot;&gt;
+                password=#{password},
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                roleId=#{role.id},
+            &lt;/if&gt;
+        &lt;/set&gt;
+        where id=#{id}
+&lt;/update&gt;
 </code></pre>
 
-<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
-
-<h3 id="toc_5">方法重写</h3>
-
-<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
-
-<pre><code class="language-swift">class Shape{
-    var no=0;
-    //用final关键字修饰，子类无法重写
-    final func show(){
-        print(&quot;Shape.show&quot;);
-    }
-    func move() {
-        print(&quot;Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    //重写父类的no属性
-    override var no: Int {
-        get{
-            print(&quot;Rectangle.no.get()&quot;);
-            return super.no;
-        }
-        set{
-            print(&quot;Rectangle.no.set()&quot;);
-            super.no=newValue;
-        }
-    }
-    override func move() {
-        print(&quot;Rectangle.move&quot;);
-    }
-    
-}
-class Circle: Shape{
-    override func move() {
-        print(&quot;Circle.move&quot;);
-    }
-}
-</code></pre>
-
-<h3 id="toc_6">继承中的初始化器和析构器</h3>
-
-<h4 id="toc_7">初始化器</h4>
+<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
 
 <ul>
-<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
-<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
-<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
-<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
+<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
 </ul>
 
-<h4 id="toc_8">析构器</h4>
+<h3 id="toc_8">传入多个输入参数</h3>
 
 <ul>
-<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
-<li>子类析构器执行完毕后，会自动调用父类析构器</li>
-<li>子类析构器自动具有多态性</li>
+<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
+<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
 </ul>
 
-<h2 id="toc_9">多态</h2>
+<h3 id="toc_9">MyBatis分页</h3>
 
-<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+<ul>
+<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
+<li>物理分页，使用limit子句来实现分页</li>
+</ul>
 
-<pre><code class="language-swift">//如下代码是没有问题的
-var rect:Shape;
-rect = Rectangle();
-//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
-rect.move();
+<h3 id="toc_10">MyBatis缓存</h3>
 
-</code></pre>
+<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
+开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
 
-<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+<h3 id="toc_11">使用注解配置SQL映射器</h3>
 
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
+<h4 id="toc_12">基本映射语句</h4>
 
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
+<ol>
+<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
+<li>@Update：同上；</li>
+<li>@delete：同上；</li>
+<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
+<li><p>@select：当需要返回集合时：</p>
+
+<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
+@Results({
+    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
+    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
+    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
+})
+public User getUserById(Integer id);
+</code></pre></li>
+</ol>
+
+<h4 id="toc_13">关系映射</h4>
+
+<ol>
+<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
+<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
+</ol>
+
+<h4 id="toc_14">动态SQL</h4>
+
+<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14689148951216.html" 
+          title="Next Post: Java康复性训练——MyBatis3(2)">Java康复性训练——MyBatis3(2) &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="14689923975384.html" data-url="http://swuzjb.github.io/14689923975384.html" data-title="Java康复性训练——MyBatis3(3)"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all_7.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_9.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

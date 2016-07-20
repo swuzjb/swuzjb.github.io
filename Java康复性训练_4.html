@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Zhan's Blog
+  Java康复性训练 - Zhan's Blog
   
   </title>
   
@@ -99,190 +99,144 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633841095158.html">
+                <a class="clearlink" href="14676190809439.html">
                 
-                  <h1>GeekBand.Swift-面向对象</h1>
+                  <h1>Java康复性训练——Java基础1</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>面向对象三大特性：封装、继承、多态</p>
-</blockquote>
+                        	<h2 id="toc_0">开发环境搭建</h2>
 
-<h2 id="toc_0">封装</h2>
-
-<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
-通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
-
-<h3 id="toc_1">访问控制符</h3>
+<h3 id="toc_1">JDK的安装与配置</h3>
 
 <ol>
-<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
-<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
-<li>public —— 可以被任何人使用</li>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
+
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
 </ol>
 
-<h3 id="toc_2">一个例子</h3>
+<h3 id="toc_2">开发工具eclipse</h3>
 
-<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+<p>下载地址：<a href="http://eclipse.org"></a></p>
 
-<pre><code class="language-swift">class Circle {
-    private var area: Double = 0;
-    private var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures();
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius;
-        calculateFigures();
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius;
-        diameter = 2 * M_PI * radius;
+<h2 id="toc_3">Hello Java</h2>
+
+<pre><code class="language-java">
+public class Hello {
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
     }
 
-    func getArea() -&gt; Double {
-        return self.area;
-    }
-
-    func getDiameter() -&gt; Double {
-        return self.diameter;
-    } 
 }
-</code></pre>
-
-<p>Swift还为我们提供了简便方法。<br/>
-通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
-
-<pre><code class="language-swift">class Circle {
-    private(set) var area: Double = 0;
-    private(set) var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures()
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius
-        calculateFigures()
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius
-        diameter = 2 * M_PI * radius
-    }
-}
-</code></pre>
-
-<p>当然也可以为属性设置公有的getter方法：</p>
-
-<pre><code class="language-switf">public private(set) var area: Double = 0
-public private(set) var diameter: Double = 0
-</code></pre>
-
-<h2 id="toc_3">继承</h2>
-
-<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
-在Swift中，子类继承父类的属性、方法、下标。</p>
-
-<h3 id="toc_4">一个例子</h3>
-
-<pre><code class="language-swift">struct Point{
-    var x=0;
-    var y=0;
-}
-class Shape{
-    var no=0;
-    func move() {
-        print(&quot;NO: \(no) Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    var leftUp=Point();
-    var width=0;
-    var height=0;
-    
-}
-class Circle: Shape{
-    var center=Point();
-    var radius=0;
-}
-</code></pre>
-
-<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
-
-<h3 id="toc_5">方法重写</h3>
-
-<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
-
-<pre><code class="language-swift">class Shape{
-    var no=0;
-    //用final关键字修饰，子类无法重写
-    final func show(){
-        print(&quot;Shape.show&quot;);
-    }
-    func move() {
-        print(&quot;Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    //重写父类的no属性
-    override var no: Int {
-        get{
-            print(&quot;Rectangle.no.get()&quot;);
-            return super.no;
-        }
-        set{
-            print(&quot;Rectangle.no.set()&quot;);
-            super.no=newValue;
-        }
-    }
-    override func move() {
-        print(&quot;Rectangle.move&quot;);
-    }
-    
-}
-class Circle: Shape{
-    override func move() {
-        print(&quot;Circle.move&quot;);
-    }
-}
-</code></pre>
-
-<h3 id="toc_6">继承中的初始化器和析构器</h3>
-
-<h4 id="toc_7">初始化器</h4>
-
-<ul>
-<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
-<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
-<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
-<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
-</ul>
-
-<h4 id="toc_8">析构器</h4>
-
-<ul>
-<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
-<li>子类析构器执行完毕后，会自动调用父类析构器</li>
-<li>子类析构器自动具有多态性</li>
-</ul>
-
-<h2 id="toc_9">多态</h2>
-
-<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
-
-<pre><code class="language-swift">//如下代码是没有问题的
-var rect:Shape;
-rect = Rectangle();
-//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
-rect.move();
 
 </code></pre>
 
-<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+<h2 id="toc_4">输入</h2>
+
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
 
                         
                       </div>
@@ -291,10 +245,10 @@ rect.move();
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/16</span>
+                    <span class="date">2016/7/4</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -302,7 +256,7 @@ rect.move();
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -315,12 +269,12 @@ rect.move();
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all_7.html">&laquo; Prev Page</a>  
+			   <a href="Java康复性训练_3.html">&laquo; Prev Page</a>  
 			  </p>
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_9.html">&raquo; Next Page</a> 
+			
 			</p>
 			  </div>
 			</div>

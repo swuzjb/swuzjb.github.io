@@ -99,376 +99,185 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14614801701186.html">
+                <a class="clearlink" href="14623728039466.html">
                 
-                  <h1>GeekBand.iOS-多线程编程</h1>
+                  <h1>GeekBand.iOS-数据持久化</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>程序都是按部就班的一步一步执行，可是我们现在却可以在听歌的过程中同时做很多事情。cpu为了提高性能也变成双核、四核、八核等等。这些都是多线程技术的应用。今天我们就来总结一下iOS中的多线程编程。</p>
-
-<h2 id="toc_0">进程与线程</h2>
-
-<ol>
-<li><p>什么是进程？</p>
-
-<p>进程是指在系统中正在运行的一个应用程序。每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805198291.png" alt=""/><br/>
-比如同时打开QQ、Xcode，系统就会分别启动2个进程。通过“活动监视器”可以查看Mac系统中所开启的进程。</p></li>
-<li><p>什么是线程？</p>
-
-<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）<br/>
-线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行<br/>
-比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805962966.png" alt=""/></p></li>
-<li><p>线程的串行</p>
-
-<p>1个线程中任务的执行是串行的。如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务。也就是说，在同一时间内，1个线程只能执行1个任务。比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614806779748.png" alt=""/></p></li>
-</ol>
-
-<h2 id="toc_1">多线程</h2>
-
-<ol>
-<li><p>什么是多线程？</p>
-
-<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务<br/>
-进程 -&gt;车间，线程-&gt;车间工人<br/>
-多线程技术可以提高程序的执行效率<br/>
-比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614808579347.png" alt=""/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614809045254.png" alt=""/></p></li>
-<li><p>多线程的优缺点<br/>
-优点：</p>
-
-<ul>
-<li>能适当提高程序的执行效率</li>
-<li>能适当提高资源利用率</li>
-</ul>
-
-<p>缺点：</p>
-
-<ul>
-<li>启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</li>
-<li>线程越多，CPU在调度线程上的开销就越大</li>
-<li>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</li>
-</ul></li>
-<li><p>多线程在iOS开发中的应用<br/>
-主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”<br/>
-主线程的主要作用：显示\刷新UI界面、处理UI事件（比如点击事件、滚动事件、拖拽事件等）。<br/>
-主线程的使用注意:别将比较耗时的操作放到主线程中。<br/>
-耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验。</p></li>
-</ol>
-
-<h2 id="toc_2">iOS中的多线程开发</h2>
-
-<p>iOS中目前主流的多线程实现方案有三种，分别是：</p>
+                        	<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
 
 <blockquote>
 <ul>
-<li>NSThread</li>
-<li>GCD</li>
-<li>NSOperation &amp; NSOperationQueue</li>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
 </ul>
 </blockquote>
 
-<h3 id="toc_3">NSThread</h3>
+<h2 id="toc_0">文件存储</h2>
 
-<p>这是一套经过苹果封装后的，面向对象的多线程操作方案。利用它可以直接操控线程对象，但是在生命周期管理以及代码复用上并不是很好，所以使用并不是很多。</p>
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
 
-<h4 id="toc_4">创建并启动</h4>
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+
+<ul>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+</ul>
+
+<h3 id="toc_2">APP Bundle</h3>
+
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
 
 <ol>
-<li><p>先创建线程类，再启动</p>
-
-<pre><code>// 创建
-NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:nil];
-// 启动
-[thread start];
-</code></pre></li>
-<li><p>创建并自动启动</p>
-
-<pre><code>[NSThread detachNewThreadSelector:@selector(run:) toTarget:self withObject:nil];
-</code></pre>
-
-<h4 id="toc_5">其他方法</h4>
-
-<p>NSThread虽然不常用，但是很多方法在我们编程的时候还是比较有价值的。</p></li>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
 </ol>
 
-<pre><code>//取消线程
-- (void)cancel;
+<p>纯C语言API</p>
 
-//启动线程
-- (void)start;
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
 
-//判断某个线程的状态的属性
-@property (readonly, getter=isExecuting) BOOL executing;
-@property (readonly, getter=isFinished) BOOL finished;
-@property (readonly, getter=isCancelled) BOOL cancelled;
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
 
-//设置和获取线程名字
--(void)setName:(NSString *)n;
--(NSString *)name;
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
 
-//获取当前线程信息
-+ (NSThread *)currentThread;
 
-//获取主线程信息
-+ (NSThread *)mainThread;
-
-//使当前线程暂停一段时间，或者暂停到某个时刻
-+ (void)sleepForTimeInterval:(NSTimeInterval)time;
-+ (void)sleepUntilDate:(NSDate *)date;
-</code></pre>
-
-<h3 id="toc_6">GCD</h3>
-
-<p>GCD(Grand Central Dispatch)，名字霸气。他是苹果为多核的并行运算提出的解决方案，所以会自动合理地利用更多的CPU内核（比如双核、四核），最重要的是它会自动管理线程的生命周期（创建线程、调度任务、销毁线程），完全不需要我们管理，我们只需要告诉干什么就行。同时它使用的也是c语言API，不过由于使用了Block，使得使用起来更加方便，而且灵活。所以基本上大家都使用 GCD 这套方案。</p>
-
-<h4 id="toc_7">任务和队列</h4>
-
-<p>在GCD中，加入了两个非常重要的概念：任务和队列。</p>
-
-<ul>
-<li><p>任务:即操作，你想要干什么，说白了就是一段代码，在GCD中就是一个Block，所以添加任务十分方便。任务有两种执行方式：同步执行和异步执行。</p>
-
-<ul>
-<li>同步（sync）执行：它会阻塞当前线程并等待Block中的代码执行完毕，然后当前线程才会继续往下运行。不具备开启新线程的能力。</li>
-<li>异步（async）执行：当前线程会直接往下执行，并不会阻塞当前线程。具备开启新线程的能力。</li>
-</ul></li>
-<li><p>队列：用于存放任务。在GCD中有两种队列：串行队列和并行队列。</p>
-
-<ul>
-<li>串行队列：队列中的任务会根据队列的先进先出的顺序执行，一个接一个的执行。</li>
-<li>并行队列：放到并行队列的任务，GCD 也会FIFO（先进先出）的取出来，但不同的是，它取出来一个就会放到别的线程，然后再取出来一个又放到另一个的线程。这样由于取的动作很快，忽略不计，看起来，所有的任务都是一起执行的。不过需要注意，GCD 会根据系统资源控制并行的数量，所以如果任务很多，它并不会让所有任务同时执行。</li>
-</ul></li>
-</ul>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14615060017180.jpg" alt=""/></p>
-
-<h4 id="toc_8">队列的创建</h4>
-
-<ul>
-<li><p><strong>主队列</strong>：这是一个特殊的<em>串行队列</em>。主队列，就是APP的主线程，放在这个队列中的任务会在主线程中运行。主要用于刷新UI，所以一般耗时的任务都应该放在别的线程中执行，防止主线程阻塞。</p>
-
-<pre><code>dispatch_queue_t queue = dispatch_get_main_queue();
-
-</code></pre></li>
-<li><p><strong>自建队列</strong>：自己创建的队列可以是串行队列，也可以是并行队列。创建的方法为<code>dispatch_queue_create</code>。这个方法有两个参数，第一个参数是标识符，用于DEBUG的时候表示唯一的队列，可以为空，一般命名方式为域名的反写。第二个参数声明创建的队列的参数的类型。</p>
-
-<pre><code>//串行队列
-dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, NULL);
-dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_SERIAL);
-//并行队列
-dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_CONCURRENT);
-</code></pre></li>
-<li><p><strong>全局并行队列</strong>：一个全局的并行队列，系统提供。一般并行任务都加入这个队列中。</p>
-
-<pre><code>dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-</code></pre>
-
-<h4 id="toc_9">创建任务</h4></li>
-<li><p>同步任务</p>
-
-<pre><code>dispatch_sync(&lt;#queue#&gt;, ^{
-  //code here
-  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
-});
-</code></pre></li>
-<li><p>异步任务</p>
-
-<pre><code>dispatch_async(&lt;#queue#&gt;, ^{
-  //code here
-  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
-});
-</code></pre>
-
-<h4 id="toc_10">队列组</h4>
-
-<p>队列组可以将很多队列添加到一个组里，这样做的好处是，当这个组里所有的任务都执行完了，队列组会通过一个方法通知我们。下面是使用方法，这是一个很实用的功能。</p>
-
-<pre><code>//1.创建队列组
-dispatch_group_t group = dispatch_group_create();
-//2.创建队列
-dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-
-//3.多次使用队列组的方法执行任务, 只有异步方法
-//3.1.执行3次循环
-dispatch_group_async(group, queue, ^{
-    for (NSInteger i = 0; i &lt; 3; i++) {
-        NSLog(@&quot;group-01 - %@&quot;, [NSThread currentThread]);
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
     }
-});
+}
+sqlite3_finalize(stmt);
 
-//3.2.主队列执行8次循环
-dispatch_group_async(group, dispatch_get_main_queue(), ^{
-    for (NSInteger i = 0; i &lt; 8; i++) {
-        NSLog(@&quot;group-02 - %@&quot;, [NSThread currentThread]);
-    }
-});
-
-//3.3.执行5次循环
-dispatch_group_async(group, queue, ^{
-    for (NSInteger i = 0; i &lt; 5; i++) {
-        NSLog(@&quot;group-03 - %@&quot;, [NSThread currentThread]);
-    }
-});
-
-//4.都完成后会自动通知
-dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-    NSLog(@&quot;完成 - %@&quot;, [NSThread currentThread]);
-});
-</code></pre></li>
-</ul>
-
-<h3 id="toc_11">NSOperation和NSOperationQueue</h3>
-
-<p><code>NSOperation</code>是苹果公司对<code>GCD</code>的封装，完全面向对象，所以使用起来更好理解。 大家可以看到<code>NSOperation</code>和<code>NSOperationQueue</code> 分别对应 <code>GCD</code>的任务和队列。操作步骤也很好理解：</p>
-
-<pre><code>1. 将要执行的任务封装为一个NSOperation对象
-2. 将这个任务添加到一个NSOperationQueue对象中。
+//关闭SQLite
+sqlite3_close(db);
 </code></pre>
 
-<h3 id="toc_12">添加任务</h3>
+<h3 id="toc_7">FMDB</h3>
 
-<p>值得说明的是，<code>NSOperation</code> 只是一个抽象类，所以不能封装任务。但它有 2个子类用于封装任务。分别是：<code>NSInvocationOperation</code> 和 <code>NSBlockOperation</code> 。创建一个 Operation 后，需要调用 start 方法来启动任务，它会默认在当前队列同步执行。当然你也可以在中途取消一个任务，只需要调用其cancel方法即可。</p>
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
 
-<ul>
-<li>NSInvocationOperation</li>
-</ul>
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
 
-<pre><code>//1.创建NSInvocationOperation对象
-NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(run) object:nil];
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
 
-//2.开始执行
-[operation start];
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
 </code></pre>
 
-<ul>
-<li>NSBlockOperation</li>
-</ul>
+<h2 id="toc_8">CoreData简介</h2>
 
-<pre><code>    //1.创建NSBlockOperation对象
-  NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-      NSLog(@&quot;%@&quot;, [NSThread currentThread]);
-  }];
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
 
-  //2.开始任务
-  [operation start];
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
+
+<ol>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+</ol>
+
+<h4 id="toc_11">简单使用</h4>
+
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
+
+//保存
+NSError* error = nil;
+[context save:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
+}
+
+//删除
+[context deleteObject:managedObject];
+
 </code></pre>
 
-<p>之前说过这样的任务，默认会在当前线程执行。但是 NSBlockOperation 还有一个方法：<code>addExecutionBlock:</code>，通过这个方法可以给 Operation 添加多个执行 Block。这样 Operation 中的任务会并发执行，它会在主线程和其它的多个线程执行这些任务。</p>
+<h4 id="toc_12">参考资料</h4>
 
-<ul>
-<li>自定义Operation
-除了上面的两种 Operation 以外，我们还可以自定义 Operation。自定义 Operation 需要继承 NSOperation 类，并实现其 main() 方法，因为在调用 start() 方法的时候，内部会调用 main() 方法完成相关逻辑。所以如果以上的两个类无法满足你的欲望的时候，你就需要自定义了。你想要实现什么功能都可以写在里面。除此之外，你还需要实现 cancel() 在内的各种方法。所以这个功能提供给高级玩家，我在这里就不说了，等我需要用到时在研究它，到时候可能会再做更新。</li>
-</ul>
-
-<h4 id="toc_13">创建队列</h4>
-
-<p>看过上面的内容就知道，我们可以调用一个 NSOperation 对象的 start() 方法来启动这个任务，但是这样做他们默认是同步执行的。就算是 <code>addExecutionBlock</code>方法，也会在 当前线程和其他线程中执行，也就是说还是会占用当前线程。这是就要用到队列 NSOperationQueue 了。而且，按类型来说的话一共有两种类型：主队列、其他队列。只要添加到队列，会自动调用任务的 start() 方法。</p>
-
-<ul>
-<li>主队列</li>
-</ul>
-
-<p>细心的同学就会发现，每套多线程方案都会有一个主线程（当然啦，说的是iOS中，像 pthread 这种多系统的方案并没有，因为 UI线程 理论需要每种操作系统自己定制）。这是一个特殊的线程，必须串行。所以添加到主队列的任务都会一个接一个地排着队在主线程处理。</p>
-
-<p><code>NSOperationQueue *queue = [NSOperationQueue mainQueue];</code></p>
-
-<ul>
-<li>其它队列</li>
-</ul>
-
-<p>因为主队列比较特殊，所以会单独有一个类方法来获得主队列。那么通过初始化产生的队列就是其他队列了，因为只有这两种队列，除了主队列，其他队列就不需要名字了。</p>
-
-<pre><code>    //1.创建一个其他队列    
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    
-    //2.创建NSBlockOperation对象
-    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-        NSLog(@&quot;%@&quot;, [NSThread currentThread]);
-    }];
-    
-    //3.添加多个Block
-    for (NSInteger i = 0; i &lt; 5; i++) {
-        [operation addExecutionBlock:^{
-            NSLog(@&quot;第%ld次：%@&quot;, i, [NSThread currentThread]);
-        }];
-    }
-    
-    //4.队列添加任务
-    [queue addOperation:operation];
-</code></pre>
-
-<p>OK, 这时应该发问了，大家将 NSOperationQueue 与 GCD的队列 相比较就会发现，这里没有串行队列，那如果我想要10个任务在其他线程串行的执行怎么办？</p>
-
-<p>这就是苹果封装的妙处，你不用管串行、并行、同步、异步这些名词。NSOperationQueue 有一个参数 maxConcurrentOperationCount 最大并发数，用来设置最多可以让多少个任务同时执行。当你把它设置为 1 的时候，他不就是串行了嘛！</p>
-
-<p>NSOperationQueue 还有一个添加任务的方法，- (void)addOperationWithBlock:(void (<sup>)(void))block;</sup> ，这是不是和 GCD 差不多？这样就可以添加一个任务到队列中了，十分方便。<br/>
-NSOperation 有一个非常实用的功能，那就是添加依赖。比如有 3 个任务：A: 从服务器上下载一张图片，B：给这张图片加个水印，C：把图片返回给服务器。这时就可以用到依赖了:</p>
-
-<pre><code>//1.任务一：下载图片
-NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^{
-    NSLog(@&quot;下载图片 - %@&quot;, [NSThread currentThread]);
-    [NSThread sleepForTimeInterval:1.0];
-}];
-
-//2.任务二：打水印
-NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
-    NSLog(@&quot;打水印   - %@&quot;, [NSThread currentThread]);
-    [NSThread sleepForTimeInterval:1.0];
-}];
-
-//3.任务三：上传图片
-NSBlockOperation *operation3 = [NSBlockOperation blockOperationWithBlock:^{
-    NSLog(@&quot;上传图片 - %@&quot;, [NSThread currentThread]);
-    [NSThread sleepForTimeInterval:1.0];
-}];
-
-//4.设置依赖
-[operation2 addDependency:operation1];      //任务二依赖任务一
-[operation3 addDependency:operation2];      //任务三依赖任务二
-
-//5.创建队列并加入任务
-NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-[queue addOperations:@[operation3, operation2, operation1] waitUntilFinished:NO];
-</code></pre>
-
-<h4 id="toc_14">其它方法</h4>
-
-<ul>
-<li><p>NSOperation</p>
-
-<pre><code>BOOL executing; //判断任务是否正在执行
-
-BOOL finished; //判断任务是否完成
-
-void (^completionBlock)(void); //用来设置完成后需要执行的操作
-
-- (void)cancel; //取消任务
-
-- (void)waitUntilFinished; //阻塞当前线程直到此任务执行完毕
-</code></pre></li>
-<li><p>NSOperationQueue</p>
-
-<pre><code>NSUInteger operationCount; //获取队列的任务数
-
--(void)cancelAllOperations; //取消队列中所有的任务
-
--(void)waitUntilAllOperationsAreFinished; //阻塞当前线程直到此队列中的所有任务执行完毕
-
-[queue setSuspended:YES]; // 暂停queue
-
-[queue setSuspended:NO]; // 继续queue
-</code></pre></li>
-</ul>
-
-<h2 id="toc_15">更多内容</h2>
-
-<p>参考<a href="http://www.jianshu.com/p/0b0d9b1f1f19">关于iOS多线程，你看我就够了</a></p>
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
 
                         
                       </div>
@@ -477,7 +286,7 @@ void (^completionBlock)(void); //用来设置完成后需要执行的操作
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/24</span>
+                    <span class="date">2016/5/4</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -488,7 +297,7 @@ void (^completionBlock)(void); //用来设置完成后需要执行的操作
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14614801701186.html" data-count-type="comments" href="14614801701186.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -579,6 +388,12 @@ void (^completionBlock)(void); //用来设置完成后需要执行的操作
 	      
 		      
 			      <li class="post">
+			        <a href="14689923975384.html">Java康复性训练——MyBatis3(3)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
 			      </li>
 		     
@@ -598,12 +413,6 @@ void (^completionBlock)(void); //用来设置完成后需要执行的操作
 		      
 			      <li class="post">
 			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14640741638557.html">GeekBand.Swift-Homework13</a>
 			      </li>
 		     
 		  

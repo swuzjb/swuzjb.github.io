@@ -4,13 +4,195 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-07-19T22:07:06+08:00</updated>
+  <updated>2016-07-20T13:20:06+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java康复性训练——MyBatis3(3)]]></title>
+    <link href="http://swuzjb.github.io/14689923975384.html"/>
+    <updated>2016-07-20T13:26:37+08:00</updated>
+    <id>http://swuzjb.github.io/14689923975384.html</id>
+    <content type="html"><![CDATA[
+<p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+</blockquote>
+
+<h2 id="toc_0">动态SQL</h2>
+
+<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
+
+<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
+
+<h3 id="toc_1">IF标签</h3>
+
+<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
+以实现一个用户检索为例：</p>
+
+<ol>
+<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
+<li><p>在UserMapper.xml中对接口进行实现：</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+    select * from user where 1=1
+    &lt;if test=&quot;username!=null&quot;&gt;
+        and username like #{username}
+    &lt;/if&gt;
+    &lt;if test=&quot;id!=null&quot;&gt;
+        and id=#{id}
+    &lt;/if&gt;
+    &lt;if test=&quot;role!=null&quot;&gt;
+        and roleId=#{role.id}
+    &lt;/if&gt;
+&lt;/select&gt;
+</code></pre></li>
+<li><p>调用查询，传入查询条件的Map即可。</p>
+
+<pre><code class="language-java">public void testSearch(){
+    Role role = new Role();
+    role.setId(1);
+    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
+    map.put(&quot;role&quot;, role);  
+    List&lt;User&gt; userList = userMapper.searchUser(map);
+    for(User user:userList){
+        System.out.println(user);
+    }   
+}
+</code></pre></li>
+</ol>
+
+<h3 id="toc_2">Choose、when和otherwise标签</h3>
+
+<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
+当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
+
+<pre><code class="language-xml">&lt;choose&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;otherwise&gt;&lt;/otherwise&gt;
+&lt;/choose&gt;
+</code></pre>
+
+<h3 id="toc_3">where标签</h3>
+
+<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user 
+        &lt;where&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                and username like #{username}
+            &lt;/if&gt;
+            &lt;if test=&quot;id!=null&quot;&gt;
+                and id=#{id}
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                and roleId=#{role.id}
+            &lt;/if&gt;
+        &lt;/where&gt;
+    &lt;/select&gt;
+</code></pre>
+
+<h3 id="toc_4">trim标签</h3>
+
+<p>与where语句类似，给语句增加前后缀。</p>
+
+<h3 id="toc_5">Foreach标签</h3>
+
+<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
+
+<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
+#{itemName}
+&lt;/foreach&gt;
+</code></pre>
+
+<h3 id="toc_6">set标签</h3>
+
+<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
+
+<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user 
+        &lt;set&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                username=#{username},
+            &lt;/if&gt;
+            &lt;if test=&quot;password!=null&quot;&gt;
+                password=#{password},
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                roleId=#{role.id},
+            &lt;/if&gt;
+        &lt;/set&gt;
+        where id=#{id}
+&lt;/update&gt;
+</code></pre>
+
+<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
+
+<ul>
+<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
+<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
+</ul>
+
+<h3 id="toc_8">传入多个输入参数</h3>
+
+<ul>
+<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
+<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
+</ul>
+
+<h3 id="toc_9">MyBatis分页</h3>
+
+<ul>
+<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
+<li>物理分页，使用limit子句来实现分页</li>
+</ul>
+
+<h3 id="toc_10">MyBatis缓存</h3>
+
+<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
+开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
+
+<h3 id="toc_11">使用注解配置SQL映射器</h3>
+
+<h4 id="toc_12">基本映射语句</h4>
+
+<ol>
+<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
+<li>@Update：同上；</li>
+<li>@delete：同上；</li>
+<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
+<li><p>@select：当需要返回集合时：</p>
+
+<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
+@Results({
+    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
+    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
+    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
+})
+public User getUserById(Integer id);
+</code></pre></li>
+</ol>
+
+<h4 id="toc_13">关系映射</h4>
+
+<ol>
+<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
+<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
+</ol>
+
+<h4 id="toc_14">动态SQL</h4>
+
+<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java康复性训练——MyBatis3(2)]]></title>
@@ -3491,101 +3673,6 @@ UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- U
 <h3 id="toc_6">多点触摸</h3>
 
 <p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-View的层次结构与属性]]></title>
-    <link href="http://swuzjb.github.io/14603730042058.html"/>
-    <updated>2016-04-11T19:10:04+08:00</updated>
-    <id>http://swuzjb.github.io/14603730042058.html</id>
-    <content type="html"><![CDATA[
-<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
-
-<h2 id="toc_0">什么是UIView</h2>
-
-<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
-
-<h2 id="toc_1">屏幕对象UIScreen</h2>
-
-<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
-
-<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
-</code></pre>
-
-<h3 id="toc_2">iOS8+</h3>
-
-<pre><code>//可变坐标系
-.coordinateSpace
-//固定坐标系
-.fixedCoordinateSpace
-</code></pre>
-
-<h3 id="toc_3">截图</h3>
-
-<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
-
-<h2 id="toc_4">UIWindow</h2>
-
-<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
-
-<h2 id="toc_5">UIView</h2>
-
-<h3 id="toc_6">UIView的树状层次</h3>
-
-<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
-
-<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
-
-<ul>
-<li><p>增加(Create)</p>
-
-<pre><code>-(void)addSubView:(UIView *)view
--(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
--(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
--(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
-</code></pre></li>
-<li><p>删除(delete)</p>
-
-<pre><code>//子View调用
--(void)removeFromSuperview
-</code></pre></li>
-<li><p>修改(update)</p>
-
-<pre><code>-(void)bringSubViewToFront:(UIView *)view
--(void)sendSubviewToBack:(UIView *)view
--(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
-</code></pre></li>
-<li><p>查找(Read)</p>
-
-<pre><code>view.window;
-view.superview;
-view.subviews;
-
--(BOOL)isDescendantOfView:(UIView *)view
-</code></pre></li>
-</ul>
-
-<h3 id="toc_8">UIView的重要属性</h3>
-
-<ul>
-<li>定位
-
-<ul>
-<li>frame/bounds/center/transform</li>
-<li>resizeToFit</li>
-</ul></li>
-<li>视觉
-
-<ul>
-<li>backgroundColor</li>
-<li>alpha vs. opaque</li>
-<li>maskView(iOS8+)</li>
-</ul></li>
-<li>访问
-.tag =&gt; -viewWithTag</li>
-</ul>
 
 ]]></content>
   </entry>
