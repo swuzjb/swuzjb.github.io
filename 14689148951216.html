@@ -123,6 +123,10 @@
       <div class="article-content">
       <p>接上篇，继续对Mybatis的使用进行介绍。</p>
 
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+</blockquote>
+
 <h2 id="toc_0">Mapper的XML配置</h2>
 
 <p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
@@ -292,6 +296,38 @@ public interface RoleMapper {
 &lt;/mapper&gt;
 </code></pre></li>
 </ol>
+
+<h3 id="toc_7">一对多关系</h3>
+
+<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
+为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
+
+<ol>
+<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
+<li>在UserMapper.xml中完善这个方法的SQL语句</li>
+<li>在Role中增加UserList属性，并添加getter和setter方法</li>
+<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
+
+<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
+    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
+&lt;/resultMap&gt;
+&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
+    select * from role where id=#{id}
+&lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_8">多对多关系</h3>
+
+<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
 
       </div>
 
