@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-触摸手势 - Zhan's Blog
+  Java康复性训练——Spring（1） - Zhan's Blog
   
   </title>
   
@@ -99,21 +99,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-触摸手势</h1>
+          <h1>Java康复性训练——Spring（1）</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/11</span>
+          <span class="date">2016/7/21</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14603833170565.html" data-count-type="comments" href="14603833170565.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
             
           </span>
 
@@ -121,121 +121,137 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">什么是手势</h2>
+      <blockquote>
+<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
+</blockquote>
 
-<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
+<h2 id="toc_0">Spring IOC</h2>
 
-<ul>
-<li>Tap 轻拍</li>
-<li>Swipe  单轴滑动</li>
-<li>Double tap  连续两次轻拍</li>
-<li>Long press  长按</li>
-<li>Pinch   捏合手指</li>
-<li>Two finger tap 双指轻拍 </li>
-<li>Rotate 旋转</li>
-</ul>
+<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
+Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
 
-<h2 id="toc_1">实现的原理</h2>
+<h3 id="toc_1">依赖注入</h3>
 
 <ol>
-<li>收集一些列的UITouch</li>
-<li>分析是否符合所需要的规律
+<li><p>装配一个Bean</p>
 
-<ul>
-<li>符合：触发手势响应</li>
-<li>否则：转为普通触摸事件响应</li>
-</ul></li>
+<ol>
+<li><p>在Spring的bean.xml文件中填写如下配置：</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
+</code></pre></li>
+<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
+
+<pre><code class="language-java">public static void main(String[] args) {
+
+    //加载Spring-bean配置信息
+    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+
+    //获取id为user1的bean的实例
+    User user1 = (User)ac.getBean(&quot;user1&quot;);
+    System.out.println(user1);
+}
+</code></pre></li>
+</ol></li>
+<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;!-- 通过索引来设置参数值 --&gt;
+    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过类型来设置参数值 --&gt;
+    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过参数名来设置参数值 --&gt;
+    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
+
+<ol>
+<li><p>静态工厂方法，在beans.xml中调用。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
 </ol>
 
-<p>Some Example</p>
+<h3 id="toc_2">注入参数</h3>
 
-<pre><code>//Double Tap
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    for(UITouch *aTouch in touches){
-        if(aTouch.tapCount &gt;= 2){
-            [self respondToDoubleTapFesture:aTouch];
-        }
-    }
-}
+<ol>
+<li>基本类型值：参考上一节属性注入。</li>
+<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
+<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
+<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
+<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
+<li><p>集合类型属性，可以用下列配置来实现。</p>
 
-//Drag
--(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    UITouch *aTouch = [touches anyObject];
-    CGPoint loc = [aTouch locationInView:self];
-    CGPpoint preloc= [aTouch previouslocationInView:self];
-    
-    CGRect myFrame = self.frame;
-    float deltaX = loc.x - preloc.x;
-    float deltaY = loc.y - preloc.y;
-    myFrame.orgin.x += deltaX;
-    myFrame.orgin.Y += deltaY;
-    [self setFrame:myFrame];
-    
-}
-</code></pre>
+<pre><code class="language-xml">&lt;!-- list--&gt;
+&lt;property name=&quot;list&quot;&gt;
+    &lt;list&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/list&gt;
+&lt;/property&gt;
+&lt;!--set--&gt;
+&lt;property name=&quot;set&quot;&gt;
+    &lt;set&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/set&gt;
+&lt;/property&gt;
+&lt;!--map--&gt;
+&lt;property name=&quot;map&quot;&gt;
+    &lt;map&gt;
+        &lt;entry&gt;
+            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
+            &lt;value&gt;value&lt;/value&gt;
+        &lt;/entry&gt;
+    &lt;/map&gt;
+&lt;/property&gt;
+</code></pre></li>
+</ol>
 
-<h2 id="toc_2">UIControl</h2>
+<h3 id="toc_3">自动装配</h3>
 
-<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
+<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
+- byName:通过名称进行自动匹配<br/>
+- byType:根据类型进行自动匹配<br/>
+- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
+<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
 
-<ul>
-<li>UIControl：UIView：UIResponder</li>
-<li>Traget-Action</li>
-<li>UIControlEvents
+<h3 id="toc_4">方法注入</h3>
 
-<ul>
-<li>TouchDown</li>
-<li>TouchDownRepeat</li>
-<li>TouchDragInside</li>
-<li>TouchDragOutside</li>
-<li>TouchDragEnter</li>
-<li>TouchUpInside</li>
-<li>TouchUpOutside</li>
-<li>TouchCancel</li>
-<li>ValueChanged</li>
-<li>PrimaryActionTriggered</li>
-<li>EditingDidBegin</li>
-<li>EditingChanged</li>
-<li>EditingDidEnd</li>
-<li>EditingDidEndOnExit</li>
-<li>AllTouchEvents</li>
-<li>AllEditingEvents</li>
-</ul></li>
-</ul>
+<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
+在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
 
-<h2 id="toc_3">UIGestureRecongnizer</h2>
+<h3 id="toc_5">bean之间关系</h3>
 
-<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
-<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
-<code>-[UIView addGestureRecognizer:]</code><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
+<ol>
+<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
+<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
+<li>引用：见上部</li>
+</ol>
 
-<h3 id="toc_4">离散手势与连续手势</h3>
+<h3 id="toc_6">bean的作用范围</h3>
 
-<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
-
-<h3 id="toc_5">手势识别状态</h3>
-
-<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
-如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
-
-<h3 id="toc_6">同时支持多种手势</h3>
-
-<ul>
-<li><p>用依赖关系改变触发顺序</p>
-
-<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
-b失败之前,a先等待</p></li>
-<li><p>使用UIGestureRecognizerDelegate控制</p>
-
-<ul>
-<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
-<li>-gestureRecognizerShouldBegin:是否可以响应</li>
-<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
-</ul></li>
-</ul>
+<ol>
+<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
+<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
+<li>request:每次Http请求时都会创建一个新的实例</li>
+<li>session:同一个Http Session共享一个Bean</li>
+<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
+<li>application:同一个Application共享一个bean</li>
+</ol>
 
       </div>
 
@@ -243,16 +259,13 @@ b失败之前,a先等待</p></li>
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14604722520928.html" 
-          title="Previous Post: GeekBand.iOS-UIScrollView的使用">&laquo; GeekBand.iOS-UIScrollView的使用</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14603791205821.html" 
-          title="Next Post: GeekBand.iOS-事件处理">GeekBand.iOS-事件处理 &raquo;</a>
+          <a  href="14689923975384.html" 
+          title="Next Post: Java康复性训练——MyBatis3(3)">Java康复性训练——MyBatis3(3) &raquo;</a>
       
       </p>
         </div>
@@ -264,7 +277,7 @@ b失败之前,a先等待</p></li>
           
 
           
-              <div class="ds-thread" data-thread-key="14603833170565.html" data-url="http://swuzjb.github.io/14603833170565.html" data-title="GeekBand.iOS-触摸手势"></div>
+              <div class="ds-thread" data-thread-key="14690817459253.html" data-url="http://swuzjb.github.io/14690817459253.html" data-title="Java康复性训练——Spring（1）"></div>
           
         </div>
       </div>

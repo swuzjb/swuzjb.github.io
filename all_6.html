@@ -99,107 +99,175 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14635750426080.html">
+                <a class="clearlink" href="14640741638557.html">
                 
-                  <h1>GeekBand.Swift-集合类型</h1>
+                  <h1>GeekBand.Swift-Homework13</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">数组(Array)</h2>
+                        	<h2 id="toc_0">题目</h2>
 
-<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
-索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
-在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+<p>请说出下面代码存在的问题，以及改进方式。</p>
 
-<h3 id="toc_1">内存模型</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
-
-<h3 id="toc_2">使用数组</h3>
-
-<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
-
-<pre><code class="language-swift">//数组声明与实例化
-var array1=[1,2,3,4,5];
-var array2:[Int];
-var array3:Array&lt;Int&gt;;
-array2=[Int](count:10, repeatedValue:10);
-array3=[Int]();
-
-//变量数组和常量数组
-var array5=[1,2,3]
-let array6=[1,2,3]
-</code></pre>
-
-<h4 id="toc_3">数组遍历</h4>
-
-<ul>
-<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
-<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
-</ul>
-
-<pre><code class="language-swift">for item in array5{
-    print(item);
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
 }
-
-for(index, value) in array5.enumerate(){
-    print(&quot;\(index): \(value)&quot;);
-}
-
-for index in 0..&lt;array5.count {
-    print(array5[index]);
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
 }
 </code></pre>
 
-<h4 id="toc_4">缓存容量与增长</h4>
+<h2 id="toc_1">回答</h2>
 
-<ul>
-<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
-<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+<h3 id="toc_2">问题分析</h3>
 
-<ul>
-<li>分配新的堆内存 2*capacity</li>
-<li>将原来堆内存上的元素拷贝到新内存</li>
-<li>释放原来的内存</li>
-</ul></li>
-<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
-</ul>
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
 
-<h4 id="toc_5">copy-on-write共享技术</h4>
-
-<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
-但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
-copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
-更改前：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
-更改后：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
-
-<h2 id="toc_6">集合类型(Set)</h2>
-
-<p>Set是一个无序集合，其存储的值不能重复。<br/>
-Set中的值必须有哈希值，即支持Hashable协议。<br/>
-Set被定义为Struct，值类型，与Array类似。</p>
-
-<pre><code class="language-swift">var set = Set&lt;String&gt;();
-var set2:Set&lt;String&gt;;
-set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
 </code></pre>
 
-<h2 id="toc_7">字典类型(Dictionary)</h2>
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
 
-<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
-Dictionary中的Key必须支持Hashable协议。<br/>
-Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
 
-<pre><code class="language-swift">var dictionary1 = [String:Int]()；
-var dictionary2 : Dictionary&lt;String,Int&gt;；
-dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
 
-for(name, age) in dictionary2{
-    print(&quot;The Age of \(name) is: \(age)&quot;)
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
 }
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
 </code></pre>
 
                         
@@ -209,7 +277,7 @@ for(name, age) in dictionary2{
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/18</span>
+                    <span class="date">2016/5/24</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -220,7 +288,7 @@ for(name, age) in dictionary2{
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -311,6 +379,12 @@ for(name, age) in dictionary2{
 	      
 		      
 			      <li class="post">
+			        <a href="14690817459253.html">Java康复性训练——Spring（1）</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14689923975384.html">Java康复性训练——MyBatis3(3)</a>
 			      </li>
 		     
@@ -330,12 +404,6 @@ for(name, age) in dictionary2{
 		      
 			      <li class="post">
 			        <a href="14686724239639.html">Java康复性训练-JDBC</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14676190809439.html">Java康复性训练——Java基础1</a>
 			      </li>
 		     
 		  
