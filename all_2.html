@@ -99,185 +99,144 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14689923975384.html">
+                <a class="clearlink" href="14690817459253.html">
                 
-                  <h1>Java康复性训练——MyBatis3(3)</h1>
+                  <h1>Java康复性训练——Spring（1）</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+                        	<blockquote>
+<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
 </blockquote>
 
-<h2 id="toc_0">动态SQL</h2>
+<h2 id="toc_0">Spring IOC</h2>
 
-<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
+<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
+Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
 
-<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
-
-<h3 id="toc_1">IF标签</h3>
-
-<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
-以实现一个用户检索为例：</p>
+<h3 id="toc_1">依赖注入</h3>
 
 <ol>
-<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
-<li><p>在UserMapper.xml中对接口进行实现：</p>
+<li><p>装配一个Bean</p>
 
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-    select * from user where 1=1
-    &lt;if test=&quot;username!=null&quot;&gt;
-        and username like #{username}
-    &lt;/if&gt;
-    &lt;if test=&quot;id!=null&quot;&gt;
-        and id=#{id}
-    &lt;/if&gt;
-    &lt;if test=&quot;role!=null&quot;&gt;
-        and roleId=#{role.id}
-    &lt;/if&gt;
-&lt;/select&gt;
+<ol>
+<li><p>在Spring的bean.xml文件中填写如下配置：</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
 </code></pre></li>
-<li><p>调用查询，传入查询条件的Map即可。</p>
+<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
 
-<pre><code class="language-java">public void testSearch(){
-    Role role = new Role();
-    role.setId(1);
-    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
-    map.put(&quot;role&quot;, role);  
-    List&lt;User&gt; userList = userMapper.searchUser(map);
-    for(User user:userList){
-        System.out.println(user);
-    }   
+<pre><code class="language-java">public static void main(String[] args) {
+
+    //加载Spring-bean配置信息
+    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+
+    //获取id为user1的bean的实例
+    User user1 = (User)ac.getBean(&quot;user1&quot;);
+    System.out.println(user1);
 }
 </code></pre></li>
-</ol>
+</ol></li>
+<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
 
-<h3 id="toc_2">Choose、when和otherwise标签</h3>
+<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
 
-<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
-当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
-
-<pre><code class="language-xml">&lt;choose&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;otherwise&gt;&lt;/otherwise&gt;
-&lt;/choose&gt;
-</code></pre>
-
-<h3 id="toc_3">where标签</h3>
-
-<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user 
-        &lt;where&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                and username like #{username}
-            &lt;/if&gt;
-            &lt;if test=&quot;id!=null&quot;&gt;
-                and id=#{id}
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                and roleId=#{role.id}
-            &lt;/if&gt;
-        &lt;/where&gt;
-    &lt;/select&gt;
-</code></pre>
-
-<h3 id="toc_4">trim标签</h3>
-
-<p>与where语句类似，给语句增加前后缀。</p>
-
-<h3 id="toc_5">Foreach标签</h3>
-
-<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
-
-<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
-#{itemName}
-&lt;/foreach&gt;
-</code></pre>
-
-<h3 id="toc_6">set标签</h3>
-
-<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
-
-<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user 
-        &lt;set&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                username=#{username},
-            &lt;/if&gt;
-            &lt;if test=&quot;password!=null&quot;&gt;
-                password=#{password},
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                roleId=#{role.id},
-            &lt;/if&gt;
-        &lt;/set&gt;
-        where id=#{id}
-&lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
-
-<ul>
-<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
-<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
-</ul>
-
-<h3 id="toc_8">传入多个输入参数</h3>
-
-<ul>
-<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
-<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
-</ul>
-
-<h3 id="toc_9">MyBatis分页</h3>
-
-<ul>
-<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
-<li>物理分页，使用limit子句来实现分页</li>
-</ul>
-
-<h3 id="toc_10">MyBatis缓存</h3>
-
-<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
-开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
-
-<h3 id="toc_11">使用注解配置SQL映射器</h3>
-
-<h4 id="toc_12">基本映射语句</h4>
+<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;!-- 通过索引来设置参数值 --&gt;
+    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过类型来设置参数值 --&gt;
+    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过参数名来设置参数值 --&gt;
+    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
 
 <ol>
-<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
-<li>@Update：同上；</li>
-<li>@delete：同上；</li>
-<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
-<li><p>@select：当需要返回集合时：</p>
+<li><p>静态工厂方法，在beans.xml中调用。</p>
 
-<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
-@Results({
-    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
-    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
-    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
-})
-public User getUserById(Integer id);
+<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h3 id="toc_2">注入参数</h3>
+
+<ol>
+<li>基本类型值：参考上一节属性注入。</li>
+<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
+<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
+<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
+<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
+<li><p>集合类型属性，可以用下列配置来实现。</p>
+
+<pre><code class="language-xml">&lt;!-- list--&gt;
+&lt;property name=&quot;list&quot;&gt;
+    &lt;list&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/list&gt;
+&lt;/property&gt;
+&lt;!--set--&gt;
+&lt;property name=&quot;set&quot;&gt;
+    &lt;set&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/set&gt;
+&lt;/property&gt;
+&lt;!--map--&gt;
+&lt;property name=&quot;map&quot;&gt;
+    &lt;map&gt;
+        &lt;entry&gt;
+            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
+            &lt;value&gt;value&lt;/value&gt;
+        &lt;/entry&gt;
+    &lt;/map&gt;
+&lt;/property&gt;
 </code></pre></li>
 </ol>
 
-<h4 id="toc_13">关系映射</h4>
+<h3 id="toc_3">自动装配</h3>
+
+<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
+- byName:通过名称进行自动匹配<br/>
+- byType:根据类型进行自动匹配<br/>
+- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
+<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
+
+<h3 id="toc_4">方法注入</h3>
+
+<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
+在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
+
+<h3 id="toc_5">bean之间关系</h3>
 
 <ol>
-<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
-<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
+<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
+<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
+<li>引用：见上部</li>
 </ol>
 
-<h4 id="toc_14">动态SQL</h4>
+<h3 id="toc_6">bean的作用范围</h3>
 
-<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
+<ol>
+<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
+<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
+<li>request:每次Http请求时都会创建一个新的实例</li>
+<li>session:同一个Http Session共享一个Bean</li>
+<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
+<li>application:同一个Application共享一个bean</li>
+</ol>
 
                         
                       </div>
@@ -286,7 +245,7 @@ public User getUserById(Integer id);
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/7/20</span>
+                    <span class="date">2016/7/21</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
@@ -297,7 +256,7 @@ public User getUserById(Integer id);
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689923975384.html" data-count-type="comments" href="14689923975384.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -388,6 +347,12 @@ public User getUserById(Integer id);
 	      
 		      
 			      <li class="post">
+			        <a href="14693288315265.html">Java康复性训练——SpringMVC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14691739607250.html">Java康复性训练——Spring（2）</a>
 			      </li>
 		     
@@ -407,12 +372,6 @@ public User getUserById(Integer id);
 		      
 			      <li class="post">
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
 			      </li>
 		     
 		  

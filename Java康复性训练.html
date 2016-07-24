@@ -99,148 +99,134 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14691739607250.html">
+                <a class="clearlink" href="14693288315265.html">
                 
-                  <h1>Java康复性训练——Spring（2）</h1>
+                  <h1>Java康复性训练——SpringMVC</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">AOP</h2>
-
-<blockquote>
-<p>AOP(Aspect Oriented Programming,面向切面编程)，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是软件开发的一个热点，也是Spring框架中的一个重要内容。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发效率。<br/>
-主要功能是：日志记录、性能统计、安全控制、事务处理、异常处理等</p>
+                        	<blockquote>
+<p>SpringMVC是一套功能强大，性能强悍且使用方便的优秀MVC框架</p>
 </blockquote>
 
-<h2 id="toc_1">Spring AOP实例</h2>
-
-<p>AOP的使用可以让我们在某个业务逻辑或事务执行的各个不同时期加入灵活的代码，让我们的权限控制、日志记录、性能统计等基础功能与业务逻辑彻底分离，降低耦合。这种执行方式称之为通知，通知有以下几种类型：</p>
+<h2 id="toc_0">SpringMVC-HelloWorld</h2>
 
 <ol>
-<li>前置通知：在业务逻辑开始之前执行。</li>
-<li>后置通知：在业务逻辑结束之后执行。</li>
-<li>环绕通知：可以灵活配置业务逻辑的执行时间或是否执行业务逻辑，功能上有点类似于Filter。</li>
-<li>返回通知：当业务逻辑执行完并返回非空数据时执行。</li>
-<li>异常通知：当业务逻辑执行过程中产生异常时执行。</li>
-</ol>
+<li>导入相关jar包</li>
+<li><p>配置web.xml文件，设置全局拦截器。拦截所有请求，转发给SpringMVC</p>
 
-<h3 id="toc_2">实例demo：</h3>
-
-<ol>
-<li><p>通知具体内容类：</p>
-
-<pre><code class="language-java">package site.zhanjingbo.advice;
-
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-
-public class UserServiceAspect {
-    public void doBefore(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;开始添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public void doAfter(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;完成添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public Object doAround(ProceedingJoinPoint pjp) throws Throwable{
-        System.out.println(&quot;环绕前&quot;);
-        Object retVal = pjp.proceed();
-        System.out.println(&quot;环绕后&quot;);
-        return retVal;
-    }   
-    public void doAfterThrowing(JoinPoint jp,Throwable ex){
-        System.out.println(&quot;异常通知信息：&quot;+ex.getMessage());
-    }
-    public void doAfterReturning(JoinPoint jp){
-        System.out.println(&quot;返回通知&quot;);
-    }
-}
+<pre><code class="language-xml">&lt;servlet&gt;
+    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+        &lt;param-value&gt;classpath:spring-mvc.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
 </code></pre></li>
-<li><p>beans.xml的配置</p>
+<li><p>添加SpringMVC配置文件spring-mvc.xml</p>
 
 <pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
     xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-    xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-    xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+    xmlns:p=&quot;http://www.springframework.org/schema/p&quot;
+    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+    xsi:schemaLocation=&quot;
+        http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
 
-        &lt;bean id=&quot;userService&quot; class=&quot;site.zhanjingbo.service.impl.UserServiceImpl&quot;/&gt;
-        &lt;bean id=&quot;userServiceAspect&quot; class=&quot;site.zhanjingbo.advice.UserServiceAspect&quot; /&gt;
+    &lt;!-- 使用注解的包，包括子集 --&gt;
+    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot;/&gt;
 
-        &lt;aop:config&gt;
-            &lt;aop:aspect id=&quot;userServiceAspect&quot; ref=&quot;userServiceAspect&quot;&gt;
-                &lt;!-- 声明一个切点 --&gt;
-                &lt;aop:pointcut expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; id=&quot;businessService&quot;/&gt;  
-                &lt;!-- 为切点添加通知 --&gt;
-                &lt;aop:before method=&quot;doBefore&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after method=&quot;doAfter&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot; /&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-returning method=&quot;doAfterReturning&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-throwing method=&quot;doAfterThrowing&quot; pointcut-ref=&quot;businessService&quot; throwing=&quot;ex&quot;/&gt;
-            &lt;/aop:aspect&gt;
-        &lt;/aop:config&gt;
+    &lt;!-- 视图解析器 --&gt;
+    &lt;bean id=&quot;viewResolver&quot;
+        class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;
+        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot; /&gt;
+        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
 &lt;/beans&gt;
 </code></pre></li>
-<li><p>执行顺序<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-22-14691852095800.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-</ol>
+<li><p>添加控制器HelloContorller</p>
 
-<h2 id="toc_3">Spring对Dao的支持</h2>
+<pre><code class="language-java">package site.zhanjingbo.controller;
 
-<p>Spring发布以来很好的支持了Hibernate和Mybatis等ORM框架，只需要简单的配置，就可以很方便的实现dao的注入。</p>
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-<h2 id="toc_4">Spring对事务的支持</h2>
+@Controller
+public class HelloController {
 
-<p>事务,是业务逻辑非常重要的一个概念。事务具有的原子性、一致性、隔离性、永久性是数据正确的保证。Spring为开发人员实现事务这个特性提供了非常方便的实现方式。</p>
-
-<ol>
-<li>编程式事务管理：通过Spring提供的事务模板类<code>org.springframework.transaction.support.TranscationTemplate</code>来实现事务处理。</li>
-<li>声明式事务管理：通过XML或注解配置的方式自动添加事务处理。</li>
-<li><p>事务传播行为：Spring中，当一个service方法调用另外一个service方法的时候，因为每个service方法都有事务，这时候就出现了事务的嵌套，就产生了事务传播行为。</p>
-
-<ol>
-<li>PROPAGATION_REQUIRED--支持当前事务,如果当前没有事务,就新建一个事务。这是最常见的选择。</li>
-<li>PROPAGATION_SUPPORTS--支持当前事务,如果当前没有事务,就以非事务方式执行。</li>
-<li>PROPAGATION_MANDATORY--支持当前事务,如果当前没有事务,就抛出异常。</li>
-<li>PROPAGATION_REQUIRES_NEW--新建事务,如果当前存在事务,把当前事务挂起。</li>
-<li>PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作,如果当前存在事务,就把当前事务挂起。</li>
-<li>PROPAGATION_NEVER--以非事务方式执行,如果当前存在事务,则抛出异常。</li>
-</ol>
-
-<pre><code class="language-xml">&lt;!-- (事务管理)transaction manager, use JtaTransactionManager for global tx --&gt;
-&lt;bean id=&quot;transactionManager&quot;
-    class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-&lt;/bean&gt;
-
-&lt;!-- 配置事务通知属性 --&gt;  
-&lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;transactionManager&quot;&gt;  
-    &lt;!-- 定义事务传播属性 --&gt;  
-    &lt;tx:attributes&gt;  
-        &lt;tx:method name=&quot;insert*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;update*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;edit*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;save*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;add*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;new*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;set*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;remove*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;delete*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;change*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;get*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;find*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;load*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-    &lt;/tx:attributes&gt;  
-&lt;/tx:advice&gt;  
+    @RequestMapping(&quot;/hello&quot;)
+    public String hello(Model model){
+        model.addAttribute(&quot;message&quot;, &quot;HelloWorld!&quot;);
+        return &quot;hello&quot;;
+    }
+}
 </code></pre></li>
+<li><p>在/WEB-INF/jsp/下建立显示返回页面hello.jsp</p>
+
+<pre><code class="language-html">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot;
+pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+&lt;title&gt;Insert title here&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+${message }
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></li>
+<li><p>完成。启动Tomcat，访问<a href="http://localhost:8080/SpringMVC/hello.do">http://localhost:8080/SpringMVC/hello.do</a>  查看<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-24-14693326495259.jpg" alt=""/></p></li>
 </ol>
+
+<h2 id="toc_1">SpringMVC控制器</h2>
+
+<ul>
+<li>@RequestMapping：用于指定方法的响应URL或模块URL</li>
+<li>@RequestParam：绑定提交参数与控制器方法参数的注解。<code>@RequestParam(value=&quot;&quot;,required=true/false)</code></li>
+<li>ModelAndView:作为控制器的返回值类型，返回模型与视图</li>
+<li>SpringMVC对象属性自动封装:SpringMVC可以根据表单传入的数据自动封装控制器参数对象</li>
+<li><p>SpringMVC POST请求中文乱码:在web.xml中添加过滤器</p>
+
+<pre><code class="language-xml">&lt;!-- 编码过滤器 --&gt;
+&lt;filter&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
+    &lt;async-supported&gt;true&lt;/async-supported&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;encoding&lt;/param-name&gt;
+        &lt;param-value&gt;UTF-8&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</code></pre></li>
+<li><p>Controller内部转发与重定向</p>
+
+<ul>
+<li>转发：<code>forward:</code></li>
+<li>重定向:<code>redirect:</code></li>
+</ul></li>
+<li><p>SpringMVC对Servlet API的支持</p>
+
+<ul>
+<li>只需要在控制器方法的参数列表中添加HttpServletRequest、HttpServletResponse参数即可自动注入实例对象。</li>
+</ul></li>
+<li><p>SpringMVC对json的支持：这个有很多实例，建议直接上搜索引擎。</p></li>
+</ul>
 
                         
                       </div>
@@ -249,7 +235,7 @@ public class UserServiceAspect {
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/7/22</span>
+                    <span class="date">2016/7/24</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
@@ -260,7 +246,7 @@ public class UserServiceAspect {
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14691739607250.html" data-count-type="comments" href="14691739607250.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14693288315265.html" data-count-type="comments" href="14693288315265.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -351,6 +337,12 @@ public class UserServiceAspect {
 	      
 		      
 			      <li class="post">
+			        <a href="14693288315265.html">Java康复性训练——SpringMVC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14691739607250.html">Java康复性训练——Spring（2）</a>
 			      </li>
 		     
@@ -370,12 +362,6 @@ public class UserServiceAspect {
 		      
 			      <li class="post">
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
 			      </li>
 		     
 		  

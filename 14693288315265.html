@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Zhan's Blog
+  Java康复性训练——SpringMVC - Zhan's Blog
   
   </title>
   
@@ -90,228 +90,192 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14640741638557.html">
-                
-                  <h1>GeekBand.Swift-Homework13</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">题目</h2>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Java康复性训练——SpringMVC</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/7/24</span>
 
-<p>请说出下面代码存在的问题，以及改进方式。</p>
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
+           
+         
+          <span class="comments">
+            
 
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    } 
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-</code></pre>
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14693288315265.html" data-count-type="comments" href="14693288315265.html#ds-thread"></a>
+            
+          </span>
 
-<h2 id="toc_1">回答</h2>
+        </div>
+      </div><!-- article -->
 
-<h3 id="toc_2">问题分析</h3>
+      <div class="article-content">
+      <blockquote>
+<p>SpringMVC是一套功能强大，性能强悍且使用方便的优秀MVC框架</p>
+</blockquote>
 
-<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
-如果在实际操作过程中，执行如下代码：</p>
+<h2 id="toc_0">SpringMVC-HelloWorld</h2>
 
-<pre><code class="language-swift">var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-</code></pre>
+<ol>
+<li>导入相关jar包</li>
+<li><p>配置web.xml文件，设置全局拦截器。拦截所有请求，转发给SpringMVC</p>
 
-<p>执行之后内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
-可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+<pre><code class="language-xml">&lt;servlet&gt;
+    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+        &lt;param-value&gt;classpath:spring-mvc.xml&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+</code></pre></li>
+<li><p>添加SpringMVC配置文件spring-mvc.xml</p>
 
-<pre><code class="language-swift">card = nil;
-customer = nil;
-</code></pre>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xmlns:p=&quot;http://www.springframework.org/schema/p&quot;
+    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+    xsi:schemaLocation=&quot;
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
 
-<p>内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+    &lt;!-- 使用注解的包，包括子集 --&gt;
+    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot;/&gt;
 
-<p>card和customer的引用计数非0，无法吸收。</p>
+    &lt;!-- 视图解析器 --&gt;
+    &lt;bean id=&quot;viewResolver&quot;
+        class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;
+        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot; /&gt;
+        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre></li>
+<li><p>添加控制器HelloContorller</p>
 
-<h3 id="toc_3">解决方法</h3>
+<pre><code class="language-java">package site.zhanjingbo.controller;
 
-<h4 id="toc_4">方案A——手动打破循环引用</h4>
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+@Controller
+public class HelloController {
 
-<pre><code class="language-swift">card = nil;
-customer.card = nil;
-customer = nil;
-</code></pre>
-
-<p>执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
-
-<h4 id="toc_5">方案B-weak(弱)引用</h4>
-
-<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    //注意这里！！
-    weak var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
+    @RequestMapping(&quot;/hello&quot;)
+    public String hello(Model model){
+        model.addAttribute(&quot;message&quot;, &quot;HelloWorld!&quot;);
+        return &quot;hello&quot;;
     }
 }
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
+</code></pre></li>
+<li><p>在/WEB-INF/jsp/下建立显示返回页面hello.jsp</p>
 
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
+<pre><code class="language-html">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot;
+pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+&lt;title&gt;Insert title here&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+${message }
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></li>
+<li><p>完成。启动Tomcat，访问<a href="http://localhost:8080/SpringMVC/hello.do">http://localhost:8080/SpringMVC/hello.do</a>  查看<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-24-14693326495259.jpg" alt=""/></p></li>
+</ol>
 
-card = nil;
-customer = nil;
-</code></pre>
+<h2 id="toc_1">SpringMVC控制器</h2>
 
-<p>内存结构:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+<ul>
+<li>@RequestMapping：用于指定方法的响应URL或模块URL</li>
+<li>@RequestParam：绑定提交参数与控制器方法参数的注解。<code>@RequestParam(value=&quot;&quot;,required=true/false)</code></li>
+<li>ModelAndView:作为控制器的返回值类型，返回模型与视图</li>
+<li>SpringMVC对象属性自动封装:SpringMVC可以根据表单传入的数据自动封装控制器参数对象</li>
+<li><p>SpringMVC POST请求中文乱码:在web.xml中添加过滤器</p>
 
-<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+<pre><code class="language-xml">&lt;!-- 编码过滤器 --&gt;
+&lt;filter&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
+    &lt;async-supported&gt;true&lt;/async-supported&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;encoding&lt;/param-name&gt;
+        &lt;param-value&gt;UTF-8&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</code></pre></li>
+<li><p>Controller内部转发与重定向</p>
 
-<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+<ul>
+<li>转发：<code>forward:</code></li>
+<li>重定向:<code>redirect:</code></li>
+</ul></li>
+<li><p>SpringMVC对Servlet API的支持</p>
 
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    //注意这里！！！！
-    unowned let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
+<ul>
+<li>只需要在控制器方法的参数列表中添加HttpServletRequest、HttpServletResponse参数即可自动注入实例对象。</li>
+</ul></li>
+<li><p>SpringMVC对json的支持：这个有很多实例，建议直接上搜索引擎。</p></li>
+</ul>
 
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-card = nil;
-customer = nil;
-</code></pre>
+      </div>
 
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14691739607250.html" 
+          title="Next Post: Java康复性训练——Spring（2）">Java康复性训练——Spring（2） &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
 
-<h5 id="toc_7">方案B和C的区别</h5>
+          
 
-<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
-
-<h2 id="toc_8">写在最后</h2>
-
-<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
-
-<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
+          
+              <div class="ds-thread" data-thread-key="14693288315265.html" data-url="http://swuzjb.github.io/14693288315265.html" data-title="Java康复性训练——SpringMVC"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all_7.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_9.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

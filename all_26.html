@@ -99,70 +99,86 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14595674718251.html">
+                <a class="clearlink" href="14595830611425.html">
                 
-                  <h1>GeekBand.iOS-View的定位</h1>
+                  <h1>GeekBand.iOS-Autoresizing</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
-UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+                        	<p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
+为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
 
-<h2 id="toc_0">View的层次</h2>
+<h2 id="toc_0">界面布局过程</h2>
 
-<p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
-上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+<ul>
+<li>super view
 
-<h2 id="toc_1">UIKit坐标系</h2>
+<ul>
+<li>layoutSubviews
 
-<p>-CGPoint{x,y}用于描述坐标<br/>
--CGSize{width,height}用于描述宽和高<br/>
--CGRect{origin,size}描述一个矩形区域<br/>
-坐标系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+<ul>
+<li>iOS5.1- 实现是空的</li>
+<li>后续的版本实现了autoLayout的支持</li>
+</ul></li>
+<li>setNeedsLayout
 
-<h2 id="toc_2">View的定位-Frame</h2>
+<ul>
+<li>下次绘制之前需要重新推算布局</li>
+</ul></li>
+<li>layoutIfNeeded
 
-<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
+<ul>
+<li>立即重新推算布局
+##对布局的需求的分析
+实现布局主要是计算界面元素之间的间距</li>
+</ul></li>
+<li>固定间距
+用struts（柱子）表示</li>
+<li>弹性间距
+根据界面尺寸比例调整的间距，用springs（弹簧）表示
+##UIView的AutoresizingMask</li>
+</ul></li>
+<li>Fixed vs Flexible
 
-<pre><code>-(CGRect)frame{
-    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
+<ul>
+<li>未指定flexible 就是 fixed</li>
+<li>UIViewAutoResizing
 
-<h2 id="toc_3">View的定位-Bounds</h2>
+<ul>
+<li>None</li>
+<li>FlexibleLeftMargin</li>
+<li>FlexibleWidth</li>
+<li>FlexibleRightMargin</li>
+<li>FlexibleTopMargin</li>
+<li>FlexibleHeight</li>
+<li>FlexibleBottomMargin</li>
+</ul></li>
+<li>Size
 
-<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
+<ul>
+<li>width</li>
+<li>height</li>
+</ul></li>
+<li>Margin
 
-<pre><code>-(CGRect)bounds{
-    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
+<ul>
+<li>left</li>
+<li>right</li>
+<li>Top</li>
+<li>bottom</li>
+</ul></li>
+</ul></li>
+</ul>
 
-<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
+<h2 id="toc_1">在Xcode中设置autoresizing</h2>
 
-<h2 id="toc_4">View的定位-Center</h2>
-
-<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
-
-<h2 id="toc_5">Demo展示</h2>
-
-<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
-[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
-view1.backgroundColor = [UIColor redColor];  
-[self.view addSubview:view1];//添加到self.view  
-NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
-  
-UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
-view2.backgroundColor = [UIColor yellowColor];  
-[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
-NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
+<ol>
+<li>将View的autoLayout关闭掉
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
+<li>在Xcode中设置autoresizing
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
+</ol>
 
                         
                       </div>
@@ -182,7 +198,7 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595830611425.html" data-count-type="comments" href="14595830611425.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -273,6 +289,12 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
 	      
 		      
 			      <li class="post">
+			        <a href="14693288315265.html">Java康复性训练——SpringMVC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14691739607250.html">Java康复性训练——Spring（2）</a>
 			      </li>
 		     
@@ -292,12 +314,6 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
 		      
 			      <li class="post">
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
 			      </li>
 		     
 		  

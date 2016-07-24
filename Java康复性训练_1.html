@@ -99,143 +99,147 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14690817459253.html">
+                <a class="clearlink" href="14691739607250.html">
                 
-                  <h1>Java康复性训练——Spring（1）</h1>
+                  <h1>Java康复性训练——Spring（2）</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
+                        	<h2 id="toc_0">AOP</h2>
+
+<blockquote>
+<p>AOP(Aspect Oriented Programming,面向切面编程)，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是软件开发的一个热点，也是Spring框架中的一个重要内容。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发效率。<br/>
+主要功能是：日志记录、性能统计、安全控制、事务处理、异常处理等</p>
 </blockquote>
 
-<h2 id="toc_0">Spring IOC</h2>
+<h2 id="toc_1">Spring AOP实例</h2>
 
-<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
-Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
-
-<h3 id="toc_1">依赖注入</h3>
+<p>AOP的使用可以让我们在某个业务逻辑或事务执行的各个不同时期加入灵活的代码，让我们的权限控制、日志记录、性能统计等基础功能与业务逻辑彻底分离，降低耦合。这种执行方式称之为通知，通知有以下几种类型：</p>
 
 <ol>
-<li><p>装配一个Bean</p>
+<li>前置通知：在业务逻辑开始之前执行。</li>
+<li>后置通知：在业务逻辑结束之后执行。</li>
+<li>环绕通知：可以灵活配置业务逻辑的执行时间或是否执行业务逻辑，功能上有点类似于Filter。</li>
+<li>返回通知：当业务逻辑执行完并返回非空数据时执行。</li>
+<li>异常通知：当业务逻辑执行过程中产生异常时执行。</li>
+</ol>
+
+<h3 id="toc_2">实例demo：</h3>
 
 <ol>
-<li><p>在Spring的bean.xml文件中填写如下配置：</p>
+<li><p>通知具体内容类：</p>
 
-<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
-</code></pre></li>
-<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
+<pre><code class="language-java">package site.zhanjingbo.advice;
 
-<pre><code class="language-java">public static void main(String[] args) {
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 
-    //加载Spring-bean配置信息
-    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
-
-    //获取id为user1的bean的实例
-    User user1 = (User)ac.getBean(&quot;user1&quot;);
-    System.out.println(user1);
+public class UserServiceAspect {
+    public void doBefore(JoinPoint jp){
+        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
+        System.out.println(&quot;开始添加用户：&quot;+jp.getArgs()[0]);
+    }
+    public void doAfter(JoinPoint jp){
+        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
+        System.out.println(&quot;完成添加用户：&quot;+jp.getArgs()[0]);
+    }
+    public Object doAround(ProceedingJoinPoint pjp) throws Throwable{
+        System.out.println(&quot;环绕前&quot;);
+        Object retVal = pjp.proceed();
+        System.out.println(&quot;环绕后&quot;);
+        return retVal;
+    }   
+    public void doAfterThrowing(JoinPoint jp,Throwable ex){
+        System.out.println(&quot;异常通知信息：&quot;+ex.getMessage());
+    }
+    public void doAfterReturning(JoinPoint jp){
+        System.out.println(&quot;返回通知&quot;);
+    }
 }
 </code></pre></li>
-</ol></li>
-<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
+<li><p>beans.xml的配置</p>
 
-<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+    xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
+
+        &lt;bean id=&quot;userService&quot; class=&quot;site.zhanjingbo.service.impl.UserServiceImpl&quot;/&gt;
+        &lt;bean id=&quot;userServiceAspect&quot; class=&quot;site.zhanjingbo.advice.UserServiceAspect&quot; /&gt;
+
+        &lt;aop:config&gt;
+            &lt;aop:aspect id=&quot;userServiceAspect&quot; ref=&quot;userServiceAspect&quot;&gt;
+                &lt;!-- 声明一个切点 --&gt;
+                &lt;aop:pointcut expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; id=&quot;businessService&quot;/&gt;  
+                &lt;!-- 为切点添加通知 --&gt;
+                &lt;aop:before method=&quot;doBefore&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after method=&quot;doAfter&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot; /&gt;
+                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after-returning method=&quot;doAfterReturning&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after-throwing method=&quot;doAfterThrowing&quot; pointcut-ref=&quot;businessService&quot; throwing=&quot;ex&quot;/&gt;
+            &lt;/aop:aspect&gt;
+        &lt;/aop:config&gt;
+&lt;/beans&gt;
+</code></pre></li>
+<li><p>执行顺序<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-22-14691852095800.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+</ol>
+
+<h2 id="toc_3">Spring对Dao的支持</h2>
+
+<p>Spring发布以来很好的支持了Hibernate和Mybatis等ORM框架，只需要简单的配置，就可以很方便的实现dao的注入。</p>
+
+<h2 id="toc_4">Spring对事务的支持</h2>
+
+<p>事务,是业务逻辑非常重要的一个概念。事务具有的原子性、一致性、隔离性、永久性是数据正确的保证。Spring为开发人员实现事务这个特性提供了非常方便的实现方式。</p>
+
+<ol>
+<li>编程式事务管理：通过Spring提供的事务模板类<code>org.springframework.transaction.support.TranscationTemplate</code>来实现事务处理。</li>
+<li>声明式事务管理：通过XML或注解配置的方式自动添加事务处理。</li>
+<li><p>事务传播行为：Spring中，当一个service方法调用另外一个service方法的时候，因为每个service方法都有事务，这时候就出现了事务的嵌套，就产生了事务传播行为。</p>
+
+<ol>
+<li>PROPAGATION_REQUIRED--支持当前事务,如果当前没有事务,就新建一个事务。这是最常见的选择。</li>
+<li>PROPAGATION_SUPPORTS--支持当前事务,如果当前没有事务,就以非事务方式执行。</li>
+<li>PROPAGATION_MANDATORY--支持当前事务,如果当前没有事务,就抛出异常。</li>
+<li>PROPAGATION_REQUIRES_NEW--新建事务,如果当前存在事务,把当前事务挂起。</li>
+<li>PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作,如果当前存在事务,就把当前事务挂起。</li>
+<li>PROPAGATION_NEVER--以非事务方式执行,如果当前存在事务,则抛出异常。</li>
+</ol>
+
+<pre><code class="language-xml">&lt;!-- (事务管理)transaction manager, use JtaTransactionManager for global tx --&gt;
+&lt;bean id=&quot;transactionManager&quot;
+    class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
 &lt;/bean&gt;
+
+&lt;!-- 配置事务通知属性 --&gt;  
+&lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;transactionManager&quot;&gt;  
+    &lt;!-- 定义事务传播属性 --&gt;  
+    &lt;tx:attributes&gt;  
+        &lt;tx:method name=&quot;insert*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;update*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;edit*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;save*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;add*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;new*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;set*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;remove*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;delete*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;change*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;get*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;find*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;load*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+    &lt;/tx:attributes&gt;  
+&lt;/tx:advice&gt;  
 </code></pre></li>
-<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;!-- 通过索引来设置参数值 --&gt;
-    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过类型来设置参数值 --&gt;
-    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过参数名来设置参数值 --&gt;
-    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
-&lt;/bean&gt;
-</code></pre></li>
-<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
-
-<ol>
-<li><p>静态工厂方法，在beans.xml中调用。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
-&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h3 id="toc_2">注入参数</h3>
-
-<ol>
-<li>基本类型值：参考上一节属性注入。</li>
-<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
-<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
-<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
-<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
-<li><p>集合类型属性，可以用下列配置来实现。</p>
-
-<pre><code class="language-xml">&lt;!-- list--&gt;
-&lt;property name=&quot;list&quot;&gt;
-    &lt;list&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/list&gt;
-&lt;/property&gt;
-&lt;!--set--&gt;
-&lt;property name=&quot;set&quot;&gt;
-    &lt;set&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/set&gt;
-&lt;/property&gt;
-&lt;!--map--&gt;
-&lt;property name=&quot;map&quot;&gt;
-    &lt;map&gt;
-        &lt;entry&gt;
-            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
-            &lt;value&gt;value&lt;/value&gt;
-        &lt;/entry&gt;
-    &lt;/map&gt;
-&lt;/property&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_3">自动装配</h3>
-
-<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
-- byName:通过名称进行自动匹配<br/>
-- byType:根据类型进行自动匹配<br/>
-- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
-<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
-
-<h3 id="toc_4">方法注入</h3>
-
-<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
-在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
-
-<h3 id="toc_5">bean之间关系</h3>
-
-<ol>
-<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
-<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
-<li>引用：见上部</li>
-</ol>
-
-<h3 id="toc_6">bean的作用范围</h3>
-
-<ol>
-<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
-<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
-<li>request:每次Http请求时都会创建一个新的实例</li>
-<li>session:同一个Http Session共享一个Bean</li>
-<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
-<li>application:同一个Application共享一个bean</li>
 </ol>
 
                         
@@ -245,7 +249,7 @@ Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单�
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/7/21</span>
+                    <span class="date">2016/7/22</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java康复性训练</a></span>
@@ -256,7 +260,7 @@ Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单�
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14691739607250.html" data-count-type="comments" href="14691739607250.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -347,6 +351,12 @@ Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单�
 	      
 		      
 			      <li class="post">
+			        <a href="14693288315265.html">Java康复性训练——SpringMVC</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14691739607250.html">Java康复性训练——Spring（2）</a>
 			      </li>
 		     
@@ -366,12 +376,6 @@ Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单�
 		      
 			      <li class="post">
 			        <a href="14689148951216.html">Java康复性训练——MyBatis3(2)</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14687533604786.html">Java康复性训练——MyBatis3(1)</a>
 			      </li>
 		     
 		  
