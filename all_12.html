@@ -99,190 +99,124 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633841095158.html">
+                <a class="clearlink" href="14634889513152.html">
                 
-                  <h1>GeekBand.Swift-面向对象</h1>
+                  <h1>GeekBand.Swift-协议</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>面向对象三大特性：封装、继承、多态</p>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
 </blockquote>
 
-<h2 id="toc_0">封装</h2>
+<h2 id="toc_0">协议的成员</h2>
 
-<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
-通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
 
-<h3 id="toc_1">访问控制符</h3>
+<h2 id="toc_1">协议的使用</h2>
+
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
+
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
+    }
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
+}
+class Image :Drawable{
+    var description:String{
+        get{
+            return self.description;
+        }
+    }
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
+}
+</code></pre>
+
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
+
+<ul>
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
+
+<ul>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
 
 <ol>
-<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
-<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
-<li>public —— 可以被任何人使用</li>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
 </ol>
 
-<h3 id="toc_2">一个例子</h3>
+<h3 id="toc_4">协议中的方法</h3>
 
-<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
-
-<pre><code class="language-swift">class Circle {
-    private var area: Double = 0;
-    private var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures();
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius;
-        calculateFigures();
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius;
-        diameter = 2 * M_PI * radius;
-    }
-
-    func getArea() -&gt; Double {
-        return self.area;
-    }
-
-    func getDiameter() -&gt; Double {
-        return self.diameter;
-    } 
-}
-</code></pre>
-
-<p>Swift还为我们提供了简便方法。<br/>
-通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
-
-<pre><code class="language-swift">class Circle {
-    private(set) var area: Double = 0;
-    private(set) var diameter: Double = 0;
-    var radius: Double {
-        didSet {
-            calculateFigures()
-        }
-    }
-    init(radius:Double) {
-        self.radius = radius
-        calculateFigures()
-    }
-    private func calculateFigures() {
-        area = M_PI * radius * radius
-        diameter = 2 * M_PI * radius
-    }
-}
-</code></pre>
-
-<p>当然也可以为属性设置公有的getter方法：</p>
-
-<pre><code class="language-switf">public private(set) var area: Double = 0
-public private(set) var diameter: Double = 0
-</code></pre>
-
-<h2 id="toc_3">继承</h2>
-
-<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
-在Swift中，子类继承父类的属性、方法、下标。</p>
-
-<h3 id="toc_4">一个例子</h3>
-
-<pre><code class="language-swift">struct Point{
-    var x=0;
-    var y=0;
-}
-class Shape{
-    var no=0;
-    func move() {
-        print(&quot;NO: \(no) Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    var leftUp=Point();
-    var width=0;
-    var height=0;
-    
-}
-class Circle: Shape{
-    var center=Point();
-    var radius=0;
-}
-</code></pre>
-
-<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
-
-<h3 id="toc_5">方法重写</h3>
-
-<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
-
-<pre><code class="language-swift">class Shape{
-    var no=0;
-    //用final关键字修饰，子类无法重写
-    final func show(){
-        print(&quot;Shape.show&quot;);
-    }
-    func move() {
-        print(&quot;Shape.move&quot;);
-    }
-}
-class Rectangle: Shape{
-    //重写父类的no属性
-    override var no: Int {
-        get{
-            print(&quot;Rectangle.no.get()&quot;);
-            return super.no;
-        }
-        set{
-            print(&quot;Rectangle.no.set()&quot;);
-            super.no=newValue;
-        }
-    }
-    override func move() {
-        print(&quot;Rectangle.move&quot;);
-    }
-    
-}
-class Circle: Shape{
-    override func move() {
-        print(&quot;Circle.move&quot;);
-    }
-}
-</code></pre>
-
-<h3 id="toc_6">继承中的初始化器和析构器</h3>
-
-<h4 id="toc_7">初始化器</h4>
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
 
 <ul>
-<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
-<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
-<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
-<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
-</ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
+</ul></li>
+</ol>
 
-<h4 id="toc_8">析构器</h4>
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
 
 <ul>
-<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
-<li>子类析构器执行完毕后，会自动调用父类析构器</li>
-<li>子类析构器自动具有多态性</li>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
+</ul></li>
 </ul>
-
-<h2 id="toc_9">多态</h2>
-
-<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
-
-<pre><code class="language-swift">//如下代码是没有问题的
-var rect:Shape;
-rect = Rectangle();
-//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
-rect.move();
-
-</code></pre>
-
-<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
 
                         
                       </div>
@@ -291,10 +225,8 @@ rect.move();
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+                    <span class="date">2016/5/17</span>
+                    
           				   
                   </div>
                   <div class="more-right right">
@@ -302,7 +234,7 @@ rect.move();
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -393,6 +325,12 @@ rect.move();
 	      
 		      
 			      <li class="post">
+			        <a href="14728168486763.html">Cookie与Session</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14720186733605.html">简述HTTP请求过程</a>
 			      </li>
 		     
@@ -412,12 +350,6 @@ rect.move();
 		      
 			      <li class="post">
 			        <a href="14690817459253.html">Java康复性训练——Spring（1）</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14689923975384.html">Java康复性训练——MyBatis3(3)</a>
 			      </li>
 		     
 		  

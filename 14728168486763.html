@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Zhan's Blog
+  Cookie与Session - Zhan's Blog
   
   </title>
   
@@ -90,199 +90,166 @@
        
 
  <script type="text/javascript">
-	$(function(){
-		$('#menu_item_index').addClass('is_active');
-	});
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
 </script>
 <div class="row">
-	<div class="large-8 medium-8 columns">
-		<div class="markdown-body home-categories">
-		
-			<div class="article">
-                <a class="clearlink" href="14610365861382.html">
-                
-                  <h1>GeekBand.iOS-UIView动画</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>这周的两个课程安排都是大坑啊，一周怎么够！</p>
-</blockquote>
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Cookie与Session</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/9/2</span>
 
-<p>先安利：<br/>
-- <a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a><br/>
-- <a href="http://transitiontreasury.com">http://transitiontreasury.com</a><br/>
-- <a href="https://github.com/sxyx2008/awesome-ios-animation">awesome-ios-animation</a></p>
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java</a></span>
+           
+         
+          <span class="comments">
+            
 
-<p>课程知识汇总：</p>
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14728168486763.html" data-count-type="comments" href="14728168486763.html#ds-thread"></a>
+            
+          </span>
 
-<h2 id="toc_0">UIKit提供的动画支持</h2>
+        </div>
+      </div><!-- article -->
 
-<p>苹果给UIView已经做好了简单的动画操作方法，可以自动的给一些属性的变化添加关键帧，生成动画效果。支持的属性包括：</p>
+      <div class="article-content">
+      <p>在开发过程中我们经常需要保存一些状态信息如用户登录状态等，但是由于HTTP协议的无状态特性，这些功能无法直接实现。所以我们引入了Cookie与Session这两个概念用于保存一些信息。</p>
 
-<ul>
-<li>frame</li>
-<li>bounds</li>
-<li>center</li>
-<li>transform</li>
-<li>alpha</li>
-<li>backgroundColor</li>
-<li>contentStretch</li>
-</ul>
+<h2 id="toc_0">Cookie</h2>
 
-<p>动画方法：</p>
+<p>Cookie的作用通俗地说就是当一个用户通过HTTP协议访问一个服务器的时候，这个服务器会将一些Key/Value键值对返回给客户端浏览器，并给这些数据加上一些限制条件，在条件符合时这个用户下次访问这个服务器的时候，数据又被完整地带回给服务器。</p>
 
-<pre><code>+(void)animationWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
-+(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
-+(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void));
+<h3 id="toc_1">Cookie如何工作</h3>
+
+<ol>
+<li>用户通过浏览器请求某个Servlet，在请求过程中如果本地有该站点的Cookie信息，浏览器会将这些信息放入request请求的请求头中；</li>
+<li>在Servlet中可以通过<code>request.getCookies();</code>获取当前的Cookie数组；</li>
+<li>根据自己的业务需求，新建Cookie对象实例，分别设置key和value的值；</li>
+<li>将需要添加的Cookie实例通过<code>response.addCookie();</code>方法添加到响应当中返回客户端，客户端根据Cookie的生命周期（MaxAge属性）来选择是否将此Cookie写入硬盘当中。</li>
+</ol>
+
+<h3 id="toc_2">DemoCode</h3>
+
+<pre><code class="language-java">    String getCookie(Cookie[] cookies, String key) { 
+        if (cookies != null) { 
+            for (Cookie cookie : cookies) { 
+                if (cookie.getName().equals(key)) { 
+                    return cookie.getValue(); 
+                } 
+            } 
+        } 
+        return null; 
+    } 
+
+    @Override 
+    public void doGet(HttpServletRequest request, 
+                      HttpServletResponse response) 
+            throws IOException, ServletException { 
+        Cookie[] cookies = request.getCookies(); 
+        String userName = getCookie(cookies, &quot;userName&quot;); 
+        String userAge = getCookie(cookies, &quot;userAge&quot;); 
+        if (userName == null) { 
+            response.addCookie(new Cookie(&quot;userName&quot;, &quot;user&quot;)); 
+        } 
+        if (userAge == null) { 
+            response.addCookie(new Cookie(&quot;userAge&quot;, &quot;28&quot;)); 
+        } 
+         
+ }
 </code></pre>
 
-<p>其中可以观察到，duration表述动画的时间，在animation这个block中修改view的可动画属性，系统就会自动添加动画。option是系统提供的各种配置常量，用于不同的动画效果。</p>
+<h3 id="toc_3">使用Cookie的限制</h3>
 
-<h3 id="toc_1">keyFrame动画支持</h3>
+<p>Cookie是 HTTP 协议头中的一个字段，虽然HTTP协议本身对这个字段并没有多少限制，但是 Cookie 最终还是存储在浏览器里，所以不同的浏览器对Cookie的存储都有一些限制，下表是一些通常的浏览器对 Cookie的大小和数量的限制。</p>
 
-<p>上述的动画操作虽然展示了一些动画效果，但是都比较简单。不能满足我们的日常需要。如果我们需要某个动画，先完成一部分，再完成另一部分。比如将一个view 先从A点移到B点再移到C点，用上面的方法就比较困难。这个时候我们就可以借助。UIView的animateKeyFrame方法。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center">浏览器版本</th>
+<th style="text-align: center">Cookie数限制（个/域名）</th>
+<th style="text-align: center">总大小限制</th>
+</tr>
+</thead>
 
-<pre><code>+(void)animateKeyframesWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewKeyFrameAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished))
-//需要在上述方法的animation中加入
-+(void)addKeyFrameWithRelativeStartTime:(double) relativeDuration:(double) animations:(void(^)(void))
-</code></pre>
+<tbody>
+<tr>
+<td style="text-align: center">IE6</td>
+<td style="text-align: center">20</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">IE7、8、9</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">Chrome</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">&gt;8000</td>
+</tr>
+<tr>
+<td style="text-align: center">FireFox</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4097B</td>
+</tr>
+</tbody>
+</table>
 
-<p>ps.这里的开始时间，持续时间都是百分比。</p>
+<hr/>
 
-<h3 id="toc_2">Spring Animation</h3>
+<h2 id="toc_4">Session</h2>
 
-<p>Spring Animation是iOS7.0之后系统新启用的一个动画模式。这里上一篇大神blog作为参考：<a href="https://renfei.org/blog/ios-8-spring-animation.html">ios-8-spring-animation</a>.<br/>
-调用方法如下：</p>
+<p>前面已经介绍了 Cookie 可以让服务端程序跟踪每个客户端的访问，但是每次客户端的访问都必须传回这些 Cookie，如果 Cookie 很多，这无形地增加了客户端与服务端的数据传输量，而 Session 的出现正是为了解决这个问题。</p>
 
-<pre><code>+(void)animationWithDuration:(NSTimeInterval)duration
-        delay:(NSTimeInterval)delay
-        usingSpringWithDamping:(CGFloat)dampingRatio //阻尼值[0,1.0]
-        initialSpringVelocity:(CGFloat)velocity//初速度
-        options:(UIViewAnimationOptions)options
-        animations:(void(^)(void))animations
-        completion:(void(^)(BOOL finished))completion       
-</code></pre>
+<h3 id="toc_5">Session如何工作</h3>
 
-<h3 id="toc_3">AutoLayout环境下的动画</h3>
+<ol>
+<li>session是基于Cookie的，同一个客户端每次和服务端交互时，不需要每次都传回所有的 Cookie 值，而是只要传回一个 ID，这个 ID 是客户端第一次访问服务器的时候生成的，而且每个客户端是唯一的。这样每个客户端就有了一个唯一的 ID，客户端只要传回这个 ID 就行了，这个 ID 通常是 NANE 为 JSESIONID 的一个 Cookie；</li>
+<li>有了Session ID服务端就可以创建HttpSession对象了，第一次触发通过<code>request.getSession()</code>方法。如果当前的Session ID 还没有对应的HttpSession对象，那么就创建一个新的，并将这个对象加到org.apache.catalina.Manager的sessions容器中保存。Manager类将管理所有Session的生命周期，如果该session存在则直接返回；</li>
+<li>直接操作session对象对key/value键值对进行存储，数据保存在服务器端，可以通过api手工操作其声明周期</li>
+</ol>
 
-<p>在使用AutoLayout之后，我们对view的frame的属性操作就会失效。这个时候，我们制作动画就应该修改的是view的constraint。步骤如下：<br/>
-1. 修改constraint<br/>
-2. -[view setNeedsUpdateConstraints]//设置约束<br/>
-3. -[view layoutIfNeeded]//在 animation block中调用</p>
+      </div>
 
-<h2 id="toc_4">Transition动画</h2>
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14720186733605.html" 
+          title="Next Post: 简述HTTP请求过程">简述HTTP请求过程 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
 
-<p>上一部分介绍了UIView自带的一些动画效果，但是还有一种动画过程没有介绍。那就是用动画过程完成界面切换。这就是View transition动画。</p>
+          
 
-<h3 id="toc_5">小变化，子View发生变化</h3>
-
-<p>UIView API:</p>
-
-<pre><code>+transitionWithView:(UIView)view //父view
-    duration:(NSTimeInterval)duration
-    options:(UIViewAnimationOptions)options
-    animations:(void(^)(void))animations
-    completion:(void(^)(BOOL finished))completion
-</code></pre>
-
-<h3 id="toc_6">大变化，场景转化</h3>
-
-<p>从formView切换到toView</p>
-
-<pre><code>+transitionFromView:(UIView)fromView
-    toView:(UIView)toView
-    duration:(NSTimeInterval)duration
-    options:(UIViewAnimationOptions)options
-    completion:(void(^)(BOOL finished))completion           
-</code></pre>
-
-<h2 id="toc_7">UIViewAnimationOptions介绍</h2>
-
-<ul>
-<li>常规动画属性设置（可以同时选择多个进行设置）
-
-<ul>
-<li>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</li>
-<li>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</li>
-<li>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</li>
-<li>UIViewAnimationOptionRepeat：重复运行动画。</li>
-<li>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</li>
-<li>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</li>
-<li>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</li>
-<li>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  </li>
-<li>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</li>
-<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
-</ul></li>
-<li>动画速度控制（可从其中选择一个设置）
-
-<ul>
-<li>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</li>
-<li>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</li>
-<li>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</li>
-<li>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</li>
-</ul></li>
-<li>转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
-
-<ul>
-<li>UIViewAnimationOptionTransitionNone：没有转场动画效果。</li>
-<li>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</li>
-<li>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</li>
-<li>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    </li>
-<li>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    </li>
-<li>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    </li>
-<li>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    </li>
-<li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
-</ul></li>
-</ul>
-
-<h2 id="toc_8">Core Animation</h2>
-
-<p>当进行复杂的动画效果时，需要使用Core Animation System系统进行操作。具体请参考：<a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/19</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610365861382.html" data-count-type="comments" href="14610365861382.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-              
+          
+              <div class="ds-thread" data-thread-key="14728168486763.html" data-url="http://swuzjb.github.io/14728168486763.html" data-title="Cookie与Session"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
 
 
-			<div class="row">
-			  <div class="large-6 columns">
-			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all_20.html">&laquo; Prev Page</a>  
-			  </p>
-			  </div>
-			  <div class="large-6 columns">
-			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_22.html">&raquo; Next Page</a> 
-			</p>
-			  </div>
-			</div>
-		</div>
-	</div><!-- large 8 -->
+
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

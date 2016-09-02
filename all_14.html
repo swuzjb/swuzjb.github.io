@@ -99,142 +99,92 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14628720930939.html">
+                <a class="clearlink" href="14633830220167.html">
                 
-                  <h1>GeekBand.Swift-下标与操作符</h1>
+                  <h1>GeekBand.Swift-结构与枚举</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">下标</h2>
-
-<blockquote>
-<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+                        	<blockquote>
+<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
 </blockquote>
 
+<h2 id="toc_0">Struct结构</h2>
+
 <ul>
-<li>下标可以用于class、struct、enum</li>
-<li>只能定义实例下标，不能定义类型下标</li>
-<li>可以定义读写下标或只读下标</li>
-<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
-<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
+<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
+<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
+<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
 </ul>
 
-<pre><code class="language-swift">
-class Vector{
-    var datas = [Int](count:100,repeatedValue:0);
-    subscript(index:Int)-&gt; Int{
-        get{
-            return datas[index]
-        }
-        set{          
-            datas[index]=newValue
-        }
-    }
-}
-
-var datas=Vector()
-for i in 0..&lt;10{
-   datas[i]=i
-}
-for i in 0..&lt;10{
-    print(datas[i])
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
 }
 </code></pre>
 
-<h2 id="toc_1">操作符</h2>
-
-<blockquote>
-<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
-</blockquote>
-
-<h3 id="toc_2">重载操作符</h3>
-
-<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
-可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
-也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
-
-<pre><code class="language-swift">class Complex{
-    var real=0.0
-    var imag=0.0
-    
-    init(real:Double, imag:Double){
-        self.real=real
-        self.imag=imag
-    }
-}
-
-//中缀操作符
-func + (left: Complex, right: Complex) -&gt; Complex {
-    
-    return Complex(real: left.real + right.real,
-        imag: left.imag + right.imag)
-}
-
-var c1=Complex(real: 10,imag: 20)
-var c2=Complex(real: 100,imag: 200)
-var c3=c1+c2
-
-
-
-//前缀操作符
-prefix func - (data: Complex) -&gt; Complex {
-    return Complex(real: -data.real, imag: -data.imag)
-}
-
-
-var c4 = -c3
-
-//复合赋值操作符
-func += (inout left: Complex, right: Complex) {
-    left = left + right
-}
-
-c1+=c2
-
-//自定义操作符
-prefix operator +++ {}
-
-prefix func +++ (inout data: Complex) -&gt; Complex {
-    data += data
-    return data
-}
-
-</code></pre>
-
-<h3 id="toc_3">相等操作符</h3>
+<h3 id="toc_1">Struct和Class</h3>
 
 <ul>
-<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+<li>相同点：
 
-<ul>
-<li>相等 ===</li>
-<li>不等 !==</li>
-</ul></li>
-<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+<ol>
+<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
+<li>都支持类型扩展、协议</li>
+</ol></li>
+<li>不同点：
 
-<ul>
-<li>相等 ==</li>
-<li>不等 !=</li>
-</ul></li>
+<ol>
+<li>类支持继承和多态，结构不支持</li>
+<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
+<li>类支持析构器，结构不支持</li>
+<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
+<li>类支持引用比较。结构不支持。</li>
+</ol></li>
 </ul>
 
-<pre><code class="language-swift">//值相等操作符
-func == (left: Complex, right: Complex) -&gt; Bool {
-    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+<h2 id="toc_2">Enum枚举</h2>
+
+<ul>
+<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
+<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
+<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
+<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
+<li>还可定义:计算属性、方法、初始化器</li>
+</ul>
+
+<pre><code class="language-swift">//定义枚举类型
+enum Color {
+    case Red
+    case Green
+    case Blue
 }
-func != (left: Complex, right: Complex) -&gt; Bool {
-    return !(left == right)
+
+enum ComplexColor{
+    case Red,Green,Blue,Alpha
 }
 
+var c1=Color.Red
+var c2:Color
+c2 = Color.Green
+c1 = .Blue
+var c3=c1
 
-var c5=c3
 
-print(c1==c5) //值相等
-print(c2==c5) //值不等
-print(c1===c5) //引用不等
-print(c3===c5) //引用相等
-print(c3==c5)
+func print(color: Color){
+    
+    switch color {
+    case .Red:
+        print(&quot;Red Color!&quot;)
+    case .Green:
+        print(&quot;Green Color!&quot;)
+    case .Blue:
+        print(&quot;Blue Color!&quot;)
+    }
+    
+}
 
 </code></pre>
 
@@ -245,7 +195,7 @@ print(c3==c5)
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/10</span>
+                    <span class="date">2016/5/16</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -256,7 +206,7 @@ print(c3==c5)
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -347,6 +297,12 @@ print(c3==c5)
 	      
 		      
 			      <li class="post">
+			        <a href="14728168486763.html">Cookie与Session</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14720186733605.html">简述HTTP请求过程</a>
 			      </li>
 		     
@@ -366,12 +322,6 @@ print(c3==c5)
 		      
 			      <li class="post">
 			        <a href="14690817459253.html">Java康复性训练——Spring（1）</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14689923975384.html">Java康复性训练——MyBatis3(3)</a>
 			      </li>
 		     
 		  

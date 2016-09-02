@@ -99,147 +99,106 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14610365861382.html">
+                <a class="clearlink" href="14577530083114.html">
                 
-                  <h1>GeekBand.iOS-UIView动画</h1>
+                  <h1>GeekBand-OC中的类别和协议</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>这周的两个课程安排都是大坑啊，一周怎么够！</p>
+<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
 </blockquote>
 
-<p>先安利：<br/>
-- <a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a><br/>
-- <a href="http://transitiontreasury.com">http://transitiontreasury.com</a><br/>
-- <a href="https://github.com/sxyx2008/awesome-ios-animation">awesome-ios-animation</a></p>
+<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
 
-<p>课程知识汇总：</p>
-
-<h2 id="toc_0">UIKit提供的动画支持</h2>
-
-<p>苹果给UIView已经做好了简单的动画操作方法，可以自动的给一些属性的变化添加关键帧，生成动画效果。支持的属性包括：</p>
-
-<ul>
-<li>frame</li>
-<li>bounds</li>
-<li>center</li>
-<li>transform</li>
-<li>alpha</li>
-<li>backgroundColor</li>
-<li>contentStretch</li>
-</ul>
-
-<p>动画方法：</p>
-
-<pre><code>+(void)animationWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
-+(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
-+(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void));
+<pre><code> @interface 已有类 （类别名）
+    //.......方法实现
+ @end
 </code></pre>
 
-<p>其中可以观察到，duration表述动画的时间，在animation这个block中修改view的可动画属性，系统就会自动添加动画。option是系统提供的各种配置常量，用于不同的动画效果。</p>
+<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
 
-<h3 id="toc_1">keyFrame动画支持</h3>
-
-<p>上述的动画操作虽然展示了一些动画效果，但是都比较简单。不能满足我们的日常需要。如果我们需要某个动画，先完成一部分，再完成另一部分。比如将一个view 先从A点移到B点再移到C点，用上面的方法就比较困难。这个时候我们就可以借助。UIView的animateKeyFrame方法。</p>
-
-<pre><code>+(void)animateKeyframesWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewKeyFrameAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished))
-//需要在上述方法的animation中加入
-+(void)addKeyFrameWithRelativeStartTime:(double) relativeDuration:(double) animations:(void(^)(void))
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+@interface NSNumber (code)
+ -(NSNumber *) add:(double) num;
+ -(NSNumber *) mult:(double) num
+@end
 </code></pre>
 
-<p>ps.这里的开始时间，持续时间都是百分比。</p>
+<p>该类别的实现部分如下</p>
 
-<h3 id="toc_2">Spring Animation</h3>
+<pre><code> #import &quot;NSNumber+code.h&quot;
 
-<p>Spring Animation是iOS7.0之后系统新启用的一个动画模式。这里上一篇大神blog作为参考：<a href="https://renfei.org/blog/ios-8-spring-animation.html">ios-8-spring-animation</a>.<br/>
-调用方法如下：</p>
-
-<pre><code>+(void)animationWithDuration:(NSTimeInterval)duration
-        delay:(NSTimeInterval)delay
-        usingSpringWithDamping:(CGFloat)dampingRatio //阻尼值[0,1.0]
-        initialSpringVelocity:(CGFloat)velocity//初速度
-        options:(UIViewAnimationOptions)options
-        animations:(void(^)(void))animations
-        completion:(void(^)(BOOL finished))completion       
+ @implementation NSNumber (code)
+ -(NSNumber *) add:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue] +num)];
+}
+-(NSNumber *) mult:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
+}
+@end
 </code></pre>
 
-<h3 id="toc_3">AutoLayout环境下的动画</h3>
+<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
 
-<p>在使用AutoLayout之后，我们对view的frame的属性操作就会失效。这个时候，我们制作动画就应该修改的是view的constraint。步骤如下：<br/>
-1. 修改constraint<br/>
-2. -[view setNeedsUpdateConstraints]//设置约束<br/>
-3. -[view layoutIfNeeded]//在 animation block中调用</p>
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
 
-<h2 id="toc_4">Transition动画</h2>
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
 
-<p>上一部分介绍了UIView自带的一些动画效果，但是还有一种动画过程没有介绍。那就是用动画过程完成界面切换。这就是View transition动画。</p>
+<hr/>
 
-<h3 id="toc_5">小变化，子View发生变化</h3>
+<h2 id="toc_0">扩展（extension）</h2>
 
-<p>UIView API:</p>
+<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
 
-<pre><code>+transitionWithView:(UIView)view //父view
-    duration:(NSTimeInterval)duration
-    options:(UIViewAnimationOptions)options
-    animations:(void(^)(void))animations
-    completion:(void(^)(BOOL finished))completion
+<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
+
+<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
+
+<pre><code>//&quot;Vehicle.m&quot;
+#import &quot;Vehicle.h&quot;
+@interface Vehicle ()
+@property(nonatomic, strong) NSString *color;
+-(void) drive:(NSString *)name;
+@end
+@implementation Vehicle
+-(void) drive:(NSString *)name
+{
+    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
+}
+@end
 </code></pre>
 
-<h3 id="toc_6">大变化，场景转化</h3>
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
 
-<p>从formView切换到toView</p>
+<hr/>
 
-<pre><code>+transitionFromView:(UIView)fromView
-    toView:(UIView)toView
-    duration:(NSTimeInterval)duration
-    options:(UIViewAnimationOptions)options
-    completion:(void(^)(BOOL finished))completion           
+<h2 id="toc_1">协议（protocol）</h2>
+
+<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
+
+<p>正式协议使用@protocol关键字定义</p>
+
+<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
+    {
+          //.....方法声明
+    }
+    @end
 </code></pre>
 
-<h2 id="toc_7">UIViewAnimationOptions介绍</h2>
+<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
+遵守协议的语法如下：</p>
 
-<ul>
-<li>常规动画属性设置（可以同时选择多个进行设置）
+<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
+</code></pre>
 
-<ul>
-<li>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</li>
-<li>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</li>
-<li>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</li>
-<li>UIViewAnimationOptionRepeat：重复运行动画。</li>
-<li>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</li>
-<li>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</li>
-<li>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</li>
-<li>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  </li>
-<li>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</li>
-<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
-</ul></li>
-<li>动画速度控制（可从其中选择一个设置）
+<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
+协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
 
-<ul>
-<li>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</li>
-<li>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</li>
-<li>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</li>
-<li>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</li>
-</ul></li>
-<li>转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
-
-<ul>
-<li>UIViewAnimationOptionTransitionNone：没有转场动画效果。</li>
-<li>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</li>
-<li>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</li>
-<li>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    </li>
-<li>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    </li>
-<li>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    </li>
-<li>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    </li>
-<li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
-</ul></li>
-</ul>
-
-<h2 id="toc_8">Core Animation</h2>
-
-<p>当进行复杂的动画效果时，需要使用Core Animation System系统进行操作。具体请参考：<a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a></p>
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
 
                         
                       </div>
@@ -248,7 +207,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/19</span>
+                    <span class="date">2016/3/12</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -259,7 +218,7 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610365861382.html" data-count-type="comments" href="14610365861382.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -272,12 +231,12 @@
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all_20.html">&laquo; Prev Page</a>  
+			   <a href="all_41.html">&laquo; Prev Page</a>  
 			  </p>
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_22.html">&raquo; Next Page</a> 
+			
 			</p>
 			  </div>
 			</div>
