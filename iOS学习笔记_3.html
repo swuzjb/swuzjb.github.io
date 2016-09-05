@@ -99,94 +99,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14633830220167.html">
+                <a class="clearlink" href="14603532939876.html">
                 
-                  <h1>GeekBand.Swift-结构与枚举</h1>
+                  <h1>GeekBand.iOS-xcode的工程管理</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
                         	<blockquote>
-<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
 </blockquote>
 
-<h2 id="toc_0">Struct结构</h2>
+<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
+
+<h2 id="toc_0">Xcode的工程结构</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
+
+<h2 id="toc_1">Workspace</h2>
+
+<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
+其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
 
 <ul>
-<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
-<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
-<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
-<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
-</ul>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
-</code></pre>
-
-<h3 id="toc_1">Struct和Class</h3>
+<li>这些项目将使用同一个位置
 
 <ul>
-<li>相同点：
-
-<ol>
-<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
-<li>都支持类型扩展、协议</li>
-</ol></li>
-<li>不同点：
-
-<ol>
-<li>类支持继承和多态，结构不支持</li>
-<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
-<li>类支持析构器，结构不支持</li>
-<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
-<li>类支持引用比较。结构不支持。</li>
-</ol></li>
+<li>保存项目状态</li>
+<li>保存构造出来的产品</li>
+<li>自动可以相互引用</li>
+</ul></li>
+<li>Xcode自动为独立的项目提供Workspace</li>
+<li>Workspace中的Project仍然可以独立打开</li>
 </ul>
 
-<h2 id="toc_2">Enum枚举</h2>
+<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
+
+<h2 id="toc_2">Project</h2>
+
+<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
 
 <ul>
-<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
-<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
-<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
-<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
-<li>还可定义:计算属性、方法、初始化器</li>
+<li>组织工程用到的文件</li>
+<li>管理构建目标Traget</li>
+<li>告诉Xcode当前构建和执行目标
+
+<ul>
+<li>通过Scheme选择</li>
+</ul></li>
 </ul>
 
-<pre><code class="language-swift">//定义枚举类型
-enum Color {
-    case Red
-    case Green
-    case Blue
-}
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
 
-enum ComplexColor{
-    case Red,Green,Blue,Alpha
-}
+<h3 id="toc_3">Group vs. Floder Reference</h3>
 
-var c1=Color.Red
-var c2:Color
-c2 = Color.Green
-c1 = .Blue
-var c3=c1
+<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
+Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
 
+<h2 id="toc_4">Traget</h2>
 
-func print(color: Color){
-    
-    switch color {
-    case .Red:
-        print(&quot;Red Color!&quot;)
-    case .Green:
-        print(&quot;Green Color!&quot;)
-    case .Blue:
-        print(&quot;Blue Color!&quot;)
-    }
-    
-}
+<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
+- 定义如何构造一个产品（product）<br/>
+    - 指定用到的文件子集<br/>
+    - 定义依赖关系<br/>
+    - 提供构建过程的规则与参数<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
 
-</code></pre>
+<h3 id="toc_5">Traget与Project区别</h3>
+
+<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
+建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
+
+<h2 id="toc_6">Scheme和Destination</h2>
+
+<ul>
+<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
+<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
+</ul>
 
                         
                       </div>
@@ -195,7 +185,7 @@ func print(color: Color){
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/5/16</span>
+                    <span class="date">2016/4/11</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -206,7 +196,450 @@ func print(color: Color){
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14596904523529.html">
+                
+                  <h1>GeekBand.iOS-AutoLayout</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
+在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
+
+<h2 id="toc_0">什么是AutoLayout</h2>
+
+<ul>
+<li>AutoLayout是一种布局技术，专门用于布局UI界面。用来取代Frame布局无法适应屏幕分辨率多重多样的不足。</li>
+<li>AutoLayout自iOS6开始引入，由于Xcode4的不给力，当时并没有获得大的推广</li>
+<li>在iOS7（Xcode5）开始，Autolayout的开发效率得到很大的提升</li>
+</ul>
+
+<p>ps.苹果官方也推荐开发者尽量使用Autolayout来布局UI界面<br/>
+Autolayout能轻松的解决屏幕适配的问题</p>
+
+<h2 id="toc_1">开始使用AutoLayout</h2>
+
+<p>自从Xcode6之后，你会看到我们新建一个Single Application，会发现一个ViewController的View非常大，跟任何一个iPhone/iPad的尺寸都不一样，这些都是假象、假象、假象。Apple 把尺寸抽象为了一个正方形，到真正的设备上才是真正的布局。</p>
+
+<h3 id="toc_2">AutoLayout概念</h3>
+
+<ul>
+<li>Pin(相对处理)
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325788323184.png" alt="Pin"/>
+
+<ol>
+<li>边缘距离。最上面的四个虚线表示某个View的距离上、下、左、右多少像素。参考位置一般为对应方向离得最近的View。</li>
+<li>限制View的宽高属性值，或者在宽高中加入一次计算关系。</li>
+<li>那个蓝色的Constrain To Margin 是iPhone6出现之后新增的。Apple 觉得更大的分辨率有点间距好看，默认为8，如果这个勾上了，这个View距离四周的值就变成了你输入的值+8。可以根据实际需求确定是否勾选。</li>
+</ol></li>
+<li>Align(对齐处理)
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325765517581.png" alt="Align"/>
+
+<ol>
+<li>Leading Edges：左对齐</li>
+<li>Trailing Edges：右对齐</li>
+<li>Top Edges：上对齐</li>
+<li>Bottom Edges：下对齐</li>
+<li>Horizontal Centers：水平中心对齐</li>
+<li>Vertical Centers：竖向中心对齐</li>
+<li>Baselines：基线对齐</li>
+<li>Horizontal Center in Container：对齐容器中的水平中心</li>
+<li>Vertical Center in Container：对齐容器中的竖向中心</li>
+</ol></li>
+</ul>
+
+<h3 id="toc_3">Autolayout使用</h3>
+
+<p>本单元中使用Demo对AutoLayout的各种约束进行讲解，讲解Demo主要来自文章开头提到的来源。AutoLayout的核心是参照，也就是基本上任何一个View都可以参照另一个View。</p>
+
+<h4 id="toc_4">Demo0-准备</h4>
+
+<p>我们开始Demo前先想想我们在Frame时代，布局需要什么：</p>
+
+<pre><code>{
+    original：{x,y}
+    size:{width,height}
+}
+</code></pre>
+
+<p>在iOS中布局是绝对定位的（大致这么理解吧）。所以我们需要某个View的X，Y，W，H。我们从基本的入门 ，我们无论添加多少约束，都是需要定位好某个View的X，Y，W，H。少了不行，多了更不行。</p>
+
+<h4 id="toc_5">Demo1-某个View距离父View上下左右间距全部为20。</h4>
+
+<p>对该View添加如下约束：<br/>
+    <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324481117197.png" alt=""/><br/>
+这里有几条注意事项：<br/>
+    1.请注意我这里把距离下面的，也就是BottomLayoutGuide的约束改成了距离控制器的View，为什么？因为BottomLayoutGuide是晚于View加载的，如果参考这个，会造成进入页面会卡一下。尽量不要直接参考下面 TopLayoutGuide 则没事。<br/>
+    2.加完约束你会发现貌似并没有什么效果？不是的，屏幕中出现的黄色的线条 ，这是IB在提升我们你所添加的约束 。和真实的尺寸不一样，怎么修改？在Resolve Auto Layout Issue中选择Update Frame。参考动图。<br/>
+动图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324514982324.gif" alt="demo1"/></p>
+
+<h4 id="toc_6">Demo2-某个View距离在父View的左侧20，白色View，上20，宽高为100。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324604147373.gif" alt="Demo2"/></p>
+
+<h4 id="toc_7">Demo3-添加一个白色View，距上20，左20，宽高和demo2中的一致</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo3"/></p>
+
+<h4 id="toc_8">Demo4-AspectRatio比例。假设某个假设某个View距离父View右上角20,20 宽高比2:1宽100。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo4"/><br/>
+AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*Multiplier+Constant</code>,注意比例是支持表达式的如2:3、relation是支持great than,less than.具体的值由系统自动计算。</p>
+
+<h4 id="toc_9">Demo5-某个View距离在父View的右侧20，demo4中白色View上20，宽高和Demo4中的宽高一样，并且有对齐。</h4>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324807851881.gif" alt="Demo5"/></p>
+
+<h2 id="toc_10">参考资料</h2>
+
+<blockquote>
+<ol>
+<li><a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a></li>
+<li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
+</ol>
+</blockquote>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/3</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14595830611425.html">
+                
+                  <h1>GeekBand.iOS-Autoresizing</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在了解了UIView的定位相关知识以后，我们就可以进一步讨论UIView的布局方式了。就现有的方式知识来时，我们直接使用SB创建界面的时候所有View的大小和位置都是定死的，可是我们所使用的iOS设备的屏幕分辨率却有很大的差别。<br/>
+为了可以更简单的使View自动的适应不同大小的屏幕，苹果在iOS2.0中提出了Autoresizing功能。</p>
+
+<h2 id="toc_0">界面布局过程</h2>
+
+<ul>
+<li>super view
+
+<ul>
+<li>layoutSubviews
+
+<ul>
+<li>iOS5.1- 实现是空的</li>
+<li>后续的版本实现了autoLayout的支持</li>
+</ul></li>
+<li>setNeedsLayout
+
+<ul>
+<li>下次绘制之前需要重新推算布局</li>
+</ul></li>
+<li>layoutIfNeeded
+
+<ul>
+<li>立即重新推算布局
+##对布局的需求的分析
+实现布局主要是计算界面元素之间的间距</li>
+</ul></li>
+<li>固定间距
+用struts（柱子）表示</li>
+<li>弹性间距
+根据界面尺寸比例调整的间距，用springs（弹簧）表示
+##UIView的AutoresizingMask</li>
+</ul></li>
+<li>Fixed vs Flexible
+
+<ul>
+<li>未指定flexible 就是 fixed</li>
+<li>UIViewAutoResizing
+
+<ul>
+<li>None</li>
+<li>FlexibleLeftMargin</li>
+<li>FlexibleWidth</li>
+<li>FlexibleRightMargin</li>
+<li>FlexibleTopMargin</li>
+<li>FlexibleHeight</li>
+<li>FlexibleBottomMargin</li>
+</ul></li>
+<li>Size
+
+<ul>
+<li>width</li>
+<li>height</li>
+</ul></li>
+<li>Margin
+
+<ul>
+<li>left</li>
+<li>right</li>
+<li>Top</li>
+<li>bottom</li>
+</ul></li>
+</ul></li>
+</ul>
+
+<h2 id="toc_1">在Xcode中设置autoresizing</h2>
+
+<ol>
+<li>将View的autoLayout关闭掉
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595904919420.jpg" alt=""/></li>
+<li>在Xcode中设置autoresizing
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595905330279.jpg" alt=""/></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595830611425.html" data-count-type="comments" href="14595830611425.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14595674718251.html">
+                
+                  <h1>GeekBand.iOS-View的定位</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
+UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+
+<h2 id="toc_0">View的层次</h2>
+
+<p>View的层次结构是一个树状结构：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
+上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+
+<h2 id="toc_1">UIKit坐标系</h2>
+
+<p>-CGPoint{x,y}用于描述坐标<br/>
+-CGSize{width,height}用于描述宽和高<br/>
+-CGRect{origin,size}描述一个矩形区域<br/>
+坐标系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+
+<h2 id="toc_2">View的定位-Frame</h2>
+
+<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
+
+<pre><code>-(CGRect)frame{
+    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<h2 id="toc_3">View的定位-Bounds</h2>
+
+<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
+
+<pre><code>-(CGRect)bounds{
+    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
+
+<h2 id="toc_4">View的定位-Center</h2>
+
+<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
+
+<h2 id="toc_5">Demo展示</h2>
+
+<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
+[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
+view1.backgroundColor = [UIColor redColor];  
+[self.view addSubview:view1];//添加到self.view  
+NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
+  
+UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
+view2.backgroundColor = [UIColor yellowColor];  
+[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
+NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14592472421509.html">
+                
+                  <h1>GeekBand.iOS-UICollectionView</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
+为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
+它对TableView的优化：
+- 对表格的自然扩展：网格式界面
+- 对表格内部职责进一步细分：分离Layout
+</code></pre>
+
+<h2 id="toc_0">CollectionView实例</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
+
+<h2 id="toc_1">CollectionView界面构成</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
+
+<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
+
+<h2 id="toc_2">说明</h2>
+
+<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
+- cell在collection中被称为item<br/>
+- header/footer被称为supplementary view<br/>
+- item view必须register<br/>
+- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
+
+<h2 id="toc_3">Cell（Item）供应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
+
+<h2 id="toc_4">基本使用</h2>
+
+<ol>
+<li>创建CollectionView对象</li>
+<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
+
+<pre><code>//返回item的数量
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
+
+//返回item实例
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre></li>
+</ol>
+
+<h2 id="toc_5">交互</h2>
+
+<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。实现UICollectionViewDelegate协议</p>
+
+<ul>
+<li>点选</li>
+<li><p>编辑格子</p>
+
+<ul>
+<li>插入、删除</li>
+<li>移动格子的位置</li>
+</ul></li>
+<li><p>刷新数据</p></li>
+<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
+<li><p>滚动到某个格子</p></li>
+<li><p>动态更换布局</p></li>
+</ul>
+
+<h3 id="toc_6">交互响应机会</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
+
+<h3 id="toc_7">刷新CollectionView</h3>
+
+<ul>
+<li>reloadData  全部刷新</li>
+<li>reloadSection  刷新某个section</li>
+<li>reloadItemsAtIndexPaths 刷新某个cell</li>
+</ul>
+
+<h3 id="toc_8">手工移动格子</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
+
+<h2 id="toc_9">参考资料</h2>
+
+<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
+<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/29</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14592472421509.html" data-count-type="comments" href="14592472421509.html#ds-thread"></a>
                        
                   </span>
                   </div>

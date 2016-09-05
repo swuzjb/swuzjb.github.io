@@ -99,244 +99,147 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14687533604786.html">
+                <a class="clearlink" href="14581131891410.html">
                 
-                  <h1>Java康复性训练——MyBatis3(1)</h1>
+                  <h1>GeekBand.iOS-猜城市游戏</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">MyBatis</h2>
-
-<blockquote>
-<p>MyBatis是一个支持普通SQL查询，存储过程和高级映射的优秀持久层框架。MyBatis消除了几乎所有的JDBC代码和参数的手工设置以及对结果集的检索封装。MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。</p>
+                        	<blockquote>
+<p>本游戏是一个用于练手的示例游戏，本文将从最开始的需求分析开始对游戏进行分析和实现</p>
 </blockquote>
 
-<h2 id="toc_1">MyBatis3使用-Hell,World项目</h2>
+<h2 id="toc_0">需求分析</h2>
 
-<p>MyBatis3的使用比较简单。新建一个基本的Mybatis项目需要如下步骤：</p>
+<p>简要需求以及程序原型设计如下图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-0@2x.png" alt="程序原型"/><br/>
+程序需求的简单描述为：用户根据图片展示，猜测图片展现的是哪一个城市，并将答案输入文本框中，程序对输入内容进行判断，如果答对，增加得分加载下一张图片，如答错，记录尝试次数，超过程序要求，游戏结束。</p>
+
+<p>游戏运行流程：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-1@2x.png" alt="游戏运行流程图"/><br/>
+补充需求说明：<br/>
+1. 输入城市名称时，要求中文简体输入如北京、上海等。<br/>
+2. 毎猜对一个城市，得分加10分。<br/>
+3. 程序所需图片 采用<code>[UIImage imageNamed:@&quot;&quot;];</code>方法读取;<br/>
+4. 城市与图片对应实现采用程序硬编码实现。</p>
+
+<h2 id="toc_1">系统设计</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-2@2x.png" alt="类结构图"/><br/>
+具体说明如下：</p>
 
 <ol>
-<li>新建一个Java项目（这句是废话）。</li>
-<li>导入相关Jar包。
+<li><p>ViewController</p>
 
-<ol>
-<li>JDBC相关包：mysql-connector-java-5.1.39-bin.jar</li>
-<li>MyBatis核心包：mybatis-3.4.1.jar</li>
-</ol></li>
-<li><p>创建Mybatis配置文件：mybatis-config.xml 位于src目录下</p>
+<p>对使用Interface Builder创建的UI界面提供操作绑定，使代码可以对View控件进行控制。</p></li>
+<li><p>City （城市类）</p>
 
-<pre><code class="language-xml">    &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-    &lt;!DOCTYPE configuration
-      PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;
-      &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;
-    &lt;configuration&gt;
-
-      &lt;!--  引入相关JDBC配置文件 --&gt;
-      &lt;properties  resource=&quot;jdbc.properties&quot;/&gt;
-
-      &lt;!-- 配置Mybatis运行的数据库环境 --&gt;
-      &lt;environments default=&quot;development&quot;&gt;
-            &lt;environment id=&quot;development&quot;&gt;
-                  &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-                  &lt;dataSource type=&quot;POOLED&quot;&gt;
-                    &lt;property name=&quot;driver&quot; value=&quot;${jdbc.driverClassName}&quot;/&gt;
-                    &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                    &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                    &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-                  &lt;/dataSource&gt;
-            &lt;/environment&gt;
-      &lt;/environments&gt;
-
-      &lt;!-- 对象与数据库映射文件 --&gt;
-      &lt;mappers&gt;
-        &lt;mapper resource=&quot;site/zhanjingbo/mapper/UserMapper.xml&quot;/&gt;
-      &lt;/mappers&gt;
-    &lt;/configuration&gt;
+<pre><code>@interface City : NSObject
+@property int cityId;//城市ID，根据ID可以加载城市图片
+@property NSString* cityName;//城市名称，名称规范如：北京
++(instancetype) initWithCityID:(int)cityId WithCityName:(NSString *)cityName;
+@end
 </code></pre></li>
-<li><p>创建JDBC配置文件:jdbc.properties。（也可直接在上文配置）</p>
+<li><p>CityDB（工厂类）<br/>
+这是一个工厂类，使用类方法，封装了一些关于城市的操作函数，如返回某城市的图片，和硬编码加载所有城市返回。</p>
 
-<pre><code class="language-txt">jdbc.dirverClassName=com.mysql.jdbc.Dirver
-jdbc.url=jdbc:mysql://localhost:3307/user
-jdbc.username=root
-jdbc.password=
-
+<pre><code>@interface CityDB : NSObject
++(UIImage *) getCityImageByCity:(City *)city;
++(NSArray&lt;City *&gt; *) loadAllCity;
+@end
 </code></pre></li>
-<li><p>创建MyBatis的连接工厂类:</p>
+<li><p>Level(关卡类) <br/>
+毎次随机出现的一个城市，抽象为一个关卡。</p>
 
-<pre><code class="language-Java">package site.zhanjingbo.util;
-import java.io.IOException;
-import java.io.InputStream;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+<pre><code>@interface Level : NSObject
+@property City* city;
+@property int time;//当前尝试次数，初始化为0
++(instancetype) initWithCity:(City *)city;
+@end
+</code></pre></li>
+<li><p>Game(游戏控制类)</p>
 
-public class SqlSessionFactoryUtil {
-    private static SqlSessionFactory sqlSessionFactory; 
-    private static SqlSessionFactory getSqlSessionFactory(){
+<pre><code>@interface Game : NSObject
+@property BOOL gameOver;
+@property int currentScore;
++(instancetype) game;//返回一个游戏对象
+-(BOOL) guessCityByName:(NSString *)cityName;//根据用户输入判断猜测是否正确
+-(UIImage *) imageForCurrentLevel;//获得当前关卡的城市的图片
+-(int) getTryTimes;//本关卡已经尝试的次数
 
-        if(sqlSessionFactory == null){
-            InputStream is = null;
-            try {
-                is = Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);
-                sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                System.out.println(&quot;配置文件加载失败&quot;);
-                e.printStackTrace();
-            }
+//内部处理所需
+//初始化类
+-(instancetype) init{
+    self = [super init];
+    if(self){
+        _levels = [NSMutableArray arrayWithCapacity:20];
+        _cities = [NSMutableArray arrayWithArray:[CityDB loadAllCity]];
+        [self shuffleCities];//随机生成关卡
+        _currentLevelIndex = 0;
+        _currentScore = 0;
+        _gameOver = false;
+        _allowTime = 3;
+    }
+    return  self;
+}
+//根据CityDB加载的城市列表，随机关卡出现的顺序
+-(void) shuffleCities{
+    Level* level;
+    for(int i = 0; i&lt;[[CityDB loadAllCity] count];i++){
+        level = [Level initWithCity:[self getACityRandom]];
+        [_levels addObject:level];
+    }
+}
+//从未出现过的City中随机选取一个
+-(City *)getACityRandom{
+    int i = arc4random() % _cities.count;
+    City* city = [_cities objectAtIndex:i];
+    [_cities removeObjectAtIndex:i];//把选取中的从待选取列表中移除
+    return city;
+}
+//获得当前的关卡标号
+-(Level *)getCurrentLevel{
+    return [_levels objectAtIndex:_currentLevelIndex];
+}
+//前往下一关
+-(void) nextLevel{
+    _currentLevelIndex++;
+    if(_currentLevelIndex &gt;= _levels.count){
+        self.gameOver = YES;
+    }
+}
+//根据输入判断是否过关
+-(BOOL) guessCityByName:(NSString *)cityName{
+    Level* currentLevel =[self getCurrentLevel];
+    City* current = currentLevel.city;
+    if([cityName isEqualToString:current.cityName]){
+        self.currentScore += 10;
+        [self nextLevel];
+        return YES;
+    }else{
+      //增加已尝试次数
+        currentLevel.time++;
+        if (currentLevel.time &gt;= _allowTime) {
+            self.gameOver = YES;
         }
-        return sqlSessionFactory;
     }
-    public static SqlSession openSession(){
-        return getSqlSessionFactory().openSession();
-    }
+    return NO;
 }
-</code></pre></li>
-<li><p>创建实体数据库访问<em>接口</em>：</p>
-
-<pre><code class="language-java">package site.zhanjingbo.dao;
-import site.zhanjingbo.model.User;
-public interface UserMapper {
-    public int addUser(User user);
+//返回本关卡剩余可尝试次数
+-(int)getTryTimes{
+    return _allowTime - [self getCurrentLevel].time;
 }
-</code></pre></li>
-<li><p>创建映射Mapper配置文件</p>
-
-<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;
-    &lt;insert id=&quot;addUser&quot; parameterType=&quot;site.zhanjingbo.model.User&quot;&gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>创建测试类 </p>
-
-<pre><code class="language-java"> package site.zhanjingbo.test;
- import org.apache.ibatis.session.SqlSession;
- import site.zhanjingbo.mapper.UserMapper;
- import site.zhanjingbo.model.User;
- import site.zhanjingbo.util.SqlSessionFactoryUtil;
- public class MyBatisTest {
-    public static void main(String[] args) {
-        //获取SqlSession实例
-        SqlSession sqlSession = SqlSessionFactoryUtil.openSession();
-        //根据sqlSession生成对应的Mapper对象
-        UserMapper userDao = sqlSession.getMapper(UserMapper.class);
-
-        User user = new User(&quot;test&quot;, &quot;123&quot;);
-        int flag = userDao.addUser(user);
-
-        if(flag &gt; 0){
-            System.out.println(&quot;添加成功&quot;);
-        }
-
-        //提交事务
-        sqlSession.commit();
-        //关闭SQLSession
-        sqlSession.close();
-
-    }
-}
+@end
 </code></pre></li>
 </ol>
 
-<h2 id="toc_2">Mybatis-Config.xml配置文件</h2>
+<p>本文对游戏的实现，并不是最佳实现，读者可根据自己的理解分析对类进行设计与实现。</p>
 
-<p>本部分简要描述一下Mybatis-config配置文件的各项内容。<br/>
-<code>&lt;configuration&gt;&lt;/configuration&gt;</code>是配置文件xml的根节点，所有配置项都其中。主要包含以下几项：</p>
+<h2 id="toc_2">Demo演示</h2>
 
-<h3 id="toc_3">properties参数配置</h3>
-
-<ul>
-<li>properties主要包含各类配置信息，可以直接引入properties文件。也可以直接设置键值对。</li>
-<li><code>&lt;properties  resource=&quot;jdbc.properties&quot;/&gt;</code> 通过resource来指定配置文件</li>
-<li><p>直接写入键值对，写法</p>
-
-<pre><code class="language-xml">&lt;properties&gt;
-    &lt;property name=&quot;jdbc.dirverCLassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;
- &lt;/properties&gt;
-</code></pre></li>
-</ul>
-
-<h3 id="toc_4">environments 环境配置</h3>
-
-<p>MyBatis支持多环境配置。可以同时配置多个数据库信息。用<code>&lt;environment&gt;</code>标签表示。</p>
-
-<h4 id="toc_5">environment标签</h4>
-
-<p>每一对<code>&lt;environment&gt;&lt;/environment&gt;</code>标签标示一个数据库环境信息。包含transactionManager、dataSource两个子节点。<br/>
-样例代码：</p>
-
-<pre><code class="language-xml">&lt;environments default=&quot;development&quot;&gt;
-        &lt;environment id=&quot;development&quot;&gt;
-              &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-              &lt;dataSource type=&quot;POOLED&quot;&gt;
-                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
-                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-              &lt;/dataSource&gt;
-        &lt;/environment&gt;
-        &lt;environment id=&quot;test&quot;&gt;
-            &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-            &lt;dataSource type=&quot;POOLED&quot;&gt;
-                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
-                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-              &lt;/dataSource&gt;
-        &lt;/environment&gt;
- &lt;/environments&gt;
-</code></pre>
-
-<h5 id="toc_6">transactionManager事务管理方式</h5>
-
-<p>MyBatis支持两种类型的事务管理器：JDBC和MANAGED(托管)：</p>
-
-<ul>
-<li>JDBC：应用程序负责管理数据库连接的声明周期</li>
-<li>MANAGED：由应用服务器管理数据库连接的声明周期。（一般商业服务器才有此功能，如JBOSS，WebLogic）</li>
-<li><code>&lt;transactionManager type=&quot;JDBC&quot;/&gt;</code></li>
-</ul>
-
-<h5 id="toc_7">dataSource数据源</h5>
-
-<p>用来配置数据库数据源信息。类型分为：UNPOOLED,POOLED,JNDI：</p>
-
-<ul>
-<li>UNPOOLED：没有连接池，每次数据库操作MyBatis都会新建一个数据库连接，用完后，关闭。适合小并发项目。</li>
-<li>POOLED：启用连接池</li>
-<li>JNDI：使用服务器配置JNDI数据源获取数据库连接</li>
-</ul>
-
-<h3 id="toc_8">typeAliases</h3>
-
-<p>类型别名，通过设置该项目可以给类的完整限定名取别名，方便使用。<br/>
-如在上面部分 UserMapper.xml中addUser的参数类别写为<code>site.zhanjingbo.model.User</code>。不方便使用。我们可以在Mybatis-config.xml中加入如下代码：</p>
-
-<pre><code class="language-xml">&lt;typeAliases&gt;
-    &lt;typeAlias type=&quot;site.zhanjingbo.model.User&quot; alias=&quot;User&quot;/&gt;
-&lt;/typeAliases&gt;
-</code></pre>
-
-<p>便可以使用<em>User</em>来指代<em>site.zhanjingbo.model.User</em>。</p>
-
-<h3 id="toc_9">Mappers映射</h3>
-
-<p>用于引入Mapper映射文件。有三种比较推荐的配置方式，如下代码：</p>
-
-<pre><code class="language-xml">  &lt;mappers&gt;
-    &lt;mapper resource=&quot;site/zhanjingbo/dao/UserMapper.xml&quot;/&gt;
-    &lt;mapper class=&quot;site.zhanjingbo.dao.UserMapper&quot;/&gt;
-    &lt;!-- 包含这个包下的所有 --&gt;
-    &lt;package name=&quot;site.zhanjingbo.dao&quot;/&gt;
-  &lt;/mappers&gt;
-</code></pre>
-
-<p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_34_04.gif" alt="演示1"/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_48_52.gif" alt="演示2"/></p>
 
                         
                       </div>
@@ -345,10 +248,10 @@ public interface UserMapper {
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/7/17</span>
+                    <span class="date">2016/3/16</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java</a></span>
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -356,7 +259,440 @@ public interface UserMapper {
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14687533604786.html" data-count-type="comments" href="14687533604786.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14581131891410.html" data-count-type="comments" href="14581131891410.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14580567370996.html">
+                
+                  <h1>GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>标题中提到的所有UI控件都可以通过Interface Builder轻松地创建，以下内容仅讨论使用代码建立和修改相关属性</p>
+</blockquote>
+
+<h2 id="toc_0">UILabel</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(x, y, width, height)]; 
+</code></pre></li>
+<li><p>常用属性</p>
+
+<pre><code> //设置显示文字     
+label.text = @&quot;label1&quot;;
+//设置字体:粗体，正常的是 SystemFontOfSize     
+label.font = [UIFont boldSystemFontOfSize:20];     
+//设置文字颜色  
+label.textColor = [UIColor orangeColor];   
+//设置文字排版方式     
+label.textAlignment = UITextAlignmentRight;     
+label.textAlignment = UITextAlignmentCenter;     
+//设置字体大小适应label宽度     
+label.adjustsFontSizeToFitWidth = YES;
+//设置label的显示行数  
+label.numberOfLines = 2; 
+//背景色，也可以设置背景图   
+label.backgroundColor=[UIColor clearColor]; //可以去掉背景色   
+//设置高亮     
+label.highlighted = YES;     
+label.highlightedTextColor = [UIColor orangeColor];     
+//设置阴影     
+label.shadowColor = [UIColor redColor];     
+label.shadowOffset = CGSizeMake(1.0,1.0);     
+//设置是否能与用户进行交互     
+label.userInteractionEnabled = YES;     
+//设置label中的文字是否可变，默认值是YES     
+label.enabled = NO;     
+//设置文字过长时的显示格式     
+label.lineBreakMode = UILineBreakModeMiddleTruncation;//截去中间     
+//  typedef enum {     
+//      UILineBreakModeWordWrap = 0,     
+//      UILineBreakModeCharacterWrap,     
+//      UILineBreakModeClip,//截去多余部分     
+//      UILineBreakModeHeadTruncation,//截去头部     
+//      UILineBreakModeTailTruncation,//截去尾部     
+//      UILineBreakModeMiddleTruncation,//截去中间     
+//  } UILineBreakMode;     
+</code></pre></li>
+</ol>
+
+<h2 id="toc_1">UIButton</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code> //UIButton的定义
+UIButton *button=[[UIButton buttonWithType:(UIButtonType);
+//typedef enum {
+//  UIButtonTypeCustom = 0, 自定义风格
+//  UIButtonTypeRoundedRect, 圆角矩形
+//  UIButtonTypeDetailDisclosure, 蓝色小箭头按钮，主要做详细说明用
+//  UIButtonTypeInfoLight, 亮色感叹号
+//  UIButtonTypeInfoDark, 暗色感叹号
+//  UIButtonTypeContactAdd, 十字加号按钮
+//} UIButtonType;
+</code></pre></li>
+<li><p>常用方法</p>
+
+<pre><code>//设置frame
+button.frame = CGRectMake(20, 20, 280, 40);
+[button setFrame:CGRectMake(20,20,50,50)];
+
+//button背景色
+button.backgroundColor = [UIColor clearColor];
+[button setBackgroundColor:[UIColor blueColor]];
+
+//是否可点击，默认为YES
+button.enable = NO;                          
+//设置button填充图片和背景图片
+[button setImage:(UIImage) forState:UIControlStateNormal];
+[button setBackgroundImage:(UIImage)forState:UIControlStateNormal];
+//设置button标题和标题颜色
+[button1 setTitle:@&quot;点击&quot; forState:UIControlStateNormal];
+[button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+
+//添加或删除事件处理
+[button addTarget:self action:@selector(butClick:)forControlEvents:UIControlEventTouchUpInside];
+[button removeTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
+</code></pre></li>
+</ol>
+
+<h2 id="toc_2">UIImageView</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UIImageView *imageView = [[UIImageView alloc ] init];
+//UIImage加载有两种方式
+//方案1
+UIImage *image = [UIImage imageNamed:@&quot;image_photo&quot;];
+//方案2
+NSString *filePath=[[NSBundle mainBundle] pathForResource:@&quot;image_photo&quot; ofType:@&quot;jpg&quot;];
+UIImage *image=[UIImage imageWithContentsOfFile:filePath];
+
+imageView.image = image;
+</code></pre>
+
+<p>方案一：用imageNamed的方式加载时，系统会把图像Cache到内存。如果图像比较大，或者图像比较多，用这种方式会消耗很大的内存，而且释放图像的内存是一件相对来说比较麻烦的事情。例如：如果利用imageNamed的方式加载图像到一个动态数组NSMutableArray，然后将将数组赋予一个UIView的对象的animationImages进行逐帧动画，那么这将会很有可能造成内存泄露。并且释放图像所占据的内存也不会那么简单。但是利用imageNamed加载图像也有自己的优势。对于同一个图像系统只会把它Cache到内存一次，这对于图像的重复利用是非常有优势的。例如：你需要在一个TableView里重复加载同样一个图标，那么用imageNamed加载图像，系统会把那个图标Cache到内存，在Table里每次利用那个图像的时候，只会把图片指针指向同一块内存。这种情况使用imageNamed加载图像就会变得非常有效。<br/>
+方案二：就是每次单独加载图片，系统不缓存。使用完后记得释放。</p></li>
+<li><p>常用方法</p>
+
+<pre><code> //设置圆角
+imageView.layer.masksToBounds = YES;
+imageView.layer.cornerRadius = 10;
+
+//设置边框颜色和大小
+imageView.layer.borderColor = [UIColor orangeColor].CGColor;
+imageView.layer.borderWidth = 2;
+
+//播放一系列图片
+UIImage *image1 = [UIImage imageNamed:@&quot;1&quot;];
+UIImage *image2 = [UIImage imageNamed:@&quot;2&quot;];
+UIImage *image3 = [UIImage imageNamed:@&quot;3&quot;];
+NSArray *imagesArray = @[image1,image2,image3];
+imageView.animationImages = imagesArray;
+// 设定所有的图片在多少秒内播放完毕
+imageView.animationDuration = [imagesArray count];
+// 重复播放多少遍，0表示无数遍
+imageView.animationRepeatCount = 0;
+// 开始播放
+[imageView startAnimating];
+
+ //为图片添加单击事件：一定要先将userInteractionEnabled置为YES，这样才能响应单击事件
+imageView.userInteractionEnabled = YES;
+UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapImageView:)];
+[imageView addGestureRecognizer:singleTap];
+
+//其他设置
+imageView.hidden = YES或者NO;    // 隐藏或者显示图片
+imageView.alpha =0.5;    // 设置透明度
+// 设置高亮时显示的图片
+imageView.highlightedImage = (UIImage *)hightlightedImage;
+imageView.image = (UIImage *)image; // 设置正常显示的图片
+</code></pre></li>
+</ol>
+
+<h2 id="toc_3">UITextField</h2>
+
+<ol>
+<li><p>建立</p>
+
+<pre><code>UITextField* textField = [[UITextField alloc] initWithFrame:CGRectMake(x, y, width, height)];
+</code></pre></li>
+<li><p>常用方法</p>
+
+<pre><code>textField setBorderStyle:UITextBorderStyleRoundedRect]; //外框类型
+textField.placeholder = @&quot;password&quot;; //默认显示的字 
+textField.secureTextEntry = YES; //密码 
+
+textField.autocorrectionType = UITextAutocorrectionType; //设置是否自动纠错
+typedef enum {
+    UITextAutocorrectionTypeDefault, //默认
+    UITextAutocorrectionTypeNo, 　//不自动纠错
+    UITextAutocorrectionTypeYes,　//自动纠错
+}UITextAutocorrectionType;
+
+textField.clearButtonMode = UITextFieldViewMode; //编辑时会出现个修改X
+typedef enum {
+    UITextFieldViewModeNever,　//重不出现
+    UITextFieldViewModeWhileEditing, //编辑时出现
+    UITextFieldViewModeUnlessEditing,　//除了编辑外都出现
+    UITextFieldViewModeAlways 　//一直出现
+}UITextFieldViewMode; 
+
+//可以在UITextField使用下面方法，按return键返回
+-(IBAction) textFieldDone:(id) sender
+{
+ [textFieldName resignFirstResponder]; 
+}
+//链接TextField控件的&quot;Did end on exit&quot;
+
+//再次编辑就清空
+textField.clearsOnBeginEditing = YES; 
+
+//设置键盘样式
+textField.keyboardType = UIKeyboardType;
+typedef enum {
+        UIKeyboardTypeDefault,     　//默认键盘，支持所有字符         
+        UIKeyboardTypeASCIICapable,　//支持ASCII的默认键盘
+        UIKeyboardTypeNumbersAndPunctuation,　//标准电话键盘，支持＋＊＃字符
+        UIKeyboardTypeURL,            //URL键盘，支持.com按钮 只支持URL字符
+        UIKeyboardTypeNumberPad,       //数字键盘
+        UIKeyboardTypePhonePad,　 　//电话键盘
+        UIKeyboardTypeNamePhonePad, 　//电话键盘，也支持输入人名
+        UIKeyboardTypeEmailAddress, 　//用于输入电子邮件地址的键盘     
+        UIKeyboardTypeDecimalPad,   　//数字键盘有数字和小数点
+        UIKeyboardTypeTwitter,      　//优化的键盘，方便输入@、#字符
+        UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable, 
+}UIKeyboardType;
+
+//return键样式
+text.returnKeyType =UIReturnKeyType;
+typedef enum {
+    UIReturnKeyDefault, 默认 灰色按钮，标有Return
+    UIReturnKeyGo,    　标有Go的蓝色按钮
+    UIReturnKeyGoogle,标有Google的蓝色按钮，用语搜索
+    UIReturnKeyJoin,标有Join的蓝色按钮
+    UIReturnKeyNext,标有Next的蓝色按钮
+    UIReturnKeyRoute,标有Route的蓝色按钮
+    UIReturnKeySearch,标有Search的蓝色按钮
+    UIReturnKeySend,标有Send的蓝色按钮
+    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
+    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
+    UIReturnKeyEmergencyCall, 紧急呼叫按钮
+} UIReturnKeyType;
+
+</code></pre></li>
+</ol>
+
+<h2 id="toc_4">To ALL</h2>
+
+<p>把上述View加入页面[self.view addSubview:(UIView)]需注意两点：</p>
+
+<ol>
+<li>这个方法会retain一次view，并且设置它的下一个响应者是receiver，即它的新的父视图。</li>
+<li>每一个视图只能有唯一的一个父视图。如果当前操作视图已经有另外的一个父视图，则addsubview的操作会把它先从上一个父视图中移除（包括响应者链），再加到新的父视图上面。</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14580567370996.html" data-count-type="comments" href="14580567370996.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14578438756442.html">
+                
+                  <h1>前笔记汇总</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
+但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
+给大家留个传送门。<br/>
+<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
+<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
+<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
+<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
+<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
+<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
+<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14578438756442.html" data-count-type="comments" href="14578438756442.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14577530083114.html">
+                
+                  <h1>GeekBand-OC中的类别和协议</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
+</blockquote>
+
+<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
+
+<pre><code> @interface 已有类 （类别名）
+    //.......方法实现
+ @end
+</code></pre>
+
+<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
+
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+@interface NSNumber (code)
+ -(NSNumber *) add:(double) num;
+ -(NSNumber *) mult:(double) num
+@end
+</code></pre>
+
+<p>该类别的实现部分如下</p>
+
+<pre><code> #import &quot;NSNumber+code.h&quot;
+
+ @implementation NSNumber (code)
+ -(NSNumber *) add:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue] +num)];
+}
+-(NSNumber *) mult:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
+}
+@end
+</code></pre>
+
+<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
+
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
+
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
+
+<hr/>
+
+<h2 id="toc_0">扩展（extension）</h2>
+
+<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
+
+<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
+
+<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
+
+<pre><code>//&quot;Vehicle.m&quot;
+#import &quot;Vehicle.h&quot;
+@interface Vehicle ()
+@property(nonatomic, strong) NSString *color;
+-(void) drive:(NSString *)name;
+@end
+@implementation Vehicle
+-(void) drive:(NSString *)name
+{
+    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
+}
+@end
+</code></pre>
+
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
+
+<hr/>
+
+<h2 id="toc_1">协议（protocol）</h2>
+
+<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
+
+<p>正式协议使用@protocol关键字定义</p>
+
+<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
+    {
+          //.....方法声明
+    }
+    @end
+</code></pre>
+
+<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
+遵守协议的语法如下：</p>
+
+<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
+</code></pre>
+
+<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
+协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
+
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -374,7 +710,7 @@ public interface UserMapper {
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_9.html">&raquo; Next Page</a> 
+			
 			</p>
 			  </div>
 			</div>

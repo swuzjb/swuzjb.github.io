@@ -99,64 +99,144 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14720186733605.html">
+                <a class="clearlink" href="14676190809439.html">
                 
-                  <h1>简述HTTP请求过程</h1>
+                  <h1>Java康复性训练——Java基础1</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<blockquote>
-<p>HTTP请求是web程序服务的基础，要想写好web程序，必然要对http请求的过程进行掌握。</p>
-</blockquote>
+                        	<h2 id="toc_0">开发环境搭建</h2>
 
-<h2 id="toc_0">HTTP请求步骤</h2>
+<h3 id="toc_1">JDK的安装与配置</h3>
 
 <ol>
-<li>如果是以域名形式进行web访问，则浏览器会先通过DNS服务将域名转化为对应的IP地址，为下一步访问做准备。</li>
-<li>通过IP地址与服务器建立TCP连接</li>
-<li>客户端向服务器端发送Request请求</li>
-<li>服务器端向客户端发送Response响应</li>
-<li>服务器端关闭TCP连接。一般情况下，一旦Web服务器向浏览器发送了请求数据，它就要关闭TCP连接，然后如果浏览器或者服务器在其头信息加入了这行代码：<code>Connection:keep-alive</code>。TCP连接在发送后将仍然保持打开状态，于是，浏览器可以继续通过相同的连接发送请求。保持连接节省了为每个请求建立新连接所需的时间，还节约了网络带宽。 </li>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
+
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
 </ol>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-08-24-14720197735370.jpg" alt=""/></p>
+<h3 id="toc_2">开发工具eclipse</h3>
 
-<h2 id="toc_1">HTTP请求头,响应头字段</h2>
+<p>下载地址：<a href="http://eclipse.org"></a></p>
 
-<h3 id="toc_2">请求头</h3>
+<h2 id="toc_3">Hello Java</h2>
 
-<ul>
-<li>Accept: text/html, image/* ：客户机支持的数据类型</li>
-<li>Accept-Charset: UTF-8 ：客户机采用的编码</li>
-<li>Accept-Encoding: gzip,compress:客户机支持的数据压缩格式</li>
-<li>Accept-Language: en-us,zh-cn:客户机的语言环境</li>
-<li>Host: localhost:8080 :访问的主机名</li>
-<li>If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT : 资源的缓存时间,用以判断服务器上的资源是否发生变化</li>
-<li>Referer: <a href="http://www.zhanjingbo.site">http://www.zhanjingbo.site</a> : 从哪个页面跳转来访问资源的,用以实现防盗链</li>
-<li>User-Agent: Mozilla/4.0 (compatible;MSIE 5.5;Windows NT 5.0):客户机的软件环境</li>
-<li>Connection: close/Keep-Alive:请求结束后,是关闭连接还是保持连接</li>
-<li>Date: Tue, 11 Jul 2000 18:23:51 GMT当前请求时间</li>
-<li>Range:指示服务器只传输一部分web资源.可以用来实现断点续传功能
+<pre><code class="language-java">
+public class Hello {
 
-<ul>
-<li>Range字段可以通过3种格式设置要传输的字节范围:</li>
-<li>Range: bytes=1000-2000:传输范围从1000到2000字节</li>
-<li>Range: bytes=1000-:传输第1000个字节以后的所有内容</li>
-<li>Range: bytes=10000:传输最后1000个字节</li>
-</ul></li>
-</ul>
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
 
-<h3 id="toc_3">响应头</h3>
+}
 
-<ul>
-<li>Location：这个头配合302状态码使用，重定向地址</li>
-<li>Server:Apache-Coyote/1.1:服务器类的类型</li>
-<li>Content-Encoding：服务器通过这个头，数据压缩的格式</li>
-<li>Content-Type：服务器通过这个头告诉浏览器送回数据的类型</li>
-<li>Refresh：服务器通过这个头，告诉浏览器隔多长时间刷新一次</li>
-<li>Connection:keep-alive\close:访问完后的状态</li>
-</ul>
+</code></pre>
+
+<h2 id="toc_4">输入</h2>
+
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
 
                         
                       </div>
@@ -165,7 +245,7 @@
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/8/24</span>
+                    <span class="date">2016/7/4</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java</a></span>
@@ -176,7 +256,687 @@
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14720186733605.html" data-count-type="comments" href="14720186733605.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14640741638557.html">
+                
+                  <h1>GeekBand.Swift-Homework13</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">题目</h2>
+
+<p>请说出下面代码存在的问题，以及改进方式。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">回答</h2>
+
+<h3 id="toc_2">问题分析</h3>
+
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
+
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+</code></pre>
+
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14635750426080.html">
+                
+                  <h1>GeekBand.Swift-集合类型</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">数组(Array)</h2>
+
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+
+<h3 id="toc_1">内存模型</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
+
+<h3 id="toc_2">使用数组</h3>
+
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
+
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
+
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
+</code></pre>
+
+<h4 id="toc_3">数组遍历</h4>
+
+<ul>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
+</ul>
+
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
+
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
+
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
+</code></pre>
+
+<h4 id="toc_4">缓存容量与增长</h4>
+
+<ul>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
+</ul>
+
+<h4 id="toc_5">copy-on-write共享技术</h4>
+
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
+
+<h2 id="toc_6">集合类型(Set)</h2>
+
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
+
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
+
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/18</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14634889513152.html">
+                
+                  <h1>GeekBand.Swift-协议</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
+</blockquote>
+
+<h2 id="toc_0">协议的成员</h2>
+
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
+
+<h2 id="toc_1">协议的使用</h2>
+
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
+
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
+    }
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
+}
+class Image :Drawable{
+    var description:String{
+        get{
+            return self.description;
+        }
+    }
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
+}
+</code></pre>
+
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
+
+<ul>
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
+
+<ul>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
+
+<ol>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
+</ol>
+
+<h3 id="toc_4">协议中的方法</h3>
+
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
+
+<ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
+
+<ul>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
+</ul></li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/17</span>
+                    
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14633841095158.html">
+                
+                  <h1>GeekBand.Swift-面向对象</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>面向对象三大特性：封装、继承、多态</p>
+</blockquote>
+
+<h2 id="toc_0">封装</h2>
+
+<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
+通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+
+<h3 id="toc_1">访问控制符</h3>
+
+<ol>
+<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
+<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
+<li>public —— 可以被任何人使用</li>
+</ol>
+
+<h3 id="toc_2">一个例子</h3>
+
+<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+
+<pre><code class="language-swift">class Circle {
+    private var area: Double = 0;
+    private var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures();
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius;
+        calculateFigures();
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius;
+        diameter = 2 * M_PI * radius;
+    }
+
+    func getArea() -&gt; Double {
+        return self.area;
+    }
+
+    func getDiameter() -&gt; Double {
+        return self.diameter;
+    } 
+}
+</code></pre>
+
+<p>Swift还为我们提供了简便方法。<br/>
+通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
+
+<pre><code class="language-swift">class Circle {
+    private(set) var area: Double = 0;
+    private(set) var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures()
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius
+        calculateFigures()
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius
+        diameter = 2 * M_PI * radius
+    }
+}
+</code></pre>
+
+<p>当然也可以为属性设置公有的getter方法：</p>
+
+<pre><code class="language-switf">public private(set) var area: Double = 0
+public private(set) var diameter: Double = 0
+</code></pre>
+
+<h2 id="toc_3">继承</h2>
+
+<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
+在Swift中，子类继承父类的属性、方法、下标。</p>
+
+<h3 id="toc_4">一个例子</h3>
+
+<pre><code class="language-swift">struct Point{
+    var x=0;
+    var y=0;
+}
+class Shape{
+    var no=0;
+    func move() {
+        print(&quot;NO: \(no) Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    var leftUp=Point();
+    var width=0;
+    var height=0;
+    
+}
+class Circle: Shape{
+    var center=Point();
+    var radius=0;
+}
+</code></pre>
+
+<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
+
+<h3 id="toc_5">方法重写</h3>
+
+<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
+
+<pre><code class="language-swift">class Shape{
+    var no=0;
+    //用final关键字修饰，子类无法重写
+    final func show(){
+        print(&quot;Shape.show&quot;);
+    }
+    func move() {
+        print(&quot;Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    //重写父类的no属性
+    override var no: Int {
+        get{
+            print(&quot;Rectangle.no.get()&quot;);
+            return super.no;
+        }
+        set{
+            print(&quot;Rectangle.no.set()&quot;);
+            super.no=newValue;
+        }
+    }
+    override func move() {
+        print(&quot;Rectangle.move&quot;);
+    }
+    
+}
+class Circle: Shape{
+    override func move() {
+        print(&quot;Circle.move&quot;);
+    }
+}
+</code></pre>
+
+<h3 id="toc_6">继承中的初始化器和析构器</h3>
+
+<h4 id="toc_7">初始化器</h4>
+
+<ul>
+<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
+<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
+<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
+<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+</ul>
+
+<h4 id="toc_8">析构器</h4>
+
+<ul>
+<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
+<li>子类析构器执行完毕后，会自动调用父类析构器</li>
+<li>子类析构器自动具有多态性</li>
+</ul>
+
+<h2 id="toc_9">多态</h2>
+
+<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+
+<pre><code class="language-swift">//如下代码是没有问题的
+var rect:Shape;
+rect = Rectangle();
+//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
+rect.move();
+
+</code></pre>
+
+<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
                        
                   </span>
                   </div>
