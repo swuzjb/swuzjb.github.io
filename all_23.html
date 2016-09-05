@@ -99,128 +99,117 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="14603833170565.html">
+                <a class="clearlink" href="14604722520928.html">
                 
-                  <h1>GeekBand.iOS-触摸手势</h1>
+                  <h1>GeekBand.iOS-UIScrollView的使用</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">什么是手势</h2>
+                        	<p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
 
-<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
+<h2 id="toc_0">什么是ScrollView</h2>
 
-<ul>
-<li>Tap 轻拍</li>
-<li>Swipe  单轴滑动</li>
-<li>Double tap  连续两次轻拍</li>
-<li>Long press  长按</li>
-<li>Pinch   捏合手指</li>
-<li>Two finger tap 双指轻拍 </li>
-<li>Rotate 旋转</li>
-</ul>
+<p>能Scroll的View。即UIScrollView可以用于显示多于一个屏幕的内容，超出屏幕范围的内容可以通过滑动进行查看。效果如图所示:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604727346930.jpg" alt=""/></p>
 
-<h2 id="toc_1">实现的原理</h2>
+<h2 id="toc_1">UIScrollView的创建方式</h2>
 
 <ol>
-<li>收集一些列的UITouch</li>
-<li>分析是否符合所需要的规律
-
-<ul>
-<li>符合：触发手势响应</li>
-<li>否则：转为普通触摸事件响应</li>
-</ul></li>
+<li>在Interface Builder里面拖</li>
+<li>使用代码创建:<code>scrollView = [[UIScrollView alloc] initWithFrame:rect];</code></li>
 </ol>
 
-<p>Some Example</p>
+<h2 id="toc_2">UIScrollView的尺寸</h2>
 
-<pre><code>//Double Tap
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    for(UITouch *aTouch in touches){
-        if(aTouch.tapCount &gt;= 2){
-            [self respondToDoubleTapFesture:aTouch];
-        }
-    }
-}
+<ol>
+<li>ScrollView自身的size，也就是自身的Frame，这个和其它View一样。</li>
+<li>ScrollView有一个特殊的size属性，称之为contentSize，也是它的内容的大小，这个是必须指定的一个属性，否则ScrollView无法进行滑动等操作。指定contentSize的方式也有两种：
 
-//Drag
--(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    UITouch *aTouch = [touches anyObject];
-    CGPoint loc = [aTouch locationInView:self];
-    CGPpoint preloc= [aTouch previouslocationInView:self];
-    
-    CGRect myFrame = self.frame;
-    float deltaX = loc.x - preloc.x;
-    float deltaY = loc.y - preloc.y;
-    myFrame.orgin.x += deltaX;
-    myFrame.orgin.Y += deltaY;
-    [self setFrame:myFrame];
-    
-}
+<ol>
+<li>使用代码指定<code>scrollView.contentSize = CGSizeMake(&lt;#CGFloat width#&gt;, &lt;#CGFloat height#&gt;);</code></li>
+<li>使用AutoLayout,约束必须可以计算出contentSize的大小才可以正常的往其内部添加子View。可以参考<a href="http://www.cocoachina.com/ios/20150104/10810.html">Storyboard中的UIScrollView使用自动布局，使其能够滚动</a>。</li>
+</ol></li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604733972117.jpg" alt=""/></p>
+
+<h2 id="toc_3">UIScrollView的滚动</h2>
+
+<p>设置完成ScrollView之后，我们的ScrollView就可以进行滚动。与滚动有几个相关的属性或方法，介绍如下：</p>
+
+<ol>
+<li><code>BOOL scrollEnable</code>是否可以滚动</li>
+<li><code>BOOL bounces</code>是否显示回弹效果</li>
+<li><code>BOOL showsHorizontalScrollIndicator</code> 是否显示垂直滚动条</li>
+<li><code>BOOL showsVerticalScrollIndicator</code>  是否显示水平滚动条</li>
+<li><code>.contentOffset</code>是一个CGPoint，表示偏移的点
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604737957967.jpg" alt=""/></li>
+</ol>
+
+<h2 id="toc_4">监听滚动</h2>
+
+<p>监听滚动需要对应的监听对象实现UIScrollViewDelegate协议。<br/>
+具体的监听方法如下：</p>
+
+<pre><code>// 只要 scrollView 滑动就会触发 ( 会触发多次 )
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView;                                               
+
+//只要 scrollView 缩放就会触发
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView 
+
+// 当将要拖拽 scrollView 时触发 , 手指接触 scrollView 并且将要滑动时触发
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
+// 当结束拖拽时触发 ( 手指将要离开屏幕 )
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset NS_AVAILABLE_IOS(5_0);
+
+// 当结束拖拽时触发 ( 手指已经离开屏幕 )
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
+
+//当 scrollView 滑动将要减速时触发 ( 将要停止 )
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView;   
+//当 scrollView 结束减速时触发 ( 停止滑动 )
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;    
+//当设置 scrollView的setContentOffset, 有一个动画效果时触发
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView; 
+//设置要缩放的 scrollView 上面的哪一个子视图 , 只能是子视图 , 不能是 scrollView 本身
+- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;     
+//当将要开始缩放时触发
+- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view NS_AVAILABLE_IOS(3_2); 
+//当结束缩放时触发
+- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale; 
+//只有当 scrollsToTop 属性设置为 YES 时 , 该方法才会触发 , 进一步询问点击状态条是否有效
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;  
+//当点击状态条并且 scrollView 滑动到顶端时触发
+- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;      
+
 </code></pre>
 
-<h2 id="toc_2">UIControl</h2>
+<h2 id="toc_5">ScrollView缩放</h2>
 
-<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
+<p>除了要指定那个View具有缩放的效果，还需要指定两个属性，<code>scrollView.minimumZoomScale</code>、<code>scrollView.maximumZoomScale</code>。直接Zoom是位图缩放而非重绘</p>
+
+<h2 id="toc_6">ScrollView分页滚动</h2>
+
+<p>通过设置.pageEnable属性可以控制是否开启分页滚动，当开启后，scrollView不再显示滚动条，并整页切换显示内容。<br/>
+页面来源：</p>
 
 <ul>
-<li>UIControl：UIView：UIResponder</li>
-<li>Traget-Action</li>
-<li>UIControlEvents
-
-<ul>
-<li>TouchDown</li>
-<li>TouchDownRepeat</li>
-<li>TouchDragInside</li>
-<li>TouchDragOutside</li>
-<li>TouchDragEnter</li>
-<li>TouchUpInside</li>
-<li>TouchUpOutside</li>
-<li>TouchCancel</li>
-<li>ValueChanged</li>
-<li>PrimaryActionTriggered</li>
-<li>EditingDidBegin</li>
-<li>EditingChanged</li>
-<li>EditingDidEnd</li>
-<li>EditingDidEndOnExit</li>
-<li>AllTouchEvents</li>
-<li>AllEditingEvents</li>
-</ul></li>
+<li>一个巨大的View，简单但是浪费资源</li>
+<li>每页一个View，通过Delegate实现View的复用</li>
 </ul>
 
-<h2 id="toc_3">UIGestureRecongnizer</h2>
+<h3 id="toc_7">ScrollView和PageControl结合</h3>
 
-<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
-<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
-<code>-[UIView addGestureRecognizer:]</code><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
+<p>这两个View结合起来可以实现图片轮播的效果，通过实现PageControl的delegate可以控制currentPage属性进行显示</p>
 
-<h3 id="toc_4">离散手势与连续手势</h3>
+<h4 id="toc_8">无限轮播</h4>
 
-<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
-
-<h3 id="toc_5">手势识别状态</h3>
-
-<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
-如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
-
-<h3 id="toc_6">同时支持多种手势</h3>
-
-<ul>
-<li><p>用依赖关系改变触发顺序</p>
-
-<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
-b失败之前,a先等待</p></li>
-<li><p>使用UIGestureRecognizerDelegate控制</p>
-
-<ul>
-<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
-<li>-gestureRecognizerShouldBegin:是否可以响应</li>
-<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
-</ul></li>
-</ul>
+<p>为了保证轮播图像首尾相接，无限循环，有两个思路：<br/>
+1. 在第一张图片前加最后一张图片，在最后一张图片后加第一张图片，在delegate中判断，如果到达这两个特殊位置，在程序中进行跳转。举例：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
+如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
+2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
 
                         
                       </div>
@@ -229,7 +218,7 @@ b失败之前,a先等待</p></li>
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2016/4/11</span>
+                    <span class="date">2016/4/12</span>
                     <span>posted in&nbsp;</span> 
           				  
           					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
@@ -240,7 +229,7 @@ b失败之前,a先等待</p></li>
                       
 
                       
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603833170565.html" data-count-type="comments" href="14603833170565.html#ds-thread"></a>
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14604722520928.html" data-count-type="comments" href="14604722520928.html#ds-thread"></a>
                        
                   </span>
                   </div>
@@ -331,6 +320,12 @@ b失败之前,a先等待</p></li>
 	      
 		      
 			      <li class="post">
+			        <a href="14729975970385.html">数据库连接池</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14728168486763.html">Cookie与Session</a>
 			      </li>
 		     
@@ -350,12 +345,6 @@ b失败之前,a先等待</p></li>
 		      
 			      <li class="post">
 			        <a href="14691739607250.html">Java康复性训练——Spring（2）</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14690817459253.html">Java康复性训练——Spring（1）</a>
 			      </li>
 		     
 		  

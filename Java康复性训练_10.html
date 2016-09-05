@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-StoryBoard - Zhan's Blog
+  Java - Zhan's Blog
   
   </title>
   
@@ -90,121 +90,196 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>GeekBand.iOS-StoryBoard</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2016/3/22</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14676190809439.html">
+                
+                  <h1>Java康复性训练——Java基础1</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">开发环境搭建</h2>
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-           
-         
-          <span class="comments">
-            
-
-            
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <blockquote>
-<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
-</blockquote>
-
-<p>本文主要介绍segue。</p>
-
-<h2 id="toc_0">使用storyboard进行页面跳转</h2>
+<h3 id="toc_1">JDK的安装与配置</h3>
 
 <ol>
-<li><p>纯storyBoard操作</p>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
 
-<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
-松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
-从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
-此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
-我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
-<li><p>使用代码调用segue跳转<br/>
-需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
-使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
 </ol>
 
-<h2 id="toc_1">使用segue传递数据</h2>
+<h3 id="toc_2">开发工具eclipse</h3>
 
-<ol>
-<li><p>使用prepareForSegue进行传值</p>
+<p>下载地址：<a href="http://eclipse.org"></a></p>
 
-<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // segue.identifier：获取连线的ID
-    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
-        // segue.destinationViewController：获取连线时所指的界面（VC）
-        //方法1：设置属性
-        ReceiveViewController *receive = segue.destinationViewController;
-        receive.name = @&quot;Garvey&quot;;
-        receive.age = 110;
-        //2:使用KVC给目标场景传值
-        [destinationController setValue:@119 forKey:@number];
-     }
+<h2 id="toc_3">Hello Java</h2>
+
+<pre><code class="language-java">
+public class Hello {
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
+
 }
-</code></pre></li>
-<li><p>返回上级的某个页面<br/>
-使用unwindForSegue进行返回（iOS9+）。<br/>
-<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
-</ol>
 
-      </div>
+</code></pre>
 
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="14586526599234.html" 
-          title="Previous Post: GeekBand.iOS-UIKIT继承关系">&laquo; GeekBand.iOS-UIKIT继承关系</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="14585643199431.html" 
-          title="Next Post: GeekBand.iOS-UIViewController">GeekBand.iOS-UIViewController &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
+<h2 id="toc_4">输入</h2>
 
-          
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
 
-          
-              <div class="ds-thread" data-thread-key="14585764912552.html" data-url="http://swuzjb.github.io/14585764912552.html" data-title="GeekBand.iOS-StoryBoard"></div>
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
 
 
-
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="Java康复性训练_9.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

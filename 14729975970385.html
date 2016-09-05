@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-StoryBoard - Zhan's Blog
+  数据库连接池 - Zhan's Blog
   
   </title>
   
@@ -99,21 +99,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-StoryBoard</h1>
+          <h1>数据库连接池</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/3/22</span>
+          <span class="date">2016/9/4</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java%E5%BA%B7%E5%A4%8D%E6%80%A7%E8%AE%AD%E7%BB%83.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14729975970385.html" data-count-type="comments" href="14729975970385.html#ds-thread"></a>
             
           </span>
 
@@ -121,53 +121,155 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <blockquote>
-<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
-</blockquote>
+      <p>建立数据库连接是一个非常耗时耗资源的行为，在大量并发的情况下，会降低服务器性能。同时，如果连接数超过最大的数据库允许连接值，数据库会直接抛出异常，非常不友好。为了解决上述的问题，我们引入了数据连接池的概念。<br/>
+数据库连接池类似于线程池，通过连接池预先同数据库建立一些连接，放在内存中，应用程序需要建立数据库连接时直接到连接池中申请一个就行，用完后再放回去，避免频繁的新建和关闭连接对象</p>
 
-<p>本文主要介绍segue。</p>
+<h2 id="toc_0">DBCP</h2>
 
-<h2 id="toc_0">使用storyboard进行页面跳转</h2>
+<p>DBCP（DataBase Connection Pool）数据库连接池，是java数据库连接池的一种，由Apache开发，通过数据库连接池，可以让程序自动管理数据库连接的释放和断开。同时DBCP也是tomcat所使用的连接池组价。</p>
 
-<ol>
-<li><p>纯storyBoard操作</p>
+<h3 id="toc_1">DBCP的简单使用DEMO</h3>
 
-<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
-松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
-从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
-此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
-我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
-<li><p>使用代码调用segue跳转<br/>
-需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
-使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
-</ol>
+<pre><code class="language-java">package site.zhanjingbo.HelloDB;
 
-<h2 id="toc_1">使用segue传递数据</h2>
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
-<ol>
-<li><p>使用prepareForSegue进行传值</p>
+import org.apache.commons.dbcp2.BasicDataSource;
 
-<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // segue.identifier：获取连线的ID
-    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
-        // segue.destinationViewController：获取连线时所指的界面（VC）
-        //方法1：设置属性
-        ReceiveViewController *receive = segue.destinationViewController;
-        receive.name = @&quot;Garvey&quot;;
-        receive.age = 110;
-        //2:使用KVC给目标场景传值
-        [destinationController setValue:@119 forKey:@number];
-     }
+public class HelloDBCP {
+
+    static final String DRIVER_NAME = &quot;com.mysql.jdbc.Driver&quot;;
+    static final String DB_URL = &quot;jdbc:mysql://localhost:3307/cloud_study?characterEncoding=utf8&quot;;
+    static final String DB_USER = &quot;root&quot;;
+    static final String DB_PASSWORD = &quot;&quot;;
+
+    public static BasicDataSource ds = null;
+
+    public static void init() {
+        ds = new BasicDataSource();
+        ds.setDriverClassName(DRIVER_NAME);
+        ds.setUsername(DB_USER);
+        ds.setUrl(DB_URL);
+        ds.setPassword(DB_PASSWORD);
+    }
+
+    public static void search() {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = ds.getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(&quot;select username from user&quot;);
+            while (rs.next()) {
+                System.out.println(&quot;Hello &quot; + rs.getString(&quot;username&quot;));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        init();
+        search();
+    }
 }
-</code></pre></li>
-<li><p>返回上级的某个页面<br/>
-使用unwindForSegue进行返回（iOS9+）。<br/>
-<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
-</ol>
+
+</code></pre>
+
+<p>通过上述的demo可见，使用DBCP对数据进行访问实际操作与JDBC并无不同。唯一的区别就是Connection对象的获取是通过BasicDataSource对象来获得而不是DriverManage对象。<br/>
+注：释放Connection对象同样是调用Connection的close()方法，不过这里的close()方法是被DBCP重写过的，是将连接对象重新放回连接池，而不是释放销毁。</p>
+
+<h3 id="toc_2">DBCP高级API</h3>
+
+<p>为了更好的设置和使用DBCP连接池，使数据库连接池效率更高，DBCP还提供了多个API接口供我们使用。</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">接口</th>
+<th style="text-align: center">作用</th>
+<th style="text-align: center">建议</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">.setInitialSize()</td>
+<td style="text-align: center">设置初始化连接数</td>
+<td style="text-align: center">设置为项目预期访问量</td>
+</tr>
+<tr>
+<td style="text-align: center">.setMaxTotal()</td>
+<td style="text-align: center">最大连接数</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">ds.setMaxWaitMillis()</td>
+<td style="text-align: center">线程最大等待时间</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">.setMaxIdle()</td>
+<td style="text-align: center">最大空闲连接数</td>
+<td style="text-align: center">与MinIdle相同</td>
+</tr>
+<tr>
+<td style="text-align: center">.setMinIdle()</td>
+<td style="text-align: center">最小空闲连接数</td>
+<td style="text-align: center">与MaxIdle相同</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="toc_3">DBCP定期检查</h4>
+
+<p>为了保证连接池中的连接都是有效的，我们需要定期的对连接池中的连接进行检查，对失效的连接及时进行关闭。相关API如下：</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">API</th>
+<th style="text-align: center">作用</th>
+<th style="text-align: center">建议</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">.setTestWhileIdle(true)</td>
+<td style="text-align: center">是否开启定期检查</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">.setMinEvictableIdle</td>
+<td style="text-align: center">最小空闲时间，超过该值被销毁</td>
+<td style="text-align: center">小于服务器连接失效时间(一般为8小时)</td>
+</tr>
+<tr>
+<td style="text-align: center">.setTimeBetweenEvictionRunsMillis</td>
+<td style="text-align: center">检查时间间隔</td>
+<td style="text-align: center"></td>
+</tr>
+</tbody>
+</table>
 
       </div>
 
@@ -175,16 +277,13 @@
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14586526599234.html" 
-          title="Previous Post: GeekBand.iOS-UIKIT继承关系">&laquo; GeekBand.iOS-UIKIT继承关系</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14585643199431.html" 
-          title="Next Post: GeekBand.iOS-UIViewController">GeekBand.iOS-UIViewController &raquo;</a>
+          <a  href="14728168486763.html" 
+          title="Next Post: Cookie与Session">Cookie与Session &raquo;</a>
       
       </p>
         </div>
@@ -196,7 +295,7 @@
           
 
           
-              <div class="ds-thread" data-thread-key="14585764912552.html" data-url="http://swuzjb.github.io/14585764912552.html" data-title="GeekBand.iOS-StoryBoard"></div>
+              <div class="ds-thread" data-thread-key="14729975970385.html" data-url="http://swuzjb.github.io/14729975970385.html" data-title="数据库连接池"></div>
           
         </div>
       </div>
