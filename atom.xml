@@ -4,13 +4,129 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-09-05T13:09:55+08:00</updated>
+  <updated>2016-09-05T13:15:28+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[网易Java Web微专业Spring-IoC容器作业]]></title>
+    <link href="http://swuzjb.github.io/14748062329626.html"/>
+    <updated>2016-09-25T20:23:52+08:00</updated>
+    <id>http://swuzjb.github.io/14748062329626.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>假设我们有个应用（Application），它包含一个写文件的服务（FileWriterService），该服务在创建时会创建并打开一个文件，销毁时关闭该文件，并且该服务包含一个write(String content)方法：会将content写入到文件中，要求：<br/>
+1. 使用Spring IoC的相关内容组织该程序；<br/>
+2. 文件路径通过配置文件（properties）指定；<br/>
+基本要求：必须附加一个项目说明文档，说明每个功能点对应程序的运行结果（截图），项目的接口说明或者关键代码（不要把全部代码贴出来）等可以反映项目结果的内容。提交作业的时候必须有这个项目说明文档，否则会影响最终评分</p>
+</blockquote>
+
+<h2 id="toc_0">程序结构</h2>
+
+<p>根据题目要求，程序采用IoC的方式进行组织和构建。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749583867443.jpg" alt=""/></p>
+
+<h2 id="toc_1">核心代码与结果</h2>
+
+<ol>
+<li><p>FileWriterService接口定义</p>
+
+<pre><code class="language-java">public interface FileWirterService {
+    public void write(String content);
+}
+</code></pre></li>
+<li><p>FileWriterService实现类FileWriterServiceImpl</p>
+
+<pre><code class="language-java">//声明一个Bean的id
+@Component(&quot;fileWriterService&quot;)
+public class FileWirterServiceImpl implements FileWirterService{
+
+    //通过配置文件获取参数，注入到FileWirterServiceImpl中
+    @Value(&quot;${filePath}&quot;)
+    private File file;
+    private FileWriter fw;
+    //创建时调用，打开一个文件，获取输出流
+    @PostConstruct
+    public void init() {
+        try {
+            //判断文件是否存在，如不存在则创建文件
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            //打开文件
+            fw = new FileWriter(file, true);
+            System.out.println(&quot;打开文件&quot;);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void write(String content) {
+        try {
+            //向文件中写入内容，并换行
+            fw.write(content+&quot;\n&quot;);
+            System.out.println(&quot;文件写入:&quot;+content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //销毁前调用，关闭文件输出流，释放文件
+    @PreDestroy
+    public void destory() {
+        try {
+            //关闭文件的输出流
+            if (fw != null) {
+                fw.flush();
+                fw.close();
+            }
+            System.out.println(&quot;关闭文件&quot;);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre></li>
+<li><p>读取配置文件获取FilePath参数。</p>
+
+<ol>
+<li>建立配置文件：<code>writer.properties</code>。写入配置<code>filePath=/Users/zhanjingbo/Desktop/spring.txt</code>，记录文件路径。</li>
+<li><p>在Spring的<code>application-context.xml</code>中加入读取配置文件的配置。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;writerServiceProperties&quot; class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+    &lt;property name=&quot;location&quot; value=&quot;classpath:writer.properties&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
+<li><p>编写Application的主类，实现main方法。</p>
+
+<pre><code class="language-java">public static void main(String[] args) {
+    //加载spring的配置文件，创建容器
+    ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
+    //通过Bean的id来对FileWriterService进行注入
+    FileWirterService fileWriterService = applicationContext.getBean(&quot;fileWriterService&quot;,FileWirterService.class);
+    //调用业务逻辑
+    fileWriterService.write(&quot;Hello World&quot;);
+    //关闭容器
+    ((ConfigurableApplicationContext)applicationContext).close();
+}
+</code></pre></li>
+<li><p>结果展示</p>
+
+<ul>
+<li><p>控制台的相关输出<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749592874889.jpg" alt=""/></p></li>
+<li><p>文件写入情况<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749593122837.jpg" alt=""/></p></li>
+</ul></li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[数据库连接池]]></title>
@@ -3154,188 +3270,6 @@ struct Rectangle{
 <h2 id="toc_6">结论</h2>
 
 <p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.iOS-数据持久化]]></title>
-    <link href="http://swuzjb.github.io/14623728039466.html"/>
-    <updated>2016-05-04T22:40:03+08:00</updated>
-    <id>http://swuzjb.github.io/14623728039466.html</id>
-    <content type="html"><![CDATA[
-<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
-在iOS中，我们可以采用如下技术进行数据的持久化：</p>
-
-<blockquote>
-<ul>
-<li>文件存储</li>
-<li>SQLite嵌入式数据库</li>
-<li>Core Data</li>
-</ul>
-</blockquote>
-
-<h2 id="toc_0">文件存储</h2>
-
-<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
-
-<h3 id="toc_1">沙盒</h3>
-
-<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
-
-<ul>
-<li>根目录：<code>NSHomeDictionary()</code></li>
-<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
-<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
-<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
-<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
-</ul>
-
-<h3 id="toc_2">APP Bundle</h3>
-
-<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
-cocoa提供了类NSBundle。<br/>
-<code>[NSBundle mainBundle]</code></p>
-
-<h3 id="toc_3">NSFileManager</h3>
-
-<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
-常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
-
-<h2 id="toc_4">数据库SQLite</h2>
-
-<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
-
-<h3 id="toc_5">什么是SQLite</h3>
-
-<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
-
-<h3 id="toc_6">使用SQLite</h3>
-
-<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
-
-<ol>
-<li>链接libSQLite3.dylib</li>
-<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
-</ol>
-
-<p>纯C语言API</p>
-
-<pre><code>//打开 SQLite
-sqlite3* db = NULL
-int result = sqlite3_open([path UTF8String],&amp;db);
-
-//执行SQL语句
-int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
-
-//预定义SQL语句,可以有效防止SQL注入
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
-    sqlite3_bind_int(stmt,2,27);
-}
-sqlite3_finalize(stmt);
-
-
-//结果集遍历
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    while(sqlite3_step(stmt)==SQLITE_ROW){
-        int _id = sqlite3_column_int(stmt,0);
-        char* _name = sqlite3_column_text(stmt,1);
-        NSString* name = [NSString stringWithUTF8String:_name];
-        ...
-    }
-}
-sqlite3_finalize(stmt);
-
-//关闭SQLite
-sqlite3_close(db);
-</code></pre>
-
-<h3 id="toc_7">FMDB</h3>
-
-<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
-使用方法如下：</p>
-
-<pre><code>//打开
-FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
-[db open];
-
-//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
-[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
-//取插入的id
-contacter.contacterId = (int)[db lastInsertRowId];
-
-//查询
-FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
-while ([result next]) {
-    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
-    contacter.name = [result stringForColumn:@&quot;name&quot;];
-    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
-    contacter.email = [result stringForColumn:@&quot;email&quot;];
-    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
- }
-
-//关闭
-[db close];
-</code></pre>
-
-<h2 id="toc_8">CoreData简介</h2>
-
-<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
-
-<h3 id="toc_9">什么是CoreData</h3>
-
-<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
-
-<h4 id="toc_10">开始使用CoreData</h4>
-
-<ol>
-<li>在新建项目时勾选<code>Use CoreData</code></li>
-<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
-</ol>
-
-<h4 id="toc_11">简单使用</h4>
-
-<pre><code>//创建一个Entity对象
-NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
-
-//填充属性
-[entity setValue:value forKey:@&quot;key&quot;];
-
-//保存
-NSError* error = nil;
-[context save:&amp;error];
-
-//查询
-NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
-
-//排序过滤
-request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
-request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
-
-
-//执行
-NSError* error = nil;
-NSArray* objs =[context executeFetchRequest:request error:&amp;error];
-
-//遍历，正常遍历数组即可。
-for(NSManagedObject *obj in objs){
-    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
-}
-
-//删除
-[context deleteObject:managedObject];
-
-</code></pre>
-
-<h4 id="toc_12">参考资料</h4>
-
-<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
-<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
-<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
 
 ]]></content>
   </entry>
