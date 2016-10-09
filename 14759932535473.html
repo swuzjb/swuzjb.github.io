@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.Swift-第一周作业 - Zhan's Blog
+  网易Java Web微专业Spring-IoC容器作业 - Zhan's Blog
   
   </title>
   
@@ -99,21 +99,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.Swift-第一周作业</h1>
+          <h1>网易Java Web微专业Spring-IoC容器作业</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/5/8</span>
+          <span class="date">2016/10/9</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14626379454584.html" data-count-type="comments" href="14626379454584.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14759932535473.html" data-count-type="comments" href="14759932535473.html#ds-thread"></a>
             
           </span>
 
@@ -122,99 +122,136 @@
 
       <div class="article-content">
       <blockquote>
-<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
-心中有沟壑<br/>
-原谅我。。英语拼错了。。。</p>
+<p>完成一个基本的应用，提供若干个Service（&gt;=2），每个Service提供基本的增删查改的接口（实现随意，比如输出一行信息），通过AOP保证所有所有的Service接口在正常调用返回后以及抛出异常时（Service接口模拟），打出如下信息：函数名称，函数参数，并说明发生的事件：正常返回或者抛出异常。</p>
 </blockquote>
 
-<h2 id="toc_0">设计方式一</h2>
+<h2 id="toc_0">AOP模式示意图</h2>
 
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
-}
-class  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
+<p><img src="media/14759932535473/14759941824050.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+<h2 id="toc_1">作业描述</h2>
 
-<h2 id="toc_1">设计方式二</h2>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
- 
-class Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_2">设计方式三</h2>
-
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
-}
- 
-struct  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_3">设计方式四</h2>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-} 
-struct Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_4">Swift中struct和class的区别</h2>
-
-<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
+<p>本次作业我设计了两个Service，分别是UserService和ProductService，每个Service分别提供增删改查操作（Print语句代替业务逻辑）。</p>
 
 <ol>
-<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
-<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
+<li><p>配置Spring配置文件，加入AOP相关的xsd文件。并配置AOP。</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+xmlns:p=&quot;http://www.springframework.org/schema/p&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-2.0.xsd&quot;&gt;
+
+    &lt;!-- 引入AOP --&gt;
+    &lt;aop:aspectj-autoproxy /&gt;
+    &lt;!-- 自动扫描annotation配置 --&gt;
+    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
+
+    &lt;!-- 自定义的日志切面声明 --&gt;
+    &lt;bean id=&quot;logAspect&quot; class=&quot;site.zhanjingbo.aspect.LogAspect&quot;&gt;&lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre></li>
+<li><p>编写Service。以UserService为例。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.service;
+import org.springframework.stereotype.Component;
+
+@Component
+public class UserService {
+    public void add(String username) throws Exception {
+        System.out.println(&quot;添加用户:&quot; + username);
+        throw new Exception(&quot;测试&quot;);
+    }
+    public void edit(String username) {
+        System.out.println(&quot;添加用户:&quot; + username);
+    }
+    public void del(String username) {
+        System.out.println(&quot;删除用户:&quot; + username);
+    }
+    public void find(String username) {
+        System.out.println(&quot;查询用户:&quot; + username);
+    }
+}
+</code></pre></li>
+<li><p>编写Aspect，完成切面方法。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.aspect;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class LogAspect {
+
+    /**
+     * 正常返回时调用
+     * @param jp调用点信息
+     */
+    @AfterReturning(&quot;execution(* site.zhanjingbo.service.*.*(..))&quot;)
+    public void logAfterReturning(JoinPoint jp){
+        String className = jp.getSignature().getDeclaringTypeName();
+        String methodName = jp.getSignature().getName();
+        System.out.print(&quot;正常返回Log:调用&quot;+className+&quot;的&quot;+methodName+&quot;方法,参数为：&quot;);
+        for (Object obj : jp.getArgs()) {
+            System.out.print(obj.toString());
+        }
+        System.out.println(&quot;&quot;);
+    }
+    /**
+     * 抛出异常返回时调用
+     * @param jp 调用点信息
+     * @param ex 异常信息
+     */
+    @AfterThrowing(pointcut=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot;,throwing=&quot;ex&quot;)
+    public void logAfterThrowing(JoinPoint jp,Exception ex){
+        String className = jp.getSignature().getDeclaringTypeName();
+        String methodName = jp.getSignature().getName();
+        System.out.print(&quot;异常Log:调用&quot;+className+&quot;的&quot;+methodName+&quot;方法,参数为：&quot;);
+        for (Object obj : jp.getArgs()) {
+            System.out.print(obj.toString());
+        }
+        System.out.println(&quot;。抛出异常:&quot;+ex.getMessage()+&quot;!&quot;);
+    }
+}
+</code></pre></li>
+<li><p>编写模拟调用的Application类，来模拟业务。</p>
+
+<pre><code class="language-java">public class Application {
+    public static void main(String[] args){
+        //加载Spring相关配置文件
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
+
+        //获取UserService实例
+        UserService userService = applicationContext.getBean(UserService.class);
+        //调用方法
+        try {
+            userService.add(&quot;ZhangSan&quot;);
+        } catch (Exception e) {
+
+        }
+        //获取ProductService实例
+        ProductService productService = applicationContext.getBean(ProductService.class);
+        //调用方法
+        productService.del(&quot;Pen&quot;);
+
+        ((ConfigurableApplicationContext)applicationContext).close();
+    }
+}
+</code></pre></li>
 </ol>
 
-<h3 id="toc_5">使用情景</h3>
+<h2 id="toc_2">程序运行结果</h2>
 
-<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
+<p><img src="media/14759932535473/14759958614665.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-<ol>
-<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
-<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
-<li>不需要继承。这个是面向对象的基本特性。</li>
-</ol>
-
-<h2 id="toc_6">结论</h2>
-
-<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
+<p>Service的方法正常调用或调用异常结束后，完成对应的切面方法响应，输出对应的Log。</p>
 
       </div>
 
@@ -222,16 +259,13 @@ struct Rectangle{
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14628652524688.html" 
-          title="Previous Post: GeekBand.Swift-属性与方法">&laquo; GeekBand.Swift-属性与方法</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14623728039466.html" 
-          title="Next Post: GeekBand.iOS-数据持久化">GeekBand.iOS-数据持久化 &raquo;</a>
+          <a  href="14748062329626.html" 
+          title="Next Post: 网易Java Web微专业Spring-IoC容器作业">网易Java Web微专业Spring-IoC容器作业 &raquo;</a>
       
       </p>
         </div>
@@ -243,7 +277,7 @@ struct Rectangle{
           
 
           
-              <div class="ds-thread" data-thread-key="14626379454584.html" data-url="http://swuzjb.github.io/14626379454584.html" data-title="GeekBand.Swift-第一周作业"></div>
+              <div class="ds-thread" data-thread-key="14759932535473.html" data-url="http://swuzjb.github.io/14759932535473.html" data-title="网易Java Web微专业Spring-IoC容器作业"></div>
           
         </div>
       </div>
