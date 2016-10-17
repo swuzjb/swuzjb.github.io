@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Java康复性训练——MyBatis3(2) - Zhan's Blog
+  网易Java Web微专业Spring-数据访问单元作业 - Zhan's Blog
   
   </title>
   
@@ -99,10 +99,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Java康复性训练——MyBatis3(2)</h1>
+          <h1>网易Java Web微专业Spring-数据访问单元作业</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/7/19</span>
+          <span class="date">2016/10/17</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -113,7 +113,7 @@
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14689148951216.html" data-count-type="comments" href="14689148951216.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14766902757975.html" data-count-type="comments" href="14766902757975.html#ds-thread"></a>
             
           </span>
 
@@ -121,213 +121,223 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+      <blockquote>
+<p>根据本单介绍的Spring JDBC，事务管理，MyBatis等内容，分别使用Spring JDBC及MyBatis提供一个转帐服务（保证事务），提供一个transferMoney接口：<br/>
+transferMoney(Long srcUserId, Long targetUserId, double count)；// srcUserId及targetUserId为转帐用户标识</p>
 </blockquote>
 
-<h2 id="toc_0">Mapper的XML配置</h2>
+<h2 id="toc_0">相关表结构</h2>
 
-<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center">列名</th>
+<th style="text-align: center">类型</th>
+<th style="text-align: center">备注</th>
+</tr>
+</thead>
 
-<pre><code class="language-java">package site.zhanjingbo.mapper;
+<tbody>
+<tr>
+<td style="text-align: center">userId</td>
+<td style="text-align: center">Long</td>
+<td style="text-align: center">唯一用户标识</td>
+</tr>
+<tr>
+<td style="text-align: center">balance</td>
+<td style="text-align: center">double</td>
+<td style="text-align: center">账户余额</td>
+</tr>
+</tbody>
+</table>
 
-import java.util.List;
+<h2 id="toc_1">程序架构</h2>
 
-import site.zhanjingbo.model.User;
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-17-14766906872633.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-public interface UserMapper {
-    public int addUser(User user);
-    public int updateUser(User user);
-    public int deleteUser(Integer id);
-    
-    public User getUserById(Integer id);
-    public List&lt;User&gt; getAllUser();
-    
-}
-</code></pre>
+<h3 id="toc_2">说明</h3>
 
-<h3 id="toc_1">添加XML配置</h3>
+<ul>
+<li>UserDao 为统一的User数据库访问接口</li>
+<li>UserService 为外部服务提供直接调用的接口</li>
+</ul>
 
-<p>配置文件如下：</p>
-
-<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-</code></pre>
-
-<h3 id="toc_2">修改XML配置</h3>
-
-<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_3">删除XML配置</h3>
-
-<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-</code></pre>
-
-<h3 id="toc_4">查询XML配置</h3>
+<h2 id="toc_3">实现说明</h2>
 
 <ol>
-<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
+<li><p>application-config配置，相关配置均有注释说明。其中事务的处理可以采用注解或AOP的XML配置方式，下列代码均有体现。</p>
 
-<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
-    select * from user where id=#{id}
-&lt;/select&gt;
+<pre><code class="language-java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+xmlns:context=&quot;http://www.springframework.org/schema/context&quot; xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
+xmlns:mybatis=&quot;http://mybatis.org/schema/mybatis-spring&quot;
+xsi:schemaLocation=&quot;
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx.xsd
+http://mybatis.org/schema/mybatis-spring
+http://mybatis.org/schema/mybatis-spring.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
+
+    &lt;!-- 数据库连接配置文件导入 --&gt;
+    &lt;context:property-placeholder location=&quot;db.properties&quot; /&gt;
+    &lt;!-- 扫描注解 --&gt;
+    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
+    &lt;!-- 使用注解声明事务 --&gt;
+    &lt;tx:annotation-driven transaction-manager=&quot;txManager&quot; /&gt;
+    &lt;!-- MyBatis的自动扫描 --&gt;
+    &lt;mybatis:scan base-package=&quot;site.zhanjingbo&quot; /&gt;
+
+    &lt;!-- 数据源配置 --&gt;
+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot;
+        destroy-method=&quot;close&quot;&gt;
+        &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
+        &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
+        &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
+        &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
+    &lt;/bean&gt;
+    &lt;!-- 事务管理器 --&gt;
+    &lt;bean id=&quot;txManager&quot;
+        class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+    &lt;/bean&gt;
+
+    &lt;!-- 使用AOP-XML声明事务 --&gt;
+    &lt;!-- &lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;txManager&quot;&gt; &lt;tx:attributes&gt; 
+        &lt;tx:method name=&quot;transfer*&quot; /&gt; &lt;/tx:attributes&gt; &lt;/tx:advice&gt; &lt;aop:config&gt; 
+        &lt;aop:pointcut id=&quot;daoOperation&quot; expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; 
+        /&gt; &lt;aop:advisor advice-ref=&quot;txAdvice&quot; pointcut-ref=&quot;daoOperation&quot; /&gt; &lt;/aop:config&gt; --&gt;
+
+    &lt;!-- 配置myBatis的sqlSessionFactory --&gt;
+    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+        &lt;!-- 自动扫描mappers.xml文件 --&gt;
+        &lt;property name=&quot;mapperLocations&quot;
+            value=&quot;classpath:site/zhanjingbo/dao/myBatiesImpl/*.xml&quot;&gt;&lt;/property&gt;
+        &lt;!-- myBatis配置文件 --&gt;
+        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
 </code></pre></li>
-<li><p>返回结构List。</p>
+<li><p>UserDao的接口声明</p>
 
-<ol>
-<li><p>先声明一个返回类型</p>
-
-<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-&lt;/resultMap&gt;
+<pre><code class="language-java">public interface UserDao {
+    public void reset();
+    public List&lt;User&gt; getUserList();
+    public void updateMoney(Long userId, double count);
+}
 </code></pre></li>
-<li><p>声明SQL语句映射</p>
+<li><p>UserDao的JDBC实现，其中JdbcTemplete由Spring进行装载。</p>
 
-<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
-    select * from user
-&lt;/select&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h2 id="toc_5">关系映射</h2>
-
-<h3 id="toc_6">一对一关系</h3>
-
-<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
-
-<ol>
-<li><p>建立Role的POJO对象</p>
-
-<pre><code class="language-java">package site.zhanjingbo.model;
-public class Role {
-    private Integer id;
-    private String roleName;
-
-    public Role(){
-        super();
+<pre><code class="language-java">@Component(&quot;UserJDBCDao&quot;)
+public class UserDaoJDBCImpl implements UserDao {
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    public Role(Integer id, String roleName) {
-        super();
-        this.id = id;
-        this.roleName = roleName;
+    public void reset() {
+        this.jdbcTemplate.execute(&quot;update UserBalance set balance=1000&quot;);
     }
-
-    public Integer getId() {
-        return id;
+    public List&lt;User&gt; getUserList() {
+        return this.jdbcTemplate.query(&quot;select * from UserBalance&quot;, new RowMapper&lt;User&gt;() {
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User();
+                user.setUserId(rs.getLong(&quot;userId&quot;));
+                user.setBalance(rs.getDouble(&quot;balance&quot;));
+                return user;
+            }
+        });
     }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-    public String getRoleName() {
-        return roleName;
-    }
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    @Override
-    public String toString() {
-        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
+    public void updateMoney(Long userId, double count) {
+        this.jdbcTemplate.update(&quot;update UserBalance set balance=balance+? where userId=?&quot;, count, userId);
     }
 }
 </code></pre></li>
-<li><p>建立Role的Mapper接口</p>
-
-<pre><code class="language-java">package site.zhanjingbo.mapper;
-
-import site.zhanjingbo.model.Role;
-
-public interface RoleMapper {
-    public Role getRoleById(Integer id);
-}
-</code></pre></li>
-<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
+<li><p>UserDao的MyBatis实现，采用Mapper.xml的方式进行声明实现</p>
 
 <pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
-        select * from role where id=#{id}
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
-    &lt;/resultMap&gt;
-
-    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user where id=#{id}
-    &lt;/select&gt;
-    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_7">一对多关系</h3>
-
-<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
-为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
-
-<ol>
-<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
-<li>在UserMapper.xml中完善这个方法的SQL语句</li>
-<li>在Role中增加UserList属性，并添加getter和setter方法</li>
-<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
-
-<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
 &lt;!DOCTYPE mapper
 PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
 &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
-    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
-&lt;/resultMap&gt;
-&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
-    select * from role where id=#{id}
-&lt;/select&gt;
-&lt;/mapper&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.dao.UserDao&quot;&gt;
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
+        &lt;result property=&quot;balance&quot; column=&quot;balance&quot; /&gt;
+    &lt;/resultMap&gt;
+    &lt;update id=&quot;reset&quot;&gt;
+        update UserBalance set balance=500
+    &lt;/update&gt;
+
+    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from userBalance
+    &lt;/select&gt;
+    &lt;update id=&quot;updateMoney&quot;&gt;
+        update UserBalance set balance=balance+#{param2} where userId=#{param1}
+    &lt;/update&gt;
+&lt;/mapper&gt; 
+</code></pre></li>
+<li><p>UserService的实现，其中主要为transferMoney方法的实现。由于该方法的业务逻辑，该方法应该确保事务性。采用注解的方式声明事务，则在该方法前添加<code>@Transactional</code>注解。采用配置文件方式对事务进行声明参考第1小节中的配置文件。</p>
+
+<pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRED)
+public void transferMoney(Long srcUserId, Long targetUserId, double count) {
+    userDao.updateMoney(srcUserId, 0 - count);
+    userDao.updateMoney(targetUserId, count);
+}
+</code></pre>
+
+<p>在UserService的实现过程中，我们需要调用UserDao的具体实例，在本次作业过程中我们采用了两种方法来实现UserDao。在测试不同的实现方式时只需要修改注入的UserDao的具体实例就可完成。为了明显区分两种实例的实现，我们在reset的方法中做了区别。其中JDBC实现方式Reset之后balance的值为1000，MyBatis实现方式reset之后的balance值为500。</p></li>
+<li><p>Application调用代码</p>
+
+<pre><code class="language-java">    public static void main(String[] args) {
+        //加载Spring
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
+        //获取UserService实例
+        UserService userService = applicationContext.getBean(UserService.class);
+        userService.reset();
+        try {
+            userService.transferMoney(new Long(10000), new Long(10001), 100);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        List&lt;User&gt; userList = userService.getUserList();
+        for (User user : userList) {
+            System.out.println(user);
+        }
+
+        ((ConfigurableApplicationContext) applicationContext).close();
+    }
 </code></pre></li>
 </ol>
 
-<h3 id="toc_8">多对多关系</h3>
+<h2 id="toc_4">运行结果</h2>
 
-<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
+<h3 id="toc_5">JDBC运行结果</h3>
+
+<ol>
+<li><p>正常执行<br/>
+<img src="media/14766902757975/14766935577292.jpg" alt=""/></p></li>
+<li><p>执行中异常，打印异常信息，数据回滚<br/>
+<img src="media/14766902757975/14766935207561.jpg" alt=""/></p></li>
+</ol>
+
+<h3 id="toc_6">MyBatis运行结果</h3>
+
+<ol>
+<li><p>正常执行<br/>
+<img src="media/14766902757975/14766936235948.jpg" alt=""/></p></li>
+<li><p>执行中异常，打印异常信息，数据回滚<br/>
+<img src="media/14766902757975/14766936425847.jpg" alt=""/></p></li>
+</ol>
+
+<h2 id="toc_7">程序地址</h2>
+
+<p><a href="http://git.oschina.net/cobber/SpringHomework4_1">SpringHomework4_1</a></p>
 
       </div>
 
@@ -335,16 +345,13 @@ PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14689923975384.html" 
-          title="Previous Post: Java康复性训练——MyBatis3(3)">&laquo; Java康复性训练——MyBatis3(3)</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14687533604786.html" 
-          title="Next Post: Java康复性训练——MyBatis3(1)">Java康复性训练——MyBatis3(1) &raquo;</a>
+          <a  href="14759932535473.html" 
+          title="Next Post: 网易Java Web微专业Spring-AOP容器作业">网易Java Web微专业Spring-AOP容器作业 &raquo;</a>
       
       </p>
         </div>
@@ -356,7 +363,7 @@ PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
           
 
           
-              <div class="ds-thread" data-thread-key="14689148951216.html" data-url="http://swuzjb.github.io/14689148951216.html" data-title="Java康复性训练——MyBatis3(2)"></div>
+              <div class="ds-thread" data-thread-key="14766902757975.html" data-url="http://swuzjb.github.io/14766902757975.html" data-title="网易Java Web微专业Spring-数据访问单元作业"></div>
           
         </div>
       </div>
