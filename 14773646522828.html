@@ -1,0 +1,651 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  网易Java Web微专业Spring-Web框架单元作业 - Zhan's Blog
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="Zhan's Blog" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:swuzjb.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        <li id="menu_item_index"><a href="index.html">HOME</a></li>
+        <li id="menu_item_archives"><a href="archives.html">Archives</a></li>
+        <li id="menu_item_about"><a href="about.html">ABOUT</a></li>
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; Zhan's Blog</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java.html">Java</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>网易Java Web微专业Spring-Web框架单元作业</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/10/25</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14773646522828.html" data-count-type="comments" href="14773646522828.html#ds-thread"></a>
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <blockquote>
+<p>完成包含以下功能的Web工程，提供一个接口，该接口可以根据需要（扩展名，Accep头）返回一个HTML文档或者JSON数据，要求：<br/>
+返回的JSON数据是一个用户列表，每个用户包含两个信息：用户Id（userId），用户名（userName），最终的数据类似：<br/>
+{&quot;userList&quot; : [<br/>
+    {<br/>
+        &quot;userId&quot;: 1001,<br/>
+        &quot;userName&quot;: &quot;test1&quot;<br/>
+    },<br/>
+    {<br/>
+        &quot;userId&quot;: 1002,<br/>
+        &quot;userName&quot;: &quot;test2&quot;<br/>
+    }<br/>
+    ...<br/>
+]}<br/>
+2. 返回的HTML文档基于FreeMarker生成，内容是一个用户列表的表格，对HTML表格不熟悉的同学可以参考 <a href="http://www.w3school.com.cn/tiy/t.asp?f=html_tables">http://www.w3school.com.cn/tiy/t.asp?f=html_tables</a> 了解；<br/>
+3. 以自己能力为基础，返回的数据可以是接口内直接返回的，也可以是从数据库表里查询出来的（加分）；<br/>
+4. 尽可能根据项目模板里介绍的内容组织代码及资源。</p>
+</blockquote>
+
+<h2 id="toc_0">项目架构</h2>
+
+<p><img src="media/14773646522828/14773699877029.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">相关概念</h2>
+
+<h3 id="toc_2">SpringMVC</h3>
+
+<p>SpringMVC是Spring自身提供的一套基于MVC设计理念的开发框架，用于替代安全性较低的Sturts框架</p>
+
+<h3 id="toc_3">JSON</h3>
+
+<p>JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。它基于ECMAScript的一个子集。 JSON采用完全独立于语言的文本格式，但是也使用了类似于C语言家族的习惯（包括C、C++、C#、Java、JavaScript、Perl、Python等）。这些特性使JSON成为理想的数据交换语言。 易于人阅读和编写，同时也易于机器解析和生成(一般用于提升网络传输速率)。</p>
+
+<h3 id="toc_4">视图解析器</h3>
+
+<p>控制器在选择好适合处理请求的方法时，传入收到的请求(根据方法参数类型，可能以不同的类型传入)，并且 调用该方法中的逻辑来进行处理(也可以是调用Service来真正处理)。方法逻辑可能也会在参数中添加或者删除数据。处理方法处理完之后，会委派给一个 视图，由该视图来处理方法的返回值。处理程序的返回值并不代表视图的具体实现，可以只是String类型，代表视图名，甚至是void(这时候 Spring MVC可以根据方法名或者控制器名找默认视图)。也不需要担心返回值只是视图名称的话，视图拿不到要显示的数据。因为方法参数对于视图来说也是可以拿到 的。比如说，如果处理方法以Map为参数，那么这个Map对于视图也是可以拿到的。<br/>
+返回的视图名称会返回给DispatcherServlet，它会根据一个视图解析器将视图名称解析为一个具体的视图实现。这里说到的视图解析器是一个实现了ViewResolver借口的Bean，它的任务就是返回一个视图的具体实现(HTML、jsonp、json等等)。</p>
+
+<h4 id="toc_5">内容协商视图解析器</h4>
+
+<p>可以根据请求的内容，自动匹配对应的视图解析器，对视图进行解析。</p>
+
+<h2 id="toc_6">作业实现</h2>
+
+<p>我们按照模块图有下自上对本次作业实现进行说明。</p>
+
+<ol>
+<li><p>User模型</p>
+
+<pre><code class="language-java">package site.zhanjingbo.course.meta;
+
+public class User {
+    private int userId;
+    private String userName;
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+}
+</code></pre></li>
+<li><p>UserDao。User数据库访问接口</p>
+
+<pre><code class="language-java">package site.zhanjingbo.course.dao;
+import java.util.List;
+import site.zhanjingbo.course.meta.User;
+public interface UserDao {
+    public List&lt;User&gt; getUserList();
+}
+</code></pre></li>
+<li><p>UserDaoMapper。使用Mybatis对UserDao进行实现。</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.course.dao.UserDao&quot;&gt;
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
+        &lt;result property=&quot;userName&quot; column=&quot;userName&quot; /&gt;
+    &lt;/resultMap&gt;
+    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>UserService。User的对应业务逻辑层</p>
+
+<pre><code class="language-java">package site.zhanjingbo.course.service.impl;
+import java.util.List;
+import javax.annotation.Resource;
+import org.springframework.stereotype.Service;
+import site.zhanjingbo.course.dao.UserDao;
+import site.zhanjingbo.course.meta.User;
+import site.zhanjingbo.course.service.UserService;  
+@Service
+public class UserServiceImpl implements UserService {
+    @Resource
+    private UserDao userDao;
+    public List&lt;User&gt; getUserList() {
+        return userDao.getUserList();
+    }
+}
+</code></pre></li>
+<li><p>UserController。User的控制器层，调用业务逻辑，返回对应视图名称和数据。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.course.web.controller;
+
+import javax.annotation.Resource;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+import site.zhanjingbo.course.service.UserService;
+
+@Controller
+@RequestMapping(&quot;/user&quot;)
+public class UserController {
+    @Resource
+    private UserService userService;
+    @RequestMapping(&quot;/userList&quot;)
+    public ModelAndView getUserList() {
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName(&quot;userList&quot;);
+        mav.addObject(&quot;userList&quot;, userService.getUserList());
+        return mav;
+    }
+}
+</code></pre></li>
+<li><p>userList.ftl。使用FreeMarker渲染的视图文件</p>
+
+<pre><code class="language-html">&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;用户列表&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;table border=&quot;1px&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;td&gt;userId&lt;/td&gt;
+              &lt;td&gt;userName&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;#list userList as user&gt; 
+                &lt;tr&gt;
+                    &lt;td&gt;${user.userId}&lt;/td&gt; 
+                    &lt;td&gt;${user.userName}&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/#list&gt;
+          &lt;/tbody&gt;  
+        &lt;/table&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre></li>
+<li><p>DispatcherServlet的配置文件，主要配置对应View的渲染方案，即内容协商视图响应。</p>
+
+<pre><code class="language-xml">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+xsi:schemaLocation=&quot;
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
+
+&lt;context:component-scan base-package=&quot;site.zhanjingbo.course.web.controller&quot; /&gt;
+
+&lt;bean id=&quot;contentNegotiationManager&quot;
+    class=&quot;org.springframework.web.accept.ContentNegotiationManagerFactoryBean&quot;&gt;
+    &lt;!-- 扩展名至mimeType的映射,即 /user.json =&gt; application/json --&gt;
+    &lt;property name=&quot;favorPathExtension&quot; value=&quot;true&quot; /&gt;
+    &lt;!-- 用于开启 /userinfo/123?format=json 的支持 --&gt;
+    &lt;property name=&quot;favorParameter&quot; value=&quot;true&quot; /&gt;
+    &lt;property name=&quot;parameterName&quot; value=&quot;format&quot; /&gt;
+    &lt;!-- 是否忽略Accept Header --&gt;
+    &lt;property name=&quot;ignoreAcceptHeader&quot; value=&quot;false&quot; /&gt;
+    &lt;property name=&quot;mediaTypes&quot;&gt;
+        &lt;map&gt;
+            &lt;entry key=&quot;json&quot; value=&quot;application/json&quot; /&gt;
+            &lt;entry key=&quot;xml&quot; value=&quot;application/xml&quot; /&gt;
+        &lt;/map&gt;
+    &lt;/property&gt;
+    &lt;!-- 默认的content type --&gt;
+    &lt;property name=&quot;defaultContentType&quot; value=&quot;text/html&quot; /&gt;
+&lt;/bean&gt;
+&lt;!-- freeMarker --&gt;
+&lt;bean id=&quot;freemarkerConfig&quot;
+    class=&quot;org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer&quot;&gt;
+    &lt;property name=&quot;templateLoaderPath&quot; value=&quot;/freemarker/&quot; /&gt;
+&lt;/bean&gt;
+&lt;bean
+    class=&quot;org.springframework.web.servlet.view.ContentNegotiatingViewResolver&quot;&gt;
+    &lt;property name=&quot;contentNegotiationManager&quot; ref=&quot;contentNegotiationManager&quot; /&gt;
+    &lt;property name=&quot;viewResolvers&quot;&gt;
+        &lt;list&gt;
+            &lt;bean id=&quot;viewResolver&quot;
+                class=&quot;org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver&quot;&gt;
+                &lt;property name=&quot;cache&quot; value=&quot;true&quot; /&gt;
+                &lt;property name=&quot;prefix&quot; value=&quot;&quot; /&gt;
+                &lt;property name=&quot;suffix&quot; value=&quot;.ftl&quot; /&gt;
+                &lt;property name=&quot;contentType&quot; value=&quot;text/html; charset=utf-8&quot; /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+    &lt;property name=&quot;defaultViews&quot;&gt;
+        &lt;list&gt;
+            &lt;!-- JSON --&gt;
+            &lt;bean
+                class=&quot;org.springframework.web.servlet.view.json.MappingJackson2JsonView&quot; /&gt;
+            &lt;!-- XML --&gt;
+            &lt;bean class=&quot;org.springframework.web.servlet.view.xml.MarshallingView&quot;&gt;
+                &lt;property name=&quot;marshaller&quot;&gt;
+                    &lt;bean class=&quot;org.springframework.oxm.xstream.XStreamMarshaller&quot; /&gt;
+                &lt;/property&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre></li>
+</ol>
+
+<h2 id="toc_7">结果展示</h2>
+
+<p>为了更好的展示不同URL后缀以及不同Accept头对应的不同返回结果，我们使用curl命令对项目进行请求，观察返回结果。</p>
+
+<ol>
+<li><p>无后缀，默认URL</p>
+
+<pre><code>curl http://localhost:8080/SpringHomework5_1/api/user/userList
+</code></pre>
+
+<p><img src="media/14773646522828/14773731907095.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+<li><p>html后缀</p>
+
+<pre><code>http://localhost:8080/SpringHomework5_1/api/user/userList.html
+</code></pre>
+
+<p><img src="media/14773646522828/14773756220422.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+<li><p>JSON后缀</p>
+
+<pre><code>http://localhost:8080/SpringHomework5_1/api/user/userList.json
+</code></pre>
+
+<p><img src="media/14773646522828/14773756553739.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+<li><p>XML后缀</p>
+
+<pre><code>curl http://localhost:8080/SpringHomework5_1/api/user/userList.xml
+</code></pre>
+
+<p><img src="media/14773646522828/14773755762050.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+<li><p>JSON头</p>
+
+<pre><code>curl -H &#39;Accept:application/json&#39; http://localhost:8080/SpringHomework5_1/api/user/userList
+</code></pre>
+
+<p><img src="media/14773646522828/14773757816596.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+<li><p>XML头</p>
+
+<pre><code>curl -H &#39;Accept:application/xml&#39; http://localhost:8080/SpringHomework5_1/api/user/userList
+</code></pre>
+
+<p><img src="media/14773646522828/14773757471295.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+</ol>
+
+<h2 id="toc_8">总结</h2>
+
+<p>虽然完成了目标任务，但是对于Spring整合其它框架以及SpringMVC的相关功能的具体熟悉还需要进一步学习。</p>
+
+<h2 id="toc_9">代码</h2>
+
+<p><a href="http://git.oschina.net/cobber/SpringHomework5_1">Demo</a></p>
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14766902757975.html" 
+          title="Next Post: 网易Java Web微专业Spring-数据访问单元作业">网易Java Web微专业Spring-数据访问单元作业 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="14773646522828.html" data-url="http://swuzjb.github.io/14773646522828.html" data-title="网易Java Web微专业Spring-Web框架单元作业"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>Zhan's Blog</h1>
+                <div class="site-des">展镜博的个人博客</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a class="github" target="_blank" href="https://github.com/swuzjb" title="GitHub">GitHub</a>
+<a class="email" href="mailto:412008196@qq.com" title="Email">Email</a>
+  <a class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java.html"><strong>Java</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>BookList</h2>
+                </div>
+                <div class="side-content">
+
+                <p class="cat-list">
+                
+                    <a href="bookList.html"><strong>待读书单</strong></a>
+                
+                </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14766902757975.html">网易Java Web微专业Spring-数据访问单元作业</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14759932535473.html">网易Java Web微专业Spring-AOP容器作业</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14748062329626.html">网易Java Web微专业Spring-IoC容器作业</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14729975970385.html">数据库连接池</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+                <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>FRIEND LINKS</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+                  <li class="post">
+                    <a href="https://guxinyan.github.io">顾鑫燕的博客</a>
+                    
+                  </li>
+                  <li class="post">
+                    <a href="http://ranchu.win">CD'S Blog</a>
+                  </li>
+                  <li class="post">
+                    <a href="https://hran.me">Hran's Blog</a>
+                  </li>
+          </ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2016 swuzjb
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+
+
+<script type="text/javascript">
+var duoshuoQuery = {short_name:'zhanjingbo'};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?0fb9ecff8c9a2c820ce81c18ff77c1e8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+  </body>
+</html>

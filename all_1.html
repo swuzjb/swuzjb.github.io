@@ -99,6 +99,135 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14728168486763.html">
+                
+                  <h1>Cookie与Session</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在开发过程中我们经常需要保存一些状态信息如用户登录状态等，但是由于HTTP协议的无状态特性，这些功能无法直接实现。所以我们引入了Cookie与Session这两个概念用于保存一些信息。</p>
+
+<h2 id="toc_0">Cookie</h2>
+
+<p>Cookie的作用通俗地说就是当一个用户通过HTTP协议访问一个服务器的时候，这个服务器会将一些Key/Value键值对返回给客户端浏览器，并给这些数据加上一些限制条件，在条件符合时这个用户下次访问这个服务器的时候，数据又被完整地带回给服务器。</p>
+
+<h3 id="toc_1">Cookie如何工作</h3>
+
+<ol>
+<li>用户通过浏览器请求某个Servlet，在请求过程中如果本地有该站点的Cookie信息，浏览器会将这些信息放入request请求的请求头中；</li>
+<li>在Servlet中可以通过<code>request.getCookies();</code>获取当前的Cookie数组；</li>
+<li>根据自己的业务需求，新建Cookie对象实例，分别设置key和value的值；</li>
+<li>将需要添加的Cookie实例通过<code>response.addCookie();</code>方法添加到响应当中返回客户端，客户端根据Cookie的生命周期（MaxAge属性）来选择是否将此Cookie写入硬盘当中。</li>
+</ol>
+
+<h3 id="toc_2">DemoCode</h3>
+
+<pre><code class="language-java">    String getCookie(Cookie[] cookies, String key) { 
+        if (cookies != null) { 
+            for (Cookie cookie : cookies) { 
+                if (cookie.getName().equals(key)) { 
+                    return cookie.getValue(); 
+                } 
+            } 
+        } 
+        return null; 
+    } 
+
+    @Override 
+    public void doGet(HttpServletRequest request, 
+                      HttpServletResponse response) 
+            throws IOException, ServletException { 
+        Cookie[] cookies = request.getCookies(); 
+        String userName = getCookie(cookies, &quot;userName&quot;); 
+        String userAge = getCookie(cookies, &quot;userAge&quot;); 
+        if (userName == null) { 
+            response.addCookie(new Cookie(&quot;userName&quot;, &quot;user&quot;)); 
+        } 
+        if (userAge == null) { 
+            response.addCookie(new Cookie(&quot;userAge&quot;, &quot;28&quot;)); 
+        } 
+         
+ }
+</code></pre>
+
+<h3 id="toc_3">使用Cookie的限制</h3>
+
+<p>Cookie是 HTTP 协议头中的一个字段，虽然HTTP协议本身对这个字段并没有多少限制，但是 Cookie 最终还是存储在浏览器里，所以不同的浏览器对Cookie的存储都有一些限制，下表是一些通常的浏览器对 Cookie的大小和数量的限制。</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">浏览器版本</th>
+<th style="text-align: center">Cookie数限制（个/域名）</th>
+<th style="text-align: center">总大小限制</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">IE6</td>
+<td style="text-align: center">20</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">IE7、8、9</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">Chrome</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">&gt;8000</td>
+</tr>
+<tr>
+<td style="text-align: center">FireFox</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4097B</td>
+</tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h2 id="toc_4">Session</h2>
+
+<p>前面已经介绍了 Cookie 可以让服务端程序跟踪每个客户端的访问，但是每次客户端的访问都必须传回这些 Cookie，如果 Cookie 很多，这无形地增加了客户端与服务端的数据传输量，而 Session 的出现正是为了解决这个问题。</p>
+
+<h3 id="toc_5">Session如何工作</h3>
+
+<ol>
+<li>session是基于Cookie的，同一个客户端每次和服务端交互时，不需要每次都传回所有的 Cookie 值，而是只要传回一个 ID，这个 ID 是客户端第一次访问服务器的时候生成的，而且每个客户端是唯一的。这样每个客户端就有了一个唯一的 ID，客户端只要传回这个 ID 就行了，这个 ID 通常是 NANE 为 JSESIONID 的一个 Cookie；</li>
+<li>有了Session ID服务端就可以创建HttpSession对象了，第一次触发通过<code>request.getSession()</code>方法。如果当前的Session ID 还没有对应的HttpSession对象，那么就创建一个新的，并将这个对象加到org.apache.catalina.Manager的sessions容器中保存。Manager类将管理所有Session的生命周期，如果该session存在则直接返回；</li>
+<li>直接操作session对象对key/value键值对进行存储，数据保存在服务器端，可以通过api手工操作其声明周期</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/9/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14728168486763.html" data-count-type="comments" href="14728168486763.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14720186733605.html">
                 
                   <h1>简述HTTP请求过程</h1>
@@ -672,212 +801,6 @@ Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单�
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14689923975384.html">
-                
-                  <h1>Java康复性训练——MyBatis3(3)</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
-</blockquote>
-
-<h2 id="toc_0">动态SQL</h2>
-
-<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
-
-<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
-
-<h3 id="toc_1">IF标签</h3>
-
-<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
-以实现一个用户检索为例：</p>
-
-<ol>
-<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
-<li><p>在UserMapper.xml中对接口进行实现：</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-    select * from user where 1=1
-    &lt;if test=&quot;username!=null&quot;&gt;
-        and username like #{username}
-    &lt;/if&gt;
-    &lt;if test=&quot;id!=null&quot;&gt;
-        and id=#{id}
-    &lt;/if&gt;
-    &lt;if test=&quot;role!=null&quot;&gt;
-        and roleId=#{role.id}
-    &lt;/if&gt;
-&lt;/select&gt;
-</code></pre></li>
-<li><p>调用查询，传入查询条件的Map即可。</p>
-
-<pre><code class="language-java">public void testSearch(){
-    Role role = new Role();
-    role.setId(1);
-    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
-    map.put(&quot;role&quot;, role);  
-    List&lt;User&gt; userList = userMapper.searchUser(map);
-    for(User user:userList){
-        System.out.println(user);
-    }   
-}
-</code></pre></li>
-</ol>
-
-<h3 id="toc_2">Choose、when和otherwise标签</h3>
-
-<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
-当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
-
-<pre><code class="language-xml">&lt;choose&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;otherwise&gt;&lt;/otherwise&gt;
-&lt;/choose&gt;
-</code></pre>
-
-<h3 id="toc_3">where标签</h3>
-
-<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user 
-        &lt;where&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                and username like #{username}
-            &lt;/if&gt;
-            &lt;if test=&quot;id!=null&quot;&gt;
-                and id=#{id}
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                and roleId=#{role.id}
-            &lt;/if&gt;
-        &lt;/where&gt;
-    &lt;/select&gt;
-</code></pre>
-
-<h3 id="toc_4">trim标签</h3>
-
-<p>与where语句类似，给语句增加前后缀。</p>
-
-<h3 id="toc_5">Foreach标签</h3>
-
-<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
-
-<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
-#{itemName}
-&lt;/foreach&gt;
-</code></pre>
-
-<h3 id="toc_6">set标签</h3>
-
-<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
-
-<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user 
-        &lt;set&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                username=#{username},
-            &lt;/if&gt;
-            &lt;if test=&quot;password!=null&quot;&gt;
-                password=#{password},
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                roleId=#{role.id},
-            &lt;/if&gt;
-        &lt;/set&gt;
-        where id=#{id}
-&lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
-
-<ul>
-<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
-<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
-</ul>
-
-<h3 id="toc_8">传入多个输入参数</h3>
-
-<ul>
-<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
-<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
-</ul>
-
-<h3 id="toc_9">MyBatis分页</h3>
-
-<ul>
-<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
-<li>物理分页，使用limit子句来实现分页</li>
-</ul>
-
-<h3 id="toc_10">MyBatis缓存</h3>
-
-<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
-开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
-
-<h3 id="toc_11">使用注解配置SQL映射器</h3>
-
-<h4 id="toc_12">基本映射语句</h4>
-
-<ol>
-<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
-<li>@Update：同上；</li>
-<li>@delete：同上；</li>
-<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
-<li><p>@select：当需要返回集合时：</p>
-
-<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
-@Results({
-    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
-    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
-    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
-})
-public User getUserById(Integer id);
-</code></pre></li>
-</ol>
-
-<h4 id="toc_13">关系映射</h4>
-
-<ol>
-<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
-<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
-</ol>
-
-<h4 id="toc_14">动态SQL</h4>
-
-<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/20</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689923975384.html" data-count-type="comments" href="14689923975384.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -962,6 +885,12 @@ public User getUserById(Integer id);
 	      
 		      
 			      <li class="post">
+			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14766902757975.html">网易Java Web微专业Spring-数据访问单元作业</a>
 			      </li>
 		     
@@ -981,12 +910,6 @@ public User getUserById(Integer id);
 		      
 			      <li class="post">
 			        <a href="14729975970385.html">数据库连接池</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14728168486763.html">Cookie与Session</a>
 			      </li>
 		     
 		  
