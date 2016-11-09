@@ -77,6 +77,8 @@
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
         
             <li><a href="Java.html">Java</a></li>
+        
+            <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
          
 
       </ul>
@@ -98,6 +100,174 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14581131891410.html">
+                
+                  <h1>GeekBand.iOS-猜城市游戏</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>本游戏是一个用于练手的示例游戏，本文将从最开始的需求分析开始对游戏进行分析和实现</p>
+</blockquote>
+
+<h2 id="toc_0">需求分析</h2>
+
+<p>简要需求以及程序原型设计如下图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-0@2x.png" alt="程序原型"/><br/>
+程序需求的简单描述为：用户根据图片展示，猜测图片展现的是哪一个城市，并将答案输入文本框中，程序对输入内容进行判断，如果答对，增加得分加载下一张图片，如答错，记录尝试次数，超过程序要求，游戏结束。</p>
+
+<p>游戏运行流程：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-1@2x.png" alt="游戏运行流程图"/><br/>
+补充需求说明：<br/>
+1. 输入城市名称时，要求中文简体输入如北京、上海等。<br/>
+2. 毎猜对一个城市，得分加10分。<br/>
+3. 程序所需图片 采用<code>[UIImage imageNamed:@&quot;&quot;];</code>方法读取;<br/>
+4. 城市与图片对应实现采用程序硬编码实现。</p>
+
+<h2 id="toc_1">系统设计</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-2@2x.png" alt="类结构图"/><br/>
+具体说明如下：</p>
+
+<ol>
+<li><p>ViewController</p>
+
+<p>对使用Interface Builder创建的UI界面提供操作绑定，使代码可以对View控件进行控制。</p></li>
+<li><p>City （城市类）</p>
+
+<pre><code>@interface City : NSObject
+@property int cityId;//城市ID，根据ID可以加载城市图片
+@property NSString* cityName;//城市名称，名称规范如：北京
++(instancetype) initWithCityID:(int)cityId WithCityName:(NSString *)cityName;
+@end
+</code></pre></li>
+<li><p>CityDB（工厂类）<br/>
+这是一个工厂类，使用类方法，封装了一些关于城市的操作函数，如返回某城市的图片，和硬编码加载所有城市返回。</p>
+
+<pre><code>@interface CityDB : NSObject
++(UIImage *) getCityImageByCity:(City *)city;
++(NSArray&lt;City *&gt; *) loadAllCity;
+@end
+</code></pre></li>
+<li><p>Level(关卡类) <br/>
+毎次随机出现的一个城市，抽象为一个关卡。</p>
+
+<pre><code>@interface Level : NSObject
+@property City* city;
+@property int time;//当前尝试次数，初始化为0
++(instancetype) initWithCity:(City *)city;
+@end
+</code></pre></li>
+<li><p>Game(游戏控制类)</p>
+
+<pre><code>@interface Game : NSObject
+@property BOOL gameOver;
+@property int currentScore;
++(instancetype) game;//返回一个游戏对象
+-(BOOL) guessCityByName:(NSString *)cityName;//根据用户输入判断猜测是否正确
+-(UIImage *) imageForCurrentLevel;//获得当前关卡的城市的图片
+-(int) getTryTimes;//本关卡已经尝试的次数
+
+//内部处理所需
+//初始化类
+-(instancetype) init{
+    self = [super init];
+    if(self){
+        _levels = [NSMutableArray arrayWithCapacity:20];
+        _cities = [NSMutableArray arrayWithArray:[CityDB loadAllCity]];
+        [self shuffleCities];//随机生成关卡
+        _currentLevelIndex = 0;
+        _currentScore = 0;
+        _gameOver = false;
+        _allowTime = 3;
+    }
+    return  self;
+}
+//根据CityDB加载的城市列表，随机关卡出现的顺序
+-(void) shuffleCities{
+    Level* level;
+    for(int i = 0; i&lt;[[CityDB loadAllCity] count];i++){
+        level = [Level initWithCity:[self getACityRandom]];
+        [_levels addObject:level];
+    }
+}
+//从未出现过的City中随机选取一个
+-(City *)getACityRandom{
+    int i = arc4random() % _cities.count;
+    City* city = [_cities objectAtIndex:i];
+    [_cities removeObjectAtIndex:i];//把选取中的从待选取列表中移除
+    return city;
+}
+//获得当前的关卡标号
+-(Level *)getCurrentLevel{
+    return [_levels objectAtIndex:_currentLevelIndex];
+}
+//前往下一关
+-(void) nextLevel{
+    _currentLevelIndex++;
+    if(_currentLevelIndex &gt;= _levels.count){
+        self.gameOver = YES;
+    }
+}
+//根据输入判断是否过关
+-(BOOL) guessCityByName:(NSString *)cityName{
+    Level* currentLevel =[self getCurrentLevel];
+    City* current = currentLevel.city;
+    if([cityName isEqualToString:current.cityName]){
+        self.currentScore += 10;
+        [self nextLevel];
+        return YES;
+    }else{
+      //增加已尝试次数
+        currentLevel.time++;
+        if (currentLevel.time &gt;= _allowTime) {
+            self.gameOver = YES;
+        }
+    }
+    return NO;
+}
+//返回本关卡剩余可尝试次数
+-(int)getTryTimes{
+    return _allowTime - [self getCurrentLevel].time;
+}
+@end
+</code></pre></li>
+</ol>
+
+<p>本文对游戏的实现，并不是最佳实现，读者可根据自己的理解分析对类进行设计与实现。</p>
+
+<h2 id="toc_2">Demo演示</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_34_04.gif" alt="演示1"/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_48_52.gif" alt="演示2"/></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14581131891410.html" data-count-type="comments" href="14581131891410.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14580567370996.html">
                 
@@ -585,6 +755,8 @@ typedef enum {
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
         
             <a href="Java.html"><strong>Java</strong></a>
+        
+            <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
          
         </p>
 
@@ -615,6 +787,12 @@ typedef enum {
 	      
 		      
 			      <li class="post">
+			        <a href="14786108252793.html">Hadoop搭建实例</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
 			      </li>
 		     
@@ -634,12 +812,6 @@ typedef enum {
 		      
 			      <li class="post">
 			        <a href="14748062329626.html">网易Java Web微专业Spring-IoC容器作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14729975970385.html">数据库连接池</a>
 			      </li>
 		     
 		  

@@ -77,6 +77,8 @@
             <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
         
             <li><a href="Java.html">Java</a></li>
+        
+            <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
          
 
       </ul>
@@ -98,6 +100,403 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14614801701186.html">
+                
+                  <h1>GeekBand.iOS-多线程编程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>程序都是按部就班的一步一步执行，可是我们现在却可以在听歌的过程中同时做很多事情。cpu为了提高性能也变成双核、四核、八核等等。这些都是多线程技术的应用。今天我们就来总结一下iOS中的多线程编程。</p>
+
+<h2 id="toc_0">进程与线程</h2>
+
+<ol>
+<li><p>什么是进程？</p>
+
+<p>进程是指在系统中正在运行的一个应用程序。每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805198291.png" alt=""/><br/>
+比如同时打开QQ、Xcode，系统就会分别启动2个进程。通过“活动监视器”可以查看Mac系统中所开启的进程。</p></li>
+<li><p>什么是线程？</p>
+
+<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）<br/>
+线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行<br/>
+比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614805962966.png" alt=""/></p></li>
+<li><p>线程的串行</p>
+
+<p>1个线程中任务的执行是串行的。如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务。也就是说，在同一时间内，1个线程只能执行1个任务。比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614806779748.png" alt=""/></p></li>
+</ol>
+
+<h2 id="toc_1">多线程</h2>
+
+<ol>
+<li><p>什么是多线程？</p>
+
+<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务<br/>
+进程 -&gt;车间，线程-&gt;车间工人<br/>
+多线程技术可以提高程序的执行效率<br/>
+比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614808579347.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14614809045254.png" alt=""/></p></li>
+<li><p>多线程的优缺点<br/>
+优点：</p>
+
+<ul>
+<li>能适当提高程序的执行效率</li>
+<li>能适当提高资源利用率</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+<li>启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</li>
+<li>线程越多，CPU在调度线程上的开销就越大</li>
+<li>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</li>
+</ul></li>
+<li><p>多线程在iOS开发中的应用<br/>
+主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”<br/>
+主线程的主要作用：显示\刷新UI界面、处理UI事件（比如点击事件、滚动事件、拖拽事件等）。<br/>
+主线程的使用注意:别将比较耗时的操作放到主线程中。<br/>
+耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验。</p></li>
+</ol>
+
+<h2 id="toc_2">iOS中的多线程开发</h2>
+
+<p>iOS中目前主流的多线程实现方案有三种，分别是：</p>
+
+<blockquote>
+<ul>
+<li>NSThread</li>
+<li>GCD</li>
+<li>NSOperation &amp; NSOperationQueue</li>
+</ul>
+</blockquote>
+
+<h3 id="toc_3">NSThread</h3>
+
+<p>这是一套经过苹果封装后的，面向对象的多线程操作方案。利用它可以直接操控线程对象，但是在生命周期管理以及代码复用上并不是很好，所以使用并不是很多。</p>
+
+<h4 id="toc_4">创建并启动</h4>
+
+<ol>
+<li><p>先创建线程类，再启动</p>
+
+<pre><code>// 创建
+NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:nil];
+// 启动
+[thread start];
+</code></pre></li>
+<li><p>创建并自动启动</p>
+
+<pre><code>[NSThread detachNewThreadSelector:@selector(run:) toTarget:self withObject:nil];
+</code></pre>
+
+<h4 id="toc_5">其他方法</h4>
+
+<p>NSThread虽然不常用，但是很多方法在我们编程的时候还是比较有价值的。</p></li>
+</ol>
+
+<pre><code>//取消线程
+- (void)cancel;
+
+//启动线程
+- (void)start;
+
+//判断某个线程的状态的属性
+@property (readonly, getter=isExecuting) BOOL executing;
+@property (readonly, getter=isFinished) BOOL finished;
+@property (readonly, getter=isCancelled) BOOL cancelled;
+
+//设置和获取线程名字
+-(void)setName:(NSString *)n;
+-(NSString *)name;
+
+//获取当前线程信息
++ (NSThread *)currentThread;
+
+//获取主线程信息
++ (NSThread *)mainThread;
+
+//使当前线程暂停一段时间，或者暂停到某个时刻
++ (void)sleepForTimeInterval:(NSTimeInterval)time;
++ (void)sleepUntilDate:(NSDate *)date;
+</code></pre>
+
+<h3 id="toc_6">GCD</h3>
+
+<p>GCD(Grand Central Dispatch)，名字霸气。他是苹果为多核的并行运算提出的解决方案，所以会自动合理地利用更多的CPU内核（比如双核、四核），最重要的是它会自动管理线程的生命周期（创建线程、调度任务、销毁线程），完全不需要我们管理，我们只需要告诉干什么就行。同时它使用的也是c语言API，不过由于使用了Block，使得使用起来更加方便，而且灵活。所以基本上大家都使用 GCD 这套方案。</p>
+
+<h4 id="toc_7">任务和队列</h4>
+
+<p>在GCD中，加入了两个非常重要的概念：任务和队列。</p>
+
+<ul>
+<li><p>任务:即操作，你想要干什么，说白了就是一段代码，在GCD中就是一个Block，所以添加任务十分方便。任务有两种执行方式：同步执行和异步执行。</p>
+
+<ul>
+<li>同步（sync）执行：它会阻塞当前线程并等待Block中的代码执行完毕，然后当前线程才会继续往下运行。不具备开启新线程的能力。</li>
+<li>异步（async）执行：当前线程会直接往下执行，并不会阻塞当前线程。具备开启新线程的能力。</li>
+</ul></li>
+<li><p>队列：用于存放任务。在GCD中有两种队列：串行队列和并行队列。</p>
+
+<ul>
+<li>串行队列：队列中的任务会根据队列的先进先出的顺序执行，一个接一个的执行。</li>
+<li>并行队列：放到并行队列的任务，GCD 也会FIFO（先进先出）的取出来，但不同的是，它取出来一个就会放到别的线程，然后再取出来一个又放到另一个的线程。这样由于取的动作很快，忽略不计，看起来，所有的任务都是一起执行的。不过需要注意，GCD 会根据系统资源控制并行的数量，所以如果任务很多，它并不会让所有任务同时执行。</li>
+</ul></li>
+</ul>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-24-14615060017180.jpg" alt=""/></p>
+
+<h4 id="toc_8">队列的创建</h4>
+
+<ul>
+<li><p><strong>主队列</strong>：这是一个特殊的<em>串行队列</em>。主队列，就是APP的主线程，放在这个队列中的任务会在主线程中运行。主要用于刷新UI，所以一般耗时的任务都应该放在别的线程中执行，防止主线程阻塞。</p>
+
+<pre><code>dispatch_queue_t queue = dispatch_get_main_queue();
+
+</code></pre></li>
+<li><p><strong>自建队列</strong>：自己创建的队列可以是串行队列，也可以是并行队列。创建的方法为<code>dispatch_queue_create</code>。这个方法有两个参数，第一个参数是标识符，用于DEBUG的时候表示唯一的队列，可以为空，一般命名方式为域名的反写。第二个参数声明创建的队列的参数的类型。</p>
+
+<pre><code>//串行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, NULL);
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_SERIAL);
+//并行队列
+dispatch_queue_t queue = dispatch_queue_create(&quot;site.zhanjingbo.testQueue&quot;, DISPATCH_QUEUE_CONCURRENT);
+</code></pre></li>
+<li><p><strong>全局并行队列</strong>：一个全局的并行队列，系统提供。一般并行任务都加入这个队列中。</p>
+
+<pre><code>dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+</code></pre>
+
+<h4 id="toc_9">创建任务</h4></li>
+<li><p>同步任务</p>
+
+<pre><code>dispatch_sync(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+<li><p>异步任务</p>
+
+<pre><code>dispatch_async(&lt;#queue#&gt;, ^{
+  //code here
+  NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+});
+</code></pre>
+
+<h4 id="toc_10">队列组</h4>
+
+<p>队列组可以将很多队列添加到一个组里，这样做的好处是，当这个组里所有的任务都执行完了，队列组会通过一个方法通知我们。下面是使用方法，这是一个很实用的功能。</p>
+
+<pre><code>//1.创建队列组
+dispatch_group_t group = dispatch_group_create();
+//2.创建队列
+dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+
+//3.多次使用队列组的方法执行任务, 只有异步方法
+//3.1.执行3次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 3; i++) {
+        NSLog(@&quot;group-01 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//3.2.主队列执行8次循环
+dispatch_group_async(group, dispatch_get_main_queue(), ^{
+    for (NSInteger i = 0; i &lt; 8; i++) {
+        NSLog(@&quot;group-02 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//3.3.执行5次循环
+dispatch_group_async(group, queue, ^{
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        NSLog(@&quot;group-03 - %@&quot;, [NSThread currentThread]);
+    }
+});
+
+//4.都完成后会自动通知
+dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+    NSLog(@&quot;完成 - %@&quot;, [NSThread currentThread]);
+});
+</code></pre></li>
+</ul>
+
+<h3 id="toc_11">NSOperation和NSOperationQueue</h3>
+
+<p><code>NSOperation</code>是苹果公司对<code>GCD</code>的封装，完全面向对象，所以使用起来更好理解。 大家可以看到<code>NSOperation</code>和<code>NSOperationQueue</code> 分别对应 <code>GCD</code>的任务和队列。操作步骤也很好理解：</p>
+
+<pre><code>1. 将要执行的任务封装为一个NSOperation对象
+2. 将这个任务添加到一个NSOperationQueue对象中。
+</code></pre>
+
+<h3 id="toc_12">添加任务</h3>
+
+<p>值得说明的是，<code>NSOperation</code> 只是一个抽象类，所以不能封装任务。但它有 2个子类用于封装任务。分别是：<code>NSInvocationOperation</code> 和 <code>NSBlockOperation</code> 。创建一个 Operation 后，需要调用 start 方法来启动任务，它会默认在当前队列同步执行。当然你也可以在中途取消一个任务，只需要调用其cancel方法即可。</p>
+
+<ul>
+<li>NSInvocationOperation</li>
+</ul>
+
+<pre><code>//1.创建NSInvocationOperation对象
+NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(run) object:nil];
+
+//2.开始执行
+[operation start];
+</code></pre>
+
+<ul>
+<li>NSBlockOperation</li>
+</ul>
+
+<pre><code>    //1.创建NSBlockOperation对象
+  NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+      NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+  }];
+
+  //2.开始任务
+  [operation start];
+</code></pre>
+
+<p>之前说过这样的任务，默认会在当前线程执行。但是 NSBlockOperation 还有一个方法：<code>addExecutionBlock:</code>，通过这个方法可以给 Operation 添加多个执行 Block。这样 Operation 中的任务会并发执行，它会在主线程和其它的多个线程执行这些任务。</p>
+
+<ul>
+<li>自定义Operation
+除了上面的两种 Operation 以外，我们还可以自定义 Operation。自定义 Operation 需要继承 NSOperation 类，并实现其 main() 方法，因为在调用 start() 方法的时候，内部会调用 main() 方法完成相关逻辑。所以如果以上的两个类无法满足你的欲望的时候，你就需要自定义了。你想要实现什么功能都可以写在里面。除此之外，你还需要实现 cancel() 在内的各种方法。所以这个功能提供给高级玩家，我在这里就不说了，等我需要用到时在研究它，到时候可能会再做更新。</li>
+</ul>
+
+<h4 id="toc_13">创建队列</h4>
+
+<p>看过上面的内容就知道，我们可以调用一个 NSOperation 对象的 start() 方法来启动这个任务，但是这样做他们默认是同步执行的。就算是 <code>addExecutionBlock</code>方法，也会在 当前线程和其他线程中执行，也就是说还是会占用当前线程。这是就要用到队列 NSOperationQueue 了。而且，按类型来说的话一共有两种类型：主队列、其他队列。只要添加到队列，会自动调用任务的 start() 方法。</p>
+
+<ul>
+<li>主队列</li>
+</ul>
+
+<p>细心的同学就会发现，每套多线程方案都会有一个主线程（当然啦，说的是iOS中，像 pthread 这种多系统的方案并没有，因为 UI线程 理论需要每种操作系统自己定制）。这是一个特殊的线程，必须串行。所以添加到主队列的任务都会一个接一个地排着队在主线程处理。</p>
+
+<p><code>NSOperationQueue *queue = [NSOperationQueue mainQueue];</code></p>
+
+<ul>
+<li>其它队列</li>
+</ul>
+
+<p>因为主队列比较特殊，所以会单独有一个类方法来获得主队列。那么通过初始化产生的队列就是其他队列了，因为只有这两种队列，除了主队列，其他队列就不需要名字了。</p>
+
+<pre><code>    //1.创建一个其他队列    
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    
+    //2.创建NSBlockOperation对象
+    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        NSLog(@&quot;%@&quot;, [NSThread currentThread]);
+    }];
+    
+    //3.添加多个Block
+    for (NSInteger i = 0; i &lt; 5; i++) {
+        [operation addExecutionBlock:^{
+            NSLog(@&quot;第%ld次：%@&quot;, i, [NSThread currentThread]);
+        }];
+    }
+    
+    //4.队列添加任务
+    [queue addOperation:operation];
+</code></pre>
+
+<p>OK, 这时应该发问了，大家将 NSOperationQueue 与 GCD的队列 相比较就会发现，这里没有串行队列，那如果我想要10个任务在其他线程串行的执行怎么办？</p>
+
+<p>这就是苹果封装的妙处，你不用管串行、并行、同步、异步这些名词。NSOperationQueue 有一个参数 maxConcurrentOperationCount 最大并发数，用来设置最多可以让多少个任务同时执行。当你把它设置为 1 的时候，他不就是串行了嘛！</p>
+
+<p>NSOperationQueue 还有一个添加任务的方法，- (void)addOperationWithBlock:(void (<sup>)(void))block;</sup> ，这是不是和 GCD 差不多？这样就可以添加一个任务到队列中了，十分方便。<br/>
+NSOperation 有一个非常实用的功能，那就是添加依赖。比如有 3 个任务：A: 从服务器上下载一张图片，B：给这张图片加个水印，C：把图片返回给服务器。这时就可以用到依赖了:</p>
+
+<pre><code>//1.任务一：下载图片
+NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;下载图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//2.任务二：打水印
+NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;打水印   - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//3.任务三：上传图片
+NSBlockOperation *operation3 = [NSBlockOperation blockOperationWithBlock:^{
+    NSLog(@&quot;上传图片 - %@&quot;, [NSThread currentThread]);
+    [NSThread sleepForTimeInterval:1.0];
+}];
+
+//4.设置依赖
+[operation2 addDependency:operation1];      //任务二依赖任务一
+[operation3 addDependency:operation2];      //任务三依赖任务二
+
+//5.创建队列并加入任务
+NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+[queue addOperations:@[operation3, operation2, operation1] waitUntilFinished:NO];
+</code></pre>
+
+<h4 id="toc_14">其它方法</h4>
+
+<ul>
+<li><p>NSOperation</p>
+
+<pre><code>BOOL executing; //判断任务是否正在执行
+
+BOOL finished; //判断任务是否完成
+
+void (^completionBlock)(void); //用来设置完成后需要执行的操作
+
+- (void)cancel; //取消任务
+
+- (void)waitUntilFinished; //阻塞当前线程直到此任务执行完毕
+</code></pre></li>
+<li><p>NSOperationQueue</p>
+
+<pre><code>NSUInteger operationCount; //获取队列的任务数
+
+-(void)cancelAllOperations; //取消队列中所有的任务
+
+-(void)waitUntilAllOperationsAreFinished; //阻塞当前线程直到此队列中的所有任务执行完毕
+
+[queue setSuspended:YES]; // 暂停queue
+
+[queue setSuspended:NO]; // 继续queue
+</code></pre></li>
+</ul>
+
+<h2 id="toc_15">更多内容</h2>
+
+<p>参考<a href="http://www.jianshu.com/p/0b0d9b1f1f19">关于iOS多线程，你看我就够了</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14614801701186.html" data-count-type="comments" href="14614801701186.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14610540983936.html">
                 
@@ -796,134 +1195,6 @@ b失败之前,a先等待</p></li>
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14603791205821.html">
-                
-                  <h1>GeekBand.iOS-事件处理</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>暂时无感，先做归纳</p>
-</blockquote>
-
-<h2 id="toc_0">什么是事件</h2>
-
-<p>Events:objects sent to an app informing user action<br/>
-在iOS中，事件分为三类：</p>
-
-<ul>
-<li>触控事件（单点、多点触控以及各种手势操作）</li>
-<li>传感器事件（重力、加速度传感器等）</li>
-<li>远程控制事件（远程遥控iOS设备多媒体播放等）</li>
-</ul>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603801710492.jpg" alt=""/></p>
-
-<h2 id="toc_1">事件的分发</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603809132422.jpg" alt=""/></p>
-
-<h3 id="toc_2">NSRunLoop</h3>
-
-<p>线程附属对象，监听一组事件源<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603810622282.jpg" alt=""/></p>
-
-<h2 id="toc_3">事件响应</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-06022409-75bfb59830bb45c3899de47f77721214.png" alt=""/></p>
-
-<p>处理原理如下：</p>
-
-<ul>
-<li>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</li>
-<li>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</li>
-<li>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</li>
-</ul>
-
-<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
-
-<ul>
-<li>hitTest:withEvent:方法大致处理流程是这样的：
-
-<ul>
-<li>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
-
-<ul>
-<li>若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</li>
-<li>若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</li>
-</ul></li>
-<li>若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</li>
-<li>若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</li>
-<li>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理。</li>
-</ul></li>
-</ul>
-
-<p>拿到这个UIView后，就调用该UIView的touches系列方法。<br/>
-消息处理过程，在找到的那个视图里处理，处理完后根据需要，利用响应链nextResponder可将消息往下一个响应者传递。<br/>
-UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- UIView</p>
-
-<p>【关键】：1、iOS判断哪个界面能接受消息是从View层级结构的父View向子View传递，即树状结构的根节点向叶子节点递归传递。2、hitTest和pointInside成对，且hitTest会调用pointInside。3、iOS的消息处理是，当消息被人处理后默认不再向父层传递</p>
-
-<h3 id="toc_4">事件沿Responder Chain传递</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603818809422.jpg" alt="事件沿Responder Chain传递"/></p>
-
-<h2 id="toc_5">在自定义类里响应触摸事件</h2>
-
-<pre><code>-(void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event;
--(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
--(void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-</code></pre>
-
-<p>UITouch:</p>
-
-<ul>
-<li>previousLocationInView 前一次的点击坐标</li>
-<li>locationInView 点击的坐标</li>
-<li>timestamp 时间戳</li>
-<li>type(iOS9+) 防误触，可以判断触摸的是手还是笔</li>
-<li>force(iOS9+) 压力信息</li>
-</ul>
-
-<p>UIEvent:</p>
-
-<ul>
-<li>type:UIEventTypeTouches(Motion/RemoteControl/Press)</li>
-<li>timestamp 时间戳</li>
-</ul>
-
-<h3 id="toc_6">多点触摸</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603826494899.jpg" alt=""/></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603791205821.html" data-count-type="comments" href="14603791205821.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -978,6 +1249,8 @@ UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- U
             <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
         
             <a href="Java.html"><strong>Java</strong></a>
+        
+            <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
          
         </p>
 
@@ -1008,6 +1281,12 @@ UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- U
 	      
 		      
 			      <li class="post">
+			        <a href="14786108252793.html">Hadoop搭建实例</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
 			      </li>
 		     
@@ -1027,12 +1306,6 @@ UIAppliactionDelegate &lt;- UIWindow &lt;- UIViewController &lt;- UIView &lt;- U
 		      
 			      <li class="post">
 			        <a href="14748062329626.html">网易Java Web微专业Spring-IoC容器作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14729975970385.html">数据库连接池</a>
 			      </li>
 		     
 		  

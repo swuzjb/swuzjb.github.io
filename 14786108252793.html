@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-UIScrollView的使用 - Zhan's Blog
+  Hadoop搭建实例 - Zhan's Blog
   
   </title>
   
@@ -101,21 +101,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-UIScrollView的使用</h1>
+          <h1>Hadoop搭建实例</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/12</span>
+          <span class="date">2016/11/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html'>课程相关</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14604722520928.html" data-count-type="comments" href="14604722520928.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14786108252793.html" data-count-type="comments" href="14786108252793.html#ds-thread"></a>
             
           </span>
 
@@ -123,110 +123,163 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
+      <blockquote>
+<p>本次课程要求自主搭建Hadoop集群环境，并进行MapReduce作业操作<br/>
+本文以统计知乎用户地域分布情况为例进行统计展示</p>
+</blockquote>
 
-<h2 id="toc_0">什么是ScrollView</h2>
+<h2 id="toc_0">数据获取与格式说明</h2>
 
-<p>能Scroll的View。即UIScrollView可以用于显示多于一个屏幕的内容，超出屏幕范围的内容可以通过滑动进行查看。效果如图所示:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604727346930.jpg" alt=""/></p>
+<h3 id="toc_1">数据获取</h3>
 
-<h2 id="toc_1">UIScrollView的创建方式</h2>
+<p>实验数据采用爬虫方式从知乎进行爬取，并保存进入数据库，总数据量3383054条。为了后续处理方便，我们将数据从数据库中倒成csv文件进行存储。<br/>
+数据爬取代码：<a href="https://github.com/wycm/mycrawler">知乎爬虫</a></p>
+
+<h3 id="toc_2">数据格式</h3>
+
+<p>导出的数据格式为：<code>id,name,headline,gender,school,major,address,industry,company,job</code><br/>
+<img src="media/14786108252793/14786149854526.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_3">Hadoop集群搭建</h2>
+
+<p>Hadoop是一个由Apache基金会所开发的分布式系统基础架构。用户可以在不了解分布式底层细节的情况下，开发分布式程序。充分利用集群的威力进行高速运算和存储。<br/>
+本次课程实例基于ubuntu12.04、jdk1.8.111、hadoop2.7.3进行说明，其中ubuntu服务器以虚拟机的形式搭建。</p>
 
 <ol>
-<li>在Interface Builder里面拖</li>
-<li>使用代码创建:<code>scrollView = [[UIScrollView alloc] initWithFrame:rect];</code></li>
-</ol>
+<li><p>ubuntu虚拟机搭建</p>
 
-<h2 id="toc_2">UIScrollView的尺寸</h2>
+<p>虚拟机创建的步骤在本文中不加以介绍，如有需要请自行百度。ps.为了简便操作，我们可以先创建并配置一台虚拟机然后进行克隆。为了简便操作，可以使用<code>sudo apt-get install ubuntu-desktop</code>安装ubuntu的图形操作界面。</p></li>
+<li><p>建立软件目录</p>
 
-<ol>
-<li>ScrollView自身的size，也就是自身的Frame，这个和其它View一样。</li>
-<li>ScrollView有一个特殊的size属性，称之为contentSize，也是它的内容的大小，这个是必须指定的一个属性，否则ScrollView无法进行滑动等操作。指定contentSize的方式也有两种：
+<p>为了后续更好的管理我们按照的软件。我们使用mkdir命令，建立软件的安装目录。命令：<code>sudo mkdir /usr/soft</code></p></li>
+<li><p>jdk的安装与环境变量设置</p>
 
 <ol>
-<li>使用代码指定<code>scrollView.contentSize = CGSizeMake(&lt;#CGFloat width#&gt;, &lt;#CGFloat height#&gt;);</code></li>
-<li>使用AutoLayout,约束必须可以计算出contentSize的大小才可以正常的往其内部添加子View。可以参考<a href="http://www.cocoachina.com/ios/20150104/10810.html">Storyboard中的UIScrollView使用自动布局，使其能够滚动</a>。</li>
+<li>首先我们从Oracle的官网上下载jdk的压缩文件。下载地址：<a href="http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz">jdk</a>;</li>
+<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
+<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv jdk1.8.0_111/ /usr/soft</code></li>
+<li><p>设置java所需要的环境变量:</p>
+
+<ol>
+<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
+<li>在配置文件中加入<code>export JAVA_HOME=&quot;/usr/soft/jdk1.8.0_111&quot;</code>；</li>
+<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin&quot;</code>；</li>
+<li>保存配置文件退出；</li>
+<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
+</ol></li>
+<li><p>调用<code>javac -version</code>命令，检查配置是否生效,安装是否成功。</p></li>
+</ol></li>
+<li><p>Hadoop的安装与环境变量设置</p>
+
+<ol>
+<li>从Apache Hadoop网站上下载对应的Hadoop安装包。下载地址：<a href="http://mirrors.cnnic.cn/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz">Hadoop2.7.3</a>；</li>
+<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
+<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv Hadoop-2.7.3 /usr/soft</code></li>
+<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
+<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin:/usr/soft/hadoop-2.7.3/bin:/usr/soft/hadoop-2.7.3/sbin&quot;</code>；</li>
+<li>保存配置文件退出；</li>
+<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
+<li>调用<code>Hadoop version</code>命令，检查配置是否生效,安装是否成功。</li>
+</ol></li>
+<li><p>SSH免密码登录配置</p>
+
+<ol>
+<li>使用<code>sudo apt-get install ssh</code>安装完整的ssh客户端；</li>
+<li>使用<code>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa</code>生成公私钥；</li>
+<li>使用<code>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</code>将公钥复制；</li>
+<li>使用<code>ssh localhost</code>命令检验是否可以免密码登录系统。</li>
+</ol></li>
+<li><p>修改服务器的名称</p>
+
+<ol>
+<li>使用<code>sudo vi /etc/hostname</code>,修改服务器的名称</li>
+<li>重启服务器使配置生效</li>
+</ol></li>
+<li><p>配置Hadoop配置文件</p>
+
+<p>Hadoop的配置文件位于其安装目录下的etc/hadoop/目录下</p>
+
+<ol>
+<li><p>修改yarn-site.xml，内容如下（master代表主服务器名）：</p>
+
+<pre><code class="language-xml">&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;fs.defaultFS&lt;/name&gt;
+        &lt;value&gt;hdfs://master/&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+        &lt;value&gt;~/hadoop/data&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre></li>
+<li><p>修改hdfs-site.xml，内容如下:</p>
+
+<pre><code class="language-xml">&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;dfs.replication&lt;/name&gt;
+        &lt;value&gt;3&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre></li>
+<li><p>修改mapred-site.xml（此文件需要从mapred-site.xml.template复制），内容如下：</p>
+
+<pre><code class="language-xml">&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+        &lt;value&gt;yarn&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre></li>
+<li><p>修改yarn-site.xml,内容如下：</p>
+
+<pre><code class="language-xml">&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
+        &lt;value&gt;master&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+        &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
+        &lt;value&gt;master:8032&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;
+        &lt;value&gt;master:8030&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre></li>
+<li><p>修改slaves文件，将附属机主机名添加入内，每行一个，样例为:</p>
+
+<pre><code class="language-xml">s1
+s3
+</code></pre></li>
+</ol></li>
+<li><p>克隆宿主机，配置hosts文件</p>
+
+<ol>
+<li>使用VM的克隆功能，克隆虚拟机，并依次修改主机名</li>
+<li><p>根据实际IP修改各个机器的hosts文件，ip查看可以使用<code>ifconfig</code>命令，样例如下：</p>
+
+<pre><code>127.0.0.1  localhost    
+10.104.234.203  master
+182.254.216.245 s1
+123.207.252.11 s2
+123.207.24.98 s3
+</code></pre></li>
+</ol></li>
+<li><p>格式化HDFS文件系统，执行<code>hdfs namenode -format</code>命令，对HDFS进行格式化。</p></li>
+<li><p>启动Hadoop集群</p>
+
+<ol>
+<li>启动文件系统,<code>start-dfs.sh</code>;</li>
+<li>启动yarn，<code>start-yarn.sh</code>;</li>
+<li>可以使用<code>jps</code>命令，检查各个服务的启动情况</li>
 </ol></li>
 </ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604733972117.jpg" alt=""/></p>
-
-<h2 id="toc_3">UIScrollView的滚动</h2>
-
-<p>设置完成ScrollView之后，我们的ScrollView就可以进行滚动。与滚动有几个相关的属性或方法，介绍如下：</p>
-
-<ol>
-<li><code>BOOL scrollEnable</code>是否可以滚动</li>
-<li><code>BOOL bounces</code>是否显示回弹效果</li>
-<li><code>BOOL showsHorizontalScrollIndicator</code> 是否显示垂直滚动条</li>
-<li><code>BOOL showsVerticalScrollIndicator</code>  是否显示水平滚动条</li>
-<li><code>.contentOffset</code>是一个CGPoint，表示偏移的点
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604737957967.jpg" alt=""/></li>
-</ol>
-
-<h2 id="toc_4">监听滚动</h2>
-
-<p>监听滚动需要对应的监听对象实现UIScrollViewDelegate协议。<br/>
-具体的监听方法如下：</p>
-
-<pre><code>// 只要 scrollView 滑动就会触发 ( 会触发多次 )
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView;                                               
-
-//只要 scrollView 缩放就会触发
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView 
-
-// 当将要拖拽 scrollView 时触发 , 手指接触 scrollView 并且将要滑动时触发
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
-// 当结束拖拽时触发 ( 手指将要离开屏幕 )
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset NS_AVAILABLE_IOS(5_0);
-
-// 当结束拖拽时触发 ( 手指已经离开屏幕 )
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
-
-//当 scrollView 滑动将要减速时触发 ( 将要停止 )
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView;   
-//当 scrollView 结束减速时触发 ( 停止滑动 )
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;    
-//当设置 scrollView的setContentOffset, 有一个动画效果时触发
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView; 
-//设置要缩放的 scrollView 上面的哪一个子视图 , 只能是子视图 , 不能是 scrollView 本身
-- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;     
-//当将要开始缩放时触发
-- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view NS_AVAILABLE_IOS(3_2); 
-//当结束缩放时触发
-- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale; 
-//只有当 scrollsToTop 属性设置为 YES 时 , 该方法才会触发 , 进一步询问点击状态条是否有效
-- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;  
-//当点击状态条并且 scrollView 滑动到顶端时触发
-- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;      
-
-</code></pre>
-
-<h2 id="toc_5">ScrollView缩放</h2>
-
-<p>除了要指定那个View具有缩放的效果，还需要指定两个属性，<code>scrollView.minimumZoomScale</code>、<code>scrollView.maximumZoomScale</code>。直接Zoom是位图缩放而非重绘</p>
-
-<h2 id="toc_6">ScrollView分页滚动</h2>
-
-<p>通过设置.pageEnable属性可以控制是否开启分页滚动，当开启后，scrollView不再显示滚动条，并整页切换显示内容。<br/>
-页面来源：</p>
-
-<ul>
-<li>一个巨大的View，简单但是浪费资源</li>
-<li>每页一个View，通过Delegate实现View的复用</li>
-</ul>
-
-<h3 id="toc_7">ScrollView和PageControl结合</h3>
-
-<p>这两个View结合起来可以实现图片轮播的效果，通过实现PageControl的delegate可以控制currentPage属性进行显示</p>
-
-<h4 id="toc_8">无限轮播</h4>
-
-<p>为了保证轮播图像首尾相接，无限循环，有两个思路：<br/>
-1. 在第一张图片前加最后一张图片，在最后一张图片后加第一张图片，在delegate中判断，如果到达这两个特殊位置，在程序中进行跳转。举例：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
-如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
-2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
 
       </div>
 
@@ -234,16 +287,13 @@
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14610365861382.html" 
-          title="Previous Post: GeekBand.iOS-UIView动画">&laquo; GeekBand.iOS-UIView动画</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14603833170565.html" 
-          title="Next Post: GeekBand.iOS-触摸手势">GeekBand.iOS-触摸手势 &raquo;</a>
+          <a  href="14773646522828.html" 
+          title="Next Post: 网易Java Web微专业Spring-Web框架单元作业">网易Java Web微专业Spring-Web框架单元作业 &raquo;</a>
       
       </p>
         </div>
@@ -255,7 +305,7 @@
           
 
           
-              <div class="ds-thread" data-thread-key="14604722520928.html" data-url="http://swuzjb.github.io/14604722520928.html" data-title="GeekBand.iOS-UIScrollView的使用"></div>
+              <div class="ds-thread" data-thread-key="14786108252793.html" data-url="http://swuzjb.github.io/14786108252793.html" data-title="Hadoop搭建实例"></div>
           
         </div>
       </div>
