@@ -4,7 +4,7 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-10-25T14:20:21+08:00</updated>
+  <updated>2016-11-09T22:22:08+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -175,6 +175,175 @@ s3
 <li>可以使用<code>jps</code>命令，检查各个服务的启动情况</li>
 </ol></li>
 </ol>
+
+<h2 id="toc_4">统计程序的编写与运行</h2>
+
+<p>本次实验所用的MapReduce程序采用Maven的方式进行构建，具体操作可以参考文章：<a href="http://www.cnblogs.com/Leo_wl/p/4862820.html">Maven构建Hadoop工程</a></p>
+
+<ol>
+<li><p>编写Mapper类，本次我们实现的功能从原理上与Hadoop自带的WordCount实验非常相似。</p>
+
+<pre><code class="language-java">package com.swu.count;
+
+import java.io.IOException;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class CountMapper extends Mapper&lt;Object, Text, Text, IntWritable&gt; {
+
+    private final static IntWritable one = new IntWritable(1);
+    private Text word = new Text();
+
+    @Override
+    protected void map(Object key, Text value, Mapper&lt;Object, Text, Text, IntWritable&gt;.Context context)
+            throws IOException, InterruptedException {
+        // 获取每一行数据，并以逗号为基准进行分割
+        String[] data = value.toString().split(&quot;,&quot;);
+        // 设置word的key为地址信息
+        word.set(data[5]);
+        // 设置value为1
+        context.write(word, one);
+    }
+
+}
+</code></pre></li>
+<li><p>编写Reducer类。</p>
+
+<pre><code class="language-java">package com.swu.count;
+
+import java.io.IOException;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class CountReduce extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt; {
+    private IntWritable result = new IntWritable();
+    private Text keyEx = new Text();
+
+    @Override
+    protected void reduce(Text key, Iterable&lt;IntWritable&gt; values,
+            Reducer&lt;Text, IntWritable, Text, IntWritable&gt;.Context context) throws IOException, InterruptedException {
+        int sum = 0;
+        // 遍历value相加
+        for (IntWritable val : values) {
+            sum += val.get();
+        }
+        // 返回新的key-value
+        result.set(sum);
+        keyEx.set(key);
+        context.write(keyEx, result);
+    }
+}
+</code></pre></li>
+<li><p>编写Comparator类，用于第二次作业的排序。</p>
+
+<pre><code class="language-java">package com.swu.count;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.WritableComparable;
+
+public class CountComparator extends IntWritable.Comparator {
+
+    @Override
+    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
+        // TODO Auto-generated method stub
+        return -super.compare(b1, s1, l1, b2, s2, l2);
+    }
+    public int compare(WritableComparable a, WritableComparable b) {
+        // TODO Auto-generated method stub
+        return -super.compare(a, b);
+    }
+}
+</code></pre></li>
+<li><p>编写主方法。</p>
+
+<pre><code class="language-java">package com.swu.count;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.GenericOptionsParser;
+import java.util.Random;
+
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.map.InverseMapper;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+        if (otherArgs.length != 2) {
+            System.err.println(&quot;Usage: zhihuCount &lt;in&gt; &lt;out&gt;&quot;);
+            System.exit(2);
+        }
+        Path tempDir = new Path(&quot;wordcount-temp-&quot; + Integer.toString(new Random().nextInt(Integer.MAX_VALUE))); // 定义一个临时目录
+
+        Job job = new Job(conf, &quot;zhihuCount&quot;);
+        job.setJarByClass(Main.class);
+        try {
+            job.setMapperClass(CountMapper.class);
+            job.setCombinerClass(CountReduce.class);
+            job.setReducerClass(CountReduce.class);
+
+            job.setOutputKeyClass(Text.class);
+            job.setOutputValueClass(IntWritable.class);
+
+            FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+            FileOutputFormat.setOutputPath(job, tempDir);
+            // 先将词频统计任务的输出结果写到临时目录中,下一个排序任务以临时目录为输入目录。
+            job.setOutputFormatClass(SequenceFileOutputFormat.class);
+            if (job.waitForCompletion(true)) {
+                Job sortJob = new Job(conf, &quot;sort&quot;);
+                sortJob.setJarByClass(Main.class);
+                FileInputFormat.addInputPath(sortJob, tempDir);
+                sortJob.setInputFormatClass(SequenceFileInputFormat.class);
+
+                /* InverseMapper由hadoop库提供，作用是实现map()之后的数据对的key和value交换 */
+                sortJob.setMapperClass(InverseMapper.class);
+                /* 将 Reducer 的个数限定为1, 最终输出的结果文件就是一个。 */
+                sortJob.setNumReduceTasks(1);
+                FileOutputFormat.setOutputPath(sortJob, new Path(otherArgs[1]));
+
+                sortJob.setOutputKeyClass(IntWritable.class);
+                sortJob.setOutputValueClass(Text.class);
+                /*
+                 * Hadoop 默认对 IntWritable 按升序排序，而我们需要的是按降序排列。 因此我们实现了一个
+                 * IntWritableDecreasingComparator 类, 并指定使用这个自定义的 Comparator
+                 * 类对输出结果中的 key (词频)进行排序
+                 */
+                sortJob.setSortComparatorClass(CountComparator.class);
+
+                System.exit(sortJob.waitForCompletion(true) ? 0 : 1);
+            }
+        } finally {
+            FileSystem.get(conf).deleteOnExit(tempDir);
+        }
+    }
+}
+</code></pre></li>
+<li><p>将写好的程序编译为jar包(注意指定Main方法)，上传至服务器。</p></li>
+<li><p>执行<code>hadoop jar XXX.jar /inputFile /outputFile</code>，执行作业。</p></li>
+</ol>
+
+<h2 id="toc_5">结果展示与说明</h2>
+
+<p>上述作业结束后，我们就可以通过查询输出文件得到我们的统计结果。本次实验统计结果如下：<br/>
+<img src="media/14786108252793/14787497512630.jpg" alt=""/><br/>
+输出文件如下：<br/>
+<img src="media/14786108252793/14787497741393.jpg" alt=""/></p>
+
+<h2 id="toc_6">相关代码</h2>
+
+<p>本次实验相关代码和所用的数据资料，均已上传至码云仓库（OSChina git）地址为：<a href="https://git.oschina.net/cobber/HadoopPractice">HadoopPractice</a></p>
 
 ]]></content>
   </entry>
