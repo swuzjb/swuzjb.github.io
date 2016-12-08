@@ -92,157 +92,832 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
 	<div class="large-8 medium-8 columns">
-    <div id="archives-page-wrap">
-      <h1></h1>
-  		<div class="markdown-body archives-wrap">
-  		
-              
-              <div class="article">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
                 <a class="clearlink" href="14640741638557.html">
+                
                   <h1>GeekBand.Swift-Homework13</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">题目</h2>
+
+<p>请说出下面代码存在的问题，以及改进方式。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">回答</h2>
+
+<h3 id="toc_2">问题分析</h3>
+
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
+
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+</code></pre>
+
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/5/24</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
+        
+			<div class="article">
                 <a class="clearlink" href="14635750426080.html">
+                
                   <h1>GeekBand.Swift-集合类型</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">数组(Array)</h2>
+
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+
+<h3 id="toc_1">内存模型</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
+
+<h3 id="toc_2">使用数组</h3>
+
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
+
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
+
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
+</code></pre>
+
+<h4 id="toc_3">数组遍历</h4>
+
+<ul>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
+</ul>
+
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
+
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
+
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
+</code></pre>
+
+<h4 id="toc_4">缓存容量与增长</h4>
+
+<ul>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
+</ul>
+
+<h4 id="toc_5">copy-on-write共享技术</h4>
+
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
+
+<h2 id="toc_6">集合类型(Set)</h2>
+
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
+
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
+
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/5/18</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/18</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
+        
+			<div class="article">
                 <a class="clearlink" href="14633841095158.html">
+                
                   <h1>GeekBand.Swift-面向对象</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>面向对象三大特性：封装、继承、多态</p>
+</blockquote>
+
+<h2 id="toc_0">封装</h2>
+
+<p>封装值得是隐藏类的一部分内部结构，避免外部访问或者外部直接访问，只有类自身可以操作。<br/>
+通常，我们使用<code>getter</code>和<code>setter</code>来达到封装的目的。</p>
+
+<h3 id="toc_1">访问控制符</h3>
+
+<ol>
+<li>private —— private访问级别所修饰的属性或者方法只能在当前的Swift源文件里可以访问。</li>
+<li>internal（默认访问级别，internal修饰符可写可不写）—— internal访问级别所修饰的属性或方法在源代码所在的整个模块都可以访问。如果是框架或者库代码，则在整个框架内部都可以访问，框架由外部代码所引用时，则不可以访问。如果是App代码，也是在整个App代码，也是在整个App内部可以访问。</li>
+<li>public —— 可以被任何人使用</li>
+</ol>
+
+<h3 id="toc_2">一个例子</h3>
+
+<p>假设我们想要创建一个代表圆的类，那么圆的半径应该是可以改变的。而且，该圆的面积和周长应该可以从圆的实例中获取，而这两个属性不应该被类本身以外所更改。出于性能考虑，面积和周长也应该只计算一次。</p>
+
+<pre><code class="language-swift">class Circle {
+    private var area: Double = 0;
+    private var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures();
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius;
+        calculateFigures();
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius;
+        diameter = 2 * M_PI * radius;
+    }
+
+    func getArea() -&gt; Double {
+        return self.area;
+    }
+
+    func getDiameter() -&gt; Double {
+        return self.diameter;
+    } 
+}
+</code></pre>
+
+<p>Swift还为我们提供了简便方法。<br/>
+通过在属性前面使用<code>private(set)</code>，属性就被设置为默认访问等级的 <code>getter</code>方法，但是<code>setter</code>方法是私有的。所以我们可以去掉两个 <code>getter</code>方法：</p>
+
+<pre><code class="language-swift">class Circle {
+    private(set) var area: Double = 0;
+    private(set) var diameter: Double = 0;
+    var radius: Double {
+        didSet {
+            calculateFigures()
+        }
+    }
+    init(radius:Double) {
+        self.radius = radius
+        calculateFigures()
+    }
+    private func calculateFigures() {
+        area = M_PI * radius * radius
+        diameter = 2 * M_PI * radius
+    }
+}
+</code></pre>
+
+<p>当然也可以为属性设置公有的getter方法：</p>
+
+<pre><code class="language-switf">public private(set) var area: Double = 0
+public private(set) var diameter: Double = 0
+</code></pre>
+
+<h2 id="toc_3">继承</h2>
+
+<p>面向对象中，非常重要的一个概念。通过继承，子类可以拥有父类(超类)中的方法和属性，对代码进行复用。<br/>
+在Swift中，子类继承父类的属性、方法、下标。</p>
+
+<h3 id="toc_4">一个例子</h3>
+
+<pre><code class="language-swift">struct Point{
+    var x=0;
+    var y=0;
+}
+class Shape{
+    var no=0;
+    func move() {
+        print(&quot;NO: \(no) Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    var leftUp=Point();
+    var width=0;
+    var height=0;
+    
+}
+class Circle: Shape{
+    var center=Point();
+    var radius=0;
+}
+</code></pre>
+
+<p>Rectangle和Circle就继承了Shape中的方法和属性。</p>
+
+<h3 id="toc_5">方法重写</h3>
+
+<p>有的时候，我们需要在子类中对父类的某一个方法进行加工。就需要进行方法的重写。在Swift中，对于方法的重写，必须添加Override关键字。</p>
+
+<pre><code class="language-swift">class Shape{
+    var no=0;
+    //用final关键字修饰，子类无法重写
+    final func show(){
+        print(&quot;Shape.show&quot;);
+    }
+    func move() {
+        print(&quot;Shape.move&quot;);
+    }
+}
+class Rectangle: Shape{
+    //重写父类的no属性
+    override var no: Int {
+        get{
+            print(&quot;Rectangle.no.get()&quot;);
+            return super.no;
+        }
+        set{
+            print(&quot;Rectangle.no.set()&quot;);
+            super.no=newValue;
+        }
+    }
+    override func move() {
+        print(&quot;Rectangle.move&quot;);
+    }
+    
+}
+class Circle: Shape{
+    override func move() {
+        print(&quot;Circle.move&quot;);
+    }
+}
+</code></pre>
+
+<h3 id="toc_6">继承中的初始化器和析构器</h3>
+
+<h4 id="toc_7">初始化器</h4>
+
+<ul>
+<li>如果子类没有定义初始化器，则自动继承父类的初始化器</li>
+<li>如果子类定义了初始化器，则不再继承。此时子类的初始化器必须调用父类的一个初始化器。如果手工不调用，编译器将自动生成调用。</li>
+<li>如果子类的初始化器与父类的初始化器原型一致，必须使用override</li>
+<li>在子类中使用父类属性，必须确保首先调用父类初始化器</li>
+</ul>
+
+<h4 id="toc_8">析构器</h4>
+
+<ul>
+<li>如果子类没有定义析构器，会自动继承父类的析构器</li>
+<li>子类析构器执行完毕后，会自动调用父类析构器</li>
+<li>子类析构器自动具有多态性</li>
+</ul>
+
+<h2 id="toc_9">多态</h2>
+
+<p>多态，也是面向对象的三大特性之一。即父类引用指向子类对象。在Swift中，每个属性都有两个类型，一个是声明类型，一个是实际类型。这两个类型在值类型中是相等的。但是在类中，可能不同。但是实际类型一定是声明类型本身或其子类。</p>
+
+<pre><code class="language-swift">//如下代码是没有问题的
+var rect:Shape;
+rect = Rectangle();
+//当我们调用rect的move方法的时候，实际调用的是Rectangle中的Move方法。
+rect.move();
+
+</code></pre>
+
+<p>也可以将多态描述为：子类在同一行为接口下，表现不同的实现方式。</p>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/5/16</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633841095158.html" data-count-type="comments" href="14633841095158.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
+        
+			<div class="article">
                 <a class="clearlink" href="14633830220167.html">
+                
                   <h1>GeekBand.Swift-结构与枚举</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+</blockquote>
+
+<h2 id="toc_0">Struct结构</h2>
+
+<ul>
+<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
+<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
+<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
+<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
+</ul>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+</code></pre>
+
+<h3 id="toc_1">Struct和Class</h3>
+
+<ul>
+<li>相同点：
+
+<ol>
+<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
+<li>都支持类型扩展、协议</li>
+</ol></li>
+<li>不同点：
+
+<ol>
+<li>类支持继承和多态，结构不支持</li>
+<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
+<li>类支持析构器，结构不支持</li>
+<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
+<li>类支持引用比较。结构不支持。</li>
+</ol></li>
+</ul>
+
+<h2 id="toc_2">Enum枚举</h2>
+
+<ul>
+<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
+<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
+<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
+<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
+<li>还可定义:计算属性、方法、初始化器</li>
+</ul>
+
+<pre><code class="language-swift">//定义枚举类型
+enum Color {
+    case Red
+    case Green
+    case Blue
+}
+
+enum ComplexColor{
+    case Red,Green,Blue,Alpha
+}
+
+var c1=Color.Red
+var c2:Color
+c2 = Color.Green
+c1 = .Blue
+var c3=c1
+
+
+func print(color: Color){
+    
+    switch color {
+    case .Red:
+        print(&quot;Red Color!&quot;)
+    case .Green:
+        print(&quot;Green Color!&quot;)
+    case .Blue:
+        print(&quot;Blue Color!&quot;)
+    }
+    
+}
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/5/16</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
+        
+			<div class="article">
                 <a class="clearlink" href="14628720930939.html">
+                
                   <h1>GeekBand.Swift-下标与操作符</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+</blockquote>
+
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
+
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
+}
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
+}
+for i in 0..&lt;10{
+    print(datas[i])
+}
+</code></pre>
+
+<h2 id="toc_1">操作符</h2>
+
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
+
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
+}
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
+</code></pre>
+
+<h3 id="toc_3">相等操作符</h3>
+
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
+
+
+var c5=c3
+
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/5/10</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
+        
               
-              <div class="article">
-                <a class="clearlink" href="14628652524688.html">
-                  <h1>GeekBand.Swift-属性与方法</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/5/10</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14626379454584.html">
-                  <h1>GeekBand.Swift-第一周作业</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/5/8</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14623728039466.html">
-                  <h1>GeekBand.iOS-数据持久化</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/5/4</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14614801701186.html">
-                  <h1>GeekBand.iOS-多线程编程</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/4/24</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14610540983936.html">
-                  <h1>GeekBand.iOS-网络操作</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/4/19</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-             
-      </div>        
 
 
 			<div class="row">

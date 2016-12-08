@@ -92,143 +92,981 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
 	<div class="large-8 medium-8 columns">
-    <div id="archives-page-wrap">
-      <h1></h1>
-  		<div class="markdown-body archives-wrap">
-  		
-              
-              <div class="article">
-                <a class="clearlink" href="14586526599234.html">
-                  <h1>GeekBand.iOS-UIKIT继承关系</h1>
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14633830220167.html">
+                
+                  <h1>GeekBand.Swift-结构与枚举</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>结构和枚举在swift中，应用范围和能力相比OC来说有很大的扩展</p>
+</blockquote>
+
+<h2 id="toc_0">Struct结构</h2>
+
+<ul>
+<li>Struct是一个值类型，在拷贝时进行值拷贝。</li>
+<li>虽然在Swift中，Struct可以定义方法。但是，struct不支持面向对象。主要用于定义轻量级的数值类型，如Point。</li>
+<li>不要在Struct中定义引用类型，会使值拷贝类型不纯粹！</li>
+<li>struct支持属性，方法，下标，初始化器。还支持类型扩展和协议</li>
+</ul>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+</code></pre>
+
+<h3 id="toc_1">Struct和Class</h3>
+
+<ul>
+<li>相同点：
+
+<ol>
+<li>都可以定义以下成员：属性、方法、下标、初始化器</li>
+<li>都支持类型扩展、协议</li>
+</ol></li>
+<li>不同点：
+
+<ol>
+<li>类支持继承和多态，结构不支持</li>
+<li>类必须自己定义初始化器，结构会有默认的按成员初始化器</li>
+<li>类支持析构器，结构不支持</li>
+<li>类的实例放在堆上，由ARC负责管理。结构的实例在栈上，方法结束后自动释放。</li>
+<li>类支持引用比较。结构不支持。</li>
+</ol></li>
+</ul>
+
+<h2 id="toc_2">Enum枚举</h2>
+
+<ul>
+<li>enum用于定义一组相关的值成员。属于值类型，具有值拷贝语义。</li>
+<li>可以使用switch—case语句处理enum，但是case必须包括所有的枚举值，或者使用default语句。</li>
+<li>enum可以指定原始值(rawValue),类型可以是字符、字符串、整数、浮点数。数值类型默认从0开始，依次递增。字符串类型默认与枚举值名称相同。</li>
+<li>enum可以设置关联值，设置不同类型的值成员，类似于联合数据结构。</li>
+<li>还可定义:计算属性、方法、初始化器</li>
+</ul>
+
+<pre><code class="language-swift">//定义枚举类型
+enum Color {
+    case Red
+    case Green
+    case Blue
+}
+
+enum ComplexColor{
+    case Red,Green,Blue,Alpha
+}
+
+var c1=Color.Red
+var c2:Color
+c2 = Color.Green
+c1 = .Blue
+var c3=c1
+
+
+func print(color: Color){
+    
+    switch color {
+    case .Red:
+        print(&quot;Red Color!&quot;)
+    case .Green:
+        print(&quot;Green Color!&quot;)
+    case .Blue:
+        print(&quot;Blue Color!&quot;)
+    }
+    
+}
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/3/22</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14633830220167.html" data-count-type="comments" href="14633830220167.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14585764912552.html">
-                  <h1>GeekBand.iOS-StoryBoard</h1>
+        
+			<div class="article">
+                <a class="clearlink" href="14628720930939.html">
+                
+                  <h1>GeekBand.Swift-下标与操作符</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">下标</h2>
+
+<blockquote>
+<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
+</blockquote>
+
+<ul>
+<li>下标可以用于class、struct、enum</li>
+<li>只能定义实例下标，不能定义类型下标</li>
+<li>可以定义读写下标或只读下标</li>
+<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
+<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
+</ul>
+
+<pre><code class="language-swift">
+class Vector{
+    var datas = [Int](count:100,repeatedValue:0);
+    subscript(index:Int)-&gt; Int{
+        get{
+            return datas[index]
+        }
+        set{          
+            datas[index]=newValue
+        }
+    }
+}
+
+var datas=Vector()
+for i in 0..&lt;10{
+   datas[i]=i
+}
+for i in 0..&lt;10{
+    print(datas[i])
+}
+</code></pre>
+
+<h2 id="toc_1">操作符</h2>
+
+<blockquote>
+<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
+</blockquote>
+
+<h3 id="toc_2">重载操作符</h3>
+
+<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
+可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
+也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
+
+<pre><code class="language-swift">class Complex{
+    var real=0.0
+    var imag=0.0
+    
+    init(real:Double, imag:Double){
+        self.real=real
+        self.imag=imag
+    }
+}
+
+//中缀操作符
+func + (left: Complex, right: Complex) -&gt; Complex {
+    
+    return Complex(real: left.real + right.real,
+        imag: left.imag + right.imag)
+}
+
+var c1=Complex(real: 10,imag: 20)
+var c2=Complex(real: 100,imag: 200)
+var c3=c1+c2
+
+
+
+//前缀操作符
+prefix func - (data: Complex) -&gt; Complex {
+    return Complex(real: -data.real, imag: -data.imag)
+}
+
+
+var c4 = -c3
+
+//复合赋值操作符
+func += (inout left: Complex, right: Complex) {
+    left = left + right
+}
+
+c1+=c2
+
+//自定义操作符
+prefix operator +++ {}
+
+prefix func +++ (inout data: Complex) -&gt; Complex {
+    data += data
+    return data
+}
+
+</code></pre>
+
+<h3 id="toc_3">相等操作符</h3>
+
+<ul>
+<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
+
+<ul>
+<li>相等 ===</li>
+<li>不等 !==</li>
+</ul></li>
+<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
+
+<ul>
+<li>相等 ==</li>
+<li>不等 !=</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-swift">//值相等操作符
+func == (left: Complex, right: Complex) -&gt; Bool {
+    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
+}
+func != (left: Complex, right: Complex) -&gt; Bool {
+    return !(left == right)
+}
+
+
+var c5=c3
+
+print(c1==c5) //值相等
+print(c2==c5) //值不等
+print(c1===c5) //引用不等
+print(c3===c5) //引用相等
+print(c3==c5)
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/3/22</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14585643199431.html">
-                  <h1>GeekBand.iOS-UIViewController</h1>
+        
+			<div class="article">
+                <a class="clearlink" href="14628652524688.html">
+                
+                  <h1>GeekBand.Swift-属性与方法</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>属性表达实例状态或类型状态<br/>
+方法是成员函数，表达行为可用于:struct,enum,class</p>
+</blockquote>
+
+<h2 id="toc_0">属性</h2>
+
+<h3 id="toc_1">属性类别</h3>
+
+<p>根据读写性划分</p>
+
+<ul>
+<li>存储属性</li>
+<li>计算属性</li>
+</ul>
+
+<p>根据可变性划分</p>
+
+<ul>
+<li>变量属性</li>
+<li>常量属性</li>
+</ul>
+
+<p>根据归属权划分</p>
+
+<ul>
+<li>实例属性</li>
+<li>类属性(在struct和enum中用static声明，class中用class声明)</li>
+</ul>
+
+<h3 id="toc_2">存储属性的本质</h3>
+
+<p>一个存储变量，同时编译器会给该变量自动添加get和set访问器方法。</p>
+
+<h3 id="toc_3">计算属性的本质</h3>
+
+<p>一个get方法。（可以添加set）。</p>
+
+<pre><code class="language-swift">class Rectangle{
+
+    //常量属性
+    let name:&quot;矩形&quot;;
+    
+    //存储属性(变量属性)
+    var width:Int;
+    var height:Int;
+    //计算属性
+    var area:Int{
+        get{
+            return width*height;
+        }
+        set{
+            self.width = newValue / height;
+        }
+    }
+    
+    
+}
+</code></pre>
+
+<h3 id="toc_4">属性监视器</h3>
+
+<p>属性监视器是swift的一个特殊功能，可以在属性值修改之前和之后完成对应动作。</p>
+
+<pre><code class="language-swift">var name:String = &quot;coder&quot;{
+    willSet{
+        doSomthing();
+    }
+    didSet{
+        doSomthing();
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">注意</h3>
+
+<p><em>实例属性在使用之前必须初始化！</em></p>
+
+<h2 id="toc_6">方法</h2>
+
+<h3 id="toc_7">方法的类别</h3>
+
+<p>方法根据归属不同可以分为:</p>
+
+<ul>
+<li>实例方法</li>
+<li>类型方法</li>
+</ul>
+
+<h3 id="toc_8">方法的声明</h3>
+
+<p>声明代码：<code>func name(参数1,参数2)-&gt;返回值{}</code></p>
+
+<p>说明：</p>
+
+<ul>
+<li>参数形式：外部参数名 本地参数名:类型</li>
+<li>声明时可以省略外部参数名,这时外部参数名默认使用本地参数名</li>
+<li>调用时，第一个参数名可忽略，但后面的参数名必须显示标明。如果在声明时加<code>_</code>，调用时也可忽略</li>
+<li>方法可以没有参数和返回值</li>
+<li>参数传递默认为传值</li>
+</ul>
+
+<h4 id="toc_9">更多参数和返回值功能</h4>
+
+<ul>
+<li>提供参数默认值</li>
+<li>常量参数与变量参数</li>
+<li>可变长参数</li>
+<li>inout参数，可以改变外部实参</li>
+<li>返回元组(Tuple)</li>
+</ul>
+
+<pre><code class="language-swift">
+class MyClass{
+    var instanceData=100;
+    static var typeData=10000;
+ 
+    //实例方法
+    func instanceMethod(){
+        ++instanceData
+        ++MyClass.typeData
+        instanceMethod2()
+        MyClass.typeMethod()
+    }
+    
+    //静态方法
+    static func typeMethod(){
+        ++typeData
+        //++instanceData
+        typeMethod2()
+        //instanceMethod()
+    }
+    
+    func instanceMethod2(){
+        print(instanceData)
+    }
+    static func typeMethod2(){
+        print(typeData)
+    }
+
+    //显式内部参数名，省略外部参数名
+    func sayGreeting(name:String, _ words:String)-&gt;String{
+        return words+&quot;! &quot;+name
+    }
+    func sayGreeting(){
+        print(&quot;Hello!&quot;)
+    }
+    func sayGreeting(name:String)-&gt;String {
+        return &quot;Hello! &quot;+name
+    }
+    //显式内部参数名，显式外部参数名
+    func sayGreeting(person name:String,greeting words:String)-&gt;String{
+        return words+&quot;! &quot;+name
+    }
+    
+    //可变数目参数
+    func averageNumber(numbers:Double...)-&gt;Double{
+    
+        var sum=0.0
+        for item in numbers {
+            sum+=item
+        }
+        return sum / Double(numbers.count)
+    }
+    
+    //常量参数 VS. 变量参数
+    func changeParameter(data1:Int, var data2:Int){
+        var dataTemp=data1
+        data2++
+        dataTemp++
+    }
+
+    //inout参数
+    func swap(inout a:Int,inout b:Int){
+        let tempA=a
+        a=b
+        b=tempA
+    }
+    
+    //返回Tuple类型
+    func minMax(array: [Int]) -&gt; (min: Int, max: Int){
+        var currentMin = array[0]
+        var currentMax = array[0]
+        for value in array[1..&lt;array.count] {
+            if value &lt; currentMin {
+                currentMin = value
+            } else if value &gt; currentMax {
+                currentMax = value
+            }
+        }
+        return (currentMin, currentMax)
+    }
+}
+
+var myObject=MyClass()
+//调用实例方法
+myObject.instanceMethod()
+//调用类型方法
+MyClass.typeMethod()
+myObject.sayGreeting()
+myObject.sayGreeting(&quot;Jason&quot;)
+myObject.sayGreeting(&quot;Jason&quot;,&quot;Welcome&quot;)
+myObject.sayGreeting(person:&quot;Jason&quot;, greeting:&quot;You are welcome&quot;)
+myObject.averageNumber(10,90,30,80,50,100)
+var data1=100
+var data2=200
+myObject.swap(&amp;data1,b: &amp;data2)
+let range=myObject.minMax([3,-9,23,15,-45,7])
+print(&quot;max=\(range.max), min=\(range.min)&quot;)
+</code></pre>
+
+<h3 id="toc_10">特殊的方法</h3>
+
+<h4 id="toc_11">初始化器</h4>
+
+<blockquote>
+<p>初始化器用于初始化类型实例，是一个特殊的函数，无返回值。</p>
+</blockquote>
+
+<h5 id="toc_12">初始化过程</h5>
+
+<ol>
+<li>分配内存</li>
+<li>调用初始化器初始化内存</li>
+</ol>
+
+<h5 id="toc_13">应用范围</h5>
+
+<ul>
+<li>class</li>
+<li>struct</li>
+<li>enum</li>
+</ul>
+
+<h5 id="toc_14">作用</h5>
+
+<ul>
+<li>初始化器主要用于初始化实例储存属性，可以使用默认初始化器或自定义的初始化器。</li>
+<li>所有储存属性必须被初始化
+
+<ul>
+<li>实例储存属性要么指定默认值，要么在初始化器内初始化</li>
+<li>类型存储属性必须指定默认值</li>
+</ul></li>
+<li>可选属性类型可以不初始化。(声明时用<code>？</code>修饰)</li>
+<li>属性被初始化时，不会调用属性观察者</li>
+</ul>
+
+<h5 id="toc_15">默认初始化器</h5>
+
+<ul>
+<li>一个类可以有多个初始化器，但至少有一个初始化器</li>
+<li>如果一个类没有人为提供初始化器，编译器会自动生成一个默认的初始化器</li>
+<li>默认初始化器，无参形式init();</li>
+</ul>
+
+<h5 id="toc_16">便捷初始化器</h5>
+
+<ul>
+<li>指定初始化器为类的主初始化器，负责初始化所有属性，默认调用父类的主初始化器</li>
+<li>便捷初始化器为类的辅助初始化器。必须调用同的指定初始化器。用<code>convenience</code>修饰</li>
+</ul>
+
+<pre><code class="language-swift">class Point3D{
+    var x:Int
+    var y:Int
+    var z:Int
+    
+    init(x:Int, y:Int, z:Int){
+        self.x=x
+        self.y=y
+        self.z=z
+        
+        //other processing
+        print(&quot;other task&quot;)
+    }
+    
+    convenience init(x:Int, y:Int){
+        
+        self.init(x:x,y:y,z:0)
+    }
+    
+    convenience init(){
+        
+        self.init(x:0,y:0,z:0)
+    }
+}
+
+</code></pre>
+
+<h4 id="toc_17">析构器</h4>
+
+<blockquote>
+<p>析构器(deinit),在实例内存被释放前调用，用于释放实例使用的非内存资源。</p>
+</blockquote>
+
+<ul>
+<li>析构器仅可以定义于class，且只能定义一个。</li>
+<li>只有实例析构器，没有类型析构器</li>
+<li>析构器运行根据ARC的释放规则，自动调用，程序员无法手动调用</li>
+</ul>
+
+<pre><code>class FileStream{
+    init(){
+        print(&quot;open file...&quot;)
+    }
+    
+    func process(){
+        print(&quot;process file...&quot;)
+    }
+       
+    deinit{
+        print(&quot;close file...&quot;)
+    }
+}
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/3/21</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628652524688.html" data-count-type="comments" href="14628652524688.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14585638251666.html">
-                  <h1>GeekBand.iOS—APP生命周期</h1>
+        
+			<div class="article">
+                <a class="clearlink" href="14626379454584.html">
+                
+                  <h1>GeekBand.Swift-第一周作业</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
+心中有沟壑<br/>
+原谅我。。英语拼错了。。。</p>
+</blockquote>
+
+<h2 id="toc_0">设计方式一</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+class  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">设计方式二</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+class Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">设计方式三</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+struct  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_3">设计方式四</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+} 
+struct Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_4">Swift中struct和class的区别</h2>
+
+<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
+
+<ol>
+<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
+<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
+</ol>
+
+<h3 id="toc_5">使用情景</h3>
+
+<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
+
+<ol>
+<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
+<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
+<li>不需要继承。这个是面向对象的基本特性。</li>
+</ol>
+
+<h2 id="toc_6">结论</h2>
+
+<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/3/21</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14626379454584.html" data-count-type="comments" href="14626379454584.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14585388984918.html">
-                  <h1>GeekBand.iOS-键盘回收</h1>
+        
+			<div class="article">
+                <a class="clearlink" href="14623728039466.html">
+                
+                  <h1>GeekBand.iOS-数据持久化</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
+
+<blockquote>
+<ul>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
+</ul>
+</blockquote>
+
+<h2 id="toc_0">文件存储</h2>
+
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+
+<ul>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+</ul>
+
+<h3 id="toc_2">APP Bundle</h3>
+
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
+
+<ol>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
+</ol>
+
+<p>纯C语言API</p>
+
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
+
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
+
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
+
+
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
+    }
+}
+sqlite3_finalize(stmt);
+
+//关闭SQLite
+sqlite3_close(db);
+</code></pre>
+
+<h3 id="toc_7">FMDB</h3>
+
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
+
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
+
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
+
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
+</code></pre>
+
+<h2 id="toc_8">CoreData简介</h2>
+
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
+
+<ol>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+</ol>
+
+<h4 id="toc_11">简单使用</h4>
+
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
+
+//保存
+NSError* error = nil;
+[context save:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
+}
+
+//删除
+[context deleteObject:managedObject];
+
+</code></pre>
+
+<h4 id="toc_12">参考资料</h4>
+
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
+
+                        
+                      </div>
+                  </div>
                 </a>
                 <div class="read-more clearfix">
-                  <span class="date">2016/3/21</span>
-                  <span>posted in&nbsp;</span> 
+                  <div class="more-left left">
                   
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
+                    <span class="date">2016/5/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
                 </div>
               </div><!-- article -->
-            
+        
               
-              <div class="article">
-                <a class="clearlink" href="14581131891410.html">
-                  <h1>GeekBand.iOS-猜城市游戏</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/3/16</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14580567370996.html">
-                  <h1>GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/3/15</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14578438756442.html">
-                  <h1>前笔记汇总</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/3/13</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-            
-              
-              <div class="article">
-                <a class="clearlink" href="14577530083114.html">
-                  <h1>GeekBand-OC中的类别和协议</h1>
-                </a>
-                <div class="read-more clearfix">
-                  <span class="date">2016/3/12</span>
-                  <span>posted in&nbsp;</span> 
-                  
-                      <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-                   
-                </div>
-              </div><!-- article -->
-             
-      </div>        
 
 
 			<div class="row">
@@ -239,7 +1077,7 @@
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			
+			 <a href="all_5.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
