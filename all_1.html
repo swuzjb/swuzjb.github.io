@@ -101,6 +101,146 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14748062329626.html">
+                
+                  <h1>网易Java Web微专业Spring-IoC容器作业</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>假设我们有个应用（Application），它包含一个写文件的服务（FileWriterService），该服务在创建时会创建并打开一个文件，销毁时关闭该文件，并且该服务包含一个write(String content)方法：会将content写入到文件中，要求：<br/>
+1. 使用Spring IoC的相关内容组织该程序；<br/>
+2. 文件路径通过配置文件（properties）指定；<br/>
+基本要求：必须附加一个项目说明文档，说明每个功能点对应程序的运行结果（截图），项目的接口说明或者关键代码（不要把全部代码贴出来）等可以反映项目结果的内容。提交作业的时候必须有这个项目说明文档，否则会影响最终评分</p>
+</blockquote>
+
+<h2 id="toc_0">程序结构</h2>
+
+<p>根据题目要求，程序采用IoC的方式进行组织和构建。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749583867443.jpg" alt=""/></p>
+
+<h2 id="toc_1">核心代码与结果</h2>
+
+<ol>
+<li><p>FileWriterService接口定义</p>
+
+<pre><code class="language-java">public interface FileWirterService {
+    public void write(String content);
+}
+</code></pre></li>
+<li><p>FileWriterService实现类FileWriterServiceImpl</p>
+
+<pre><code class="language-java">//声明一个Bean的id
+@Component(&quot;fileWriterService&quot;)
+public class FileWirterServiceImpl implements FileWirterService{
+
+    //通过配置文件获取参数，注入到FileWirterServiceImpl中
+    @Value(&quot;${filePath}&quot;)
+    private File file;
+    private FileWriter fw;
+    //创建时调用，打开一个文件，获取输出流
+    @PostConstruct
+    public void init() {
+        try {
+            //判断文件是否存在，如不存在则创建文件
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            //打开文件
+            fw = new FileWriter(file, true);
+            System.out.println(&quot;打开文件&quot;);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void write(String content) {
+        try {
+            //向文件中写入内容，并换行
+            fw.write(content+&quot;\n&quot;);
+            System.out.println(&quot;文件写入:&quot;+content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //销毁前调用，关闭文件输出流，释放文件
+    @PreDestroy
+    public void destory() {
+        try {
+            //关闭文件的输出流
+            if (fw != null) {
+                fw.flush();
+                fw.close();
+            }
+            System.out.println(&quot;关闭文件&quot;);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre></li>
+<li><p>读取配置文件获取FilePath参数。</p>
+
+<ol>
+<li>建立配置文件：<code>writer.properties</code>。写入配置<code>filePath=/Users/zhanjingbo/Desktop/spring.txt</code>，记录文件路径。</li>
+<li><p>在Spring的<code>application-context.xml</code>中加入读取配置文件的配置。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;writerServiceProperties&quot; class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+    &lt;property name=&quot;location&quot; value=&quot;classpath:writer.properties&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
+<li><p>编写Application的主类，实现main方法。</p>
+
+<pre><code class="language-java">public static void main(String[] args) {
+    //加载spring的配置文件，创建容器
+    ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
+    //通过Bean的id来对FileWriterService进行注入
+    FileWirterService fileWriterService = applicationContext.getBean(&quot;fileWriterService&quot;,FileWirterService.class);
+    //调用业务逻辑
+    fileWriterService.write(&quot;Hello World&quot;);
+    //关闭容器
+    ((ConfigurableApplicationContext)applicationContext).close();
+}
+</code></pre></li>
+<li><p>结果展示</p>
+
+<ul>
+<li><p>控制台的相关输出<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749592874889.jpg" alt=""/></p></li>
+<li><p>文件写入情况<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749593122837.jpg" alt=""/></p></li>
+</ul></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/9/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14748062329626.html" data-count-type="comments" href="14748062329626.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14729975970385.html">
                 
                   <h1>数据库连接池</h1>
@@ -652,175 +792,6 @@ ${message }
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14691739607250.html">
-                
-                  <h1>Java康复性训练——Spring（2）</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">AOP</h2>
-
-<blockquote>
-<p>AOP(Aspect Oriented Programming,面向切面编程)，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是软件开发的一个热点，也是Spring框架中的一个重要内容。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发效率。<br/>
-主要功能是：日志记录、性能统计、安全控制、事务处理、异常处理等</p>
-</blockquote>
-
-<h2 id="toc_1">Spring AOP实例</h2>
-
-<p>AOP的使用可以让我们在某个业务逻辑或事务执行的各个不同时期加入灵活的代码，让我们的权限控制、日志记录、性能统计等基础功能与业务逻辑彻底分离，降低耦合。这种执行方式称之为通知，通知有以下几种类型：</p>
-
-<ol>
-<li>前置通知：在业务逻辑开始之前执行。</li>
-<li>后置通知：在业务逻辑结束之后执行。</li>
-<li>环绕通知：可以灵活配置业务逻辑的执行时间或是否执行业务逻辑，功能上有点类似于Filter。</li>
-<li>返回通知：当业务逻辑执行完并返回非空数据时执行。</li>
-<li>异常通知：当业务逻辑执行过程中产生异常时执行。</li>
-</ol>
-
-<h3 id="toc_2">实例demo：</h3>
-
-<ol>
-<li><p>通知具体内容类：</p>
-
-<pre><code class="language-java">package site.zhanjingbo.advice;
-
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-
-public class UserServiceAspect {
-    public void doBefore(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;开始添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public void doAfter(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;完成添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public Object doAround(ProceedingJoinPoint pjp) throws Throwable{
-        System.out.println(&quot;环绕前&quot;);
-        Object retVal = pjp.proceed();
-        System.out.println(&quot;环绕后&quot;);
-        return retVal;
-    }   
-    public void doAfterThrowing(JoinPoint jp,Throwable ex){
-        System.out.println(&quot;异常通知信息：&quot;+ex.getMessage());
-    }
-    public void doAfterReturning(JoinPoint jp){
-        System.out.println(&quot;返回通知&quot;);
-    }
-}
-</code></pre></li>
-<li><p>beans.xml的配置</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-    xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-    xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
-
-        &lt;bean id=&quot;userService&quot; class=&quot;site.zhanjingbo.service.impl.UserServiceImpl&quot;/&gt;
-        &lt;bean id=&quot;userServiceAspect&quot; class=&quot;site.zhanjingbo.advice.UserServiceAspect&quot; /&gt;
-
-        &lt;aop:config&gt;
-            &lt;aop:aspect id=&quot;userServiceAspect&quot; ref=&quot;userServiceAspect&quot;&gt;
-                &lt;!-- 声明一个切点 --&gt;
-                &lt;aop:pointcut expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; id=&quot;businessService&quot;/&gt;  
-                &lt;!-- 为切点添加通知 --&gt;
-                &lt;aop:before method=&quot;doBefore&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after method=&quot;doAfter&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot; /&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-returning method=&quot;doAfterReturning&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-throwing method=&quot;doAfterThrowing&quot; pointcut-ref=&quot;businessService&quot; throwing=&quot;ex&quot;/&gt;
-            &lt;/aop:aspect&gt;
-        &lt;/aop:config&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>执行顺序<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-22-14691852095800.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-</ol>
-
-<h2 id="toc_3">Spring对Dao的支持</h2>
-
-<p>Spring发布以来很好的支持了Hibernate和Mybatis等ORM框架，只需要简单的配置，就可以很方便的实现dao的注入。</p>
-
-<h2 id="toc_4">Spring对事务的支持</h2>
-
-<p>事务,是业务逻辑非常重要的一个概念。事务具有的原子性、一致性、隔离性、永久性是数据正确的保证。Spring为开发人员实现事务这个特性提供了非常方便的实现方式。</p>
-
-<ol>
-<li>编程式事务管理：通过Spring提供的事务模板类<code>org.springframework.transaction.support.TranscationTemplate</code>来实现事务处理。</li>
-<li>声明式事务管理：通过XML或注解配置的方式自动添加事务处理。</li>
-<li><p>事务传播行为：Spring中，当一个service方法调用另外一个service方法的时候，因为每个service方法都有事务，这时候就出现了事务的嵌套，就产生了事务传播行为。</p>
-
-<ol>
-<li>PROPAGATION_REQUIRED--支持当前事务,如果当前没有事务,就新建一个事务。这是最常见的选择。</li>
-<li>PROPAGATION_SUPPORTS--支持当前事务,如果当前没有事务,就以非事务方式执行。</li>
-<li>PROPAGATION_MANDATORY--支持当前事务,如果当前没有事务,就抛出异常。</li>
-<li>PROPAGATION_REQUIRES_NEW--新建事务,如果当前存在事务,把当前事务挂起。</li>
-<li>PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作,如果当前存在事务,就把当前事务挂起。</li>
-<li>PROPAGATION_NEVER--以非事务方式执行,如果当前存在事务,则抛出异常。</li>
-</ol>
-
-<pre><code class="language-xml">&lt;!-- (事务管理)transaction manager, use JtaTransactionManager for global tx --&gt;
-&lt;bean id=&quot;transactionManager&quot;
-    class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-&lt;/bean&gt;
-
-&lt;!-- 配置事务通知属性 --&gt;  
-&lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;transactionManager&quot;&gt;  
-    &lt;!-- 定义事务传播属性 --&gt;  
-    &lt;tx:attributes&gt;  
-        &lt;tx:method name=&quot;insert*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;update*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;edit*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;save*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;add*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;new*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;set*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;remove*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;delete*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;change*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;get*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;find*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;load*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-    &lt;/tx:attributes&gt;  
-&lt;/tx:advice&gt;  
-</code></pre></li>
-</ol>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/22</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14691739607250.html" data-count-type="comments" href="14691739607250.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -907,6 +878,12 @@ public class UserServiceAspect {
 	      
 		      
 			      <li class="post">
+			        <a href="14814626217350.html">HTTPS技术简要介绍</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14786108252793.html">Hadoop搭建实例</a>
 			      </li>
 		     
@@ -926,12 +903,6 @@ public class UserServiceAspect {
 		      
 			      <li class="post">
 			        <a href="14759932535473.html">网易Java Web微专业Spring-AOP容器作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14748062329626.html">网易Java Web微专业Spring-IoC容器作业</a>
 			      </li>
 		     
 		  
