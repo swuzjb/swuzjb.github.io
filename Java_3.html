@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Java康复性训练——SpringMVC - Zhan's Blog
+  Java - Zhan's Blog
   
   </title>
   
@@ -92,195 +92,196 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>Java康复性训练——SpringMVC</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2016/7/24</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14676190809439.html">
+                
+                  <h1>Java康复性训练——Java基础1</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">开发环境搭建</h2>
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='Java.html'>Java</a></span>
-           
-         
-          <span class="comments">
-            
-
-            
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14693288315265.html" data-count-type="comments" href="14693288315265.html#ds-thread"></a>
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <blockquote>
-<p>SpringMVC是一套功能强大，性能强悍且使用方便的优秀MVC框架</p>
-</blockquote>
-
-<h2 id="toc_0">SpringMVC-HelloWorld</h2>
+<h3 id="toc_1">JDK的安装与配置</h3>
 
 <ol>
-<li>导入相关jar包</li>
-<li><p>配置web.xml文件，设置全局拦截器。拦截所有请求，转发给SpringMVC</p>
+<li>下载JavaSE版本的安装包。</li>
+<li>双击安装，选定安装目录</li>
+<li>配置环境变量
 
-<pre><code class="language-xml">&lt;servlet&gt;
-    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
-    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
-    &lt;init-param&gt;
-        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
-        &lt;param-value&gt;classpath:spring-mvc.xml&lt;/param-value&gt;
-    &lt;/init-param&gt;
-&lt;/servlet&gt;
-&lt;servlet-mapping&gt;
-    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
-    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
-&lt;/servlet-mapping&gt;
-</code></pre></li>
-<li><p>添加SpringMVC配置文件spring-mvc.xml</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-    xmlns:p=&quot;http://www.springframework.org/schema/p&quot;
-    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
-    xsi:schemaLocation=&quot;
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
-
-    &lt;!-- 使用注解的包，包括子集 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot;/&gt;
-
-    &lt;!-- 视图解析器 --&gt;
-    &lt;bean id=&quot;viewResolver&quot;
-        class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;
-        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot; /&gt;
-        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;&gt;&lt;/property&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>添加控制器HelloContorller</p>
-
-<pre><code class="language-java">package site.zhanjingbo.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-@Controller
-public class HelloController {
-
-    @RequestMapping(&quot;/hello&quot;)
-    public String hello(Model model){
-        model.addAttribute(&quot;message&quot;, &quot;HelloWorld!&quot;);
-        return &quot;hello&quot;;
-    }
-}
-</code></pre></li>
-<li><p>在/WEB-INF/jsp/下建立显示返回页面hello.jsp</p>
-
-<pre><code class="language-html">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot;
-pageEncoding=&quot;UTF-8&quot;%&gt;
-&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
-&lt;title&gt;Insert title here&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-${message }
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre></li>
-<li><p>完成。启动Tomcat，访问<a href="http://localhost:8080/SpringMVC/hello.do">http://localhost:8080/SpringMVC/hello.do</a>  查看<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-24-14693326495259.jpg" alt=""/></p></li>
+<ul>
+<li>JAVA_HOME JDK的安装目录</li>
+<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
+</ul></li>
 </ol>
 
-<h2 id="toc_1">SpringMVC控制器</h2>
+<h3 id="toc_2">开发工具eclipse</h3>
 
-<ul>
-<li>@RequestMapping：用于指定方法的响应URL或模块URL</li>
-<li>@RequestParam：绑定提交参数与控制器方法参数的注解。<code>@RequestParam(value=&quot;&quot;,required=true/false)</code></li>
-<li>ModelAndView:作为控制器的返回值类型，返回模型与视图</li>
-<li>SpringMVC对象属性自动封装:SpringMVC可以根据表单传入的数据自动封装控制器参数对象</li>
-<li><p>SpringMVC POST请求中文乱码:在web.xml中添加过滤器</p>
+<p>下载地址：<a href="http://eclipse.org"></a></p>
 
-<pre><code class="language-xml">&lt;!-- 编码过滤器 --&gt;
-&lt;filter&gt;
-    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
-    &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
-    &lt;async-supported&gt;true&lt;/async-supported&gt;
-    &lt;init-param&gt;
-        &lt;param-name&gt;encoding&lt;/param-name&gt;
-        &lt;param-value&gt;UTF-8&lt;/param-value&gt;
-    &lt;/init-param&gt;
-&lt;/filter&gt;
-&lt;filter-mapping&gt;
-    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
-    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
-&lt;/filter-mapping&gt;
-</code></pre></li>
-<li><p>Controller内部转发与重定向</p>
+<h2 id="toc_3">Hello Java</h2>
 
-<ul>
-<li>转发：<code>forward:</code></li>
-<li>重定向:<code>redirect:</code></li>
-</ul></li>
-<li><p>SpringMVC对Servlet API的支持</p>
+<pre><code class="language-java">
+public class Hello {
 
-<ul>
-<li>只需要在控制器方法的参数列表中添加HttpServletRequest、HttpServletResponse参数即可自动注入实例对象。</li>
-</ul></li>
-<li><p>SpringMVC对json的支持：这个有很多实例，建议直接上搜索引擎。</p></li>
-</ul>
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello Java&quot;);
+    }
 
-      </div>
+}
 
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="14720186733605.html" 
-          title="Previous Post: 简述HTTP请求过程">&laquo; 简述HTTP请求过程</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="14691739607250.html" 
-          title="Next Post: Java康复性训练——Spring（2）">Java康复性训练——Spring（2） &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
+</code></pre>
 
-          
+<h2 id="toc_4">输入</h2>
 
-          
-              <div class="ds-thread" data-thread-key="14693288315265.html" data-url="http://swuzjb.github.io/14693288315265.html" data-title="Java康复性训练——SpringMVC"></div>
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
+<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
+
+<h2 id="toc_5">变量</h2>
+
+<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
+
+<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
+
+<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
+
+<h2 id="toc_6">赋值</h2>
+
+<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
+
+<h2 id="toc_7">浮点数</h2>
+
+<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
+带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
+
+<h2 id="toc_8">优先级</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
+
+<h2 id="toc_9">类型转换</h2>
+
+<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
+
+<pre><code class="language-java">float a = 1.0;
+int b = (int)a;
+</code></pre>
+
+<h2 id="toc_10">关系运算</h2>
+
+<p>计算两个值之间的关系，叫做关系运算<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
+判断两个浮点数是否相等</p>
+
+<pre><code class="language-java">double a = 1.0;
+double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
+System.out.println(Math.abs(a-b)&lt;1e6);
+</code></pre>
+
+<h2 id="toc_11">IF语句</h2>
+
+<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
+
+<pre><code class="language-java">if(?){
+    //do something
+}else{
+    //do something
+}
+</code></pre>
+
+<h2 id="toc_12">多路分支（Switch-Case）</h2>
+
+<pre><code class="language-java">switch (整型或字符型变量){
+    case 变量可能值1: 
+      　  分支一;
+        　break;
+   case 变量可能值2: 
+      　  分支二;
+        　break;
+   case 变量可能值3: 
+      　  分支三;
+        　break;
+   ...
+   default:
+       最后分支;
+｝
+</code></pre>
+
+<h2 id="toc_13">循环</h2>
+
+<h3 id="toc_14">while循环</h3>
+
+<p>可能一次都不执行</p>
+
+<pre><code class="language-java">while(true){
+    //doSomthing..
+}
+</code></pre>
+
+<h3 id="toc_15">do-while循环</h3>
+
+<p>至少执行一次</p>
+
+<pre><code class="language-java">do{
+    //doSomething..
+}while();
+</code></pre>
+
+<h3 id="toc_16">for循环</h3>
+
+<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
+    //doSomething
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
 
 
-
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="Java_2.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">
