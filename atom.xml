@@ -4,13 +4,111 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2016-12-11T21:35:20+08:00</updated>
+  <updated>2017-02-20T21:23:55+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析（一）——相关概念综述]]></title>
+    <link href="http://swuzjb.github.io/14876629153312.html"/>
+    <updated>2017-02-21T15:41:55+08:00</updated>
+    <id>http://swuzjb.github.io/14876629153312.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">概述</h2>
+
+<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
+
+<ul>
+<li>降低编程难度<br/></li>
+<li>提高程序性能</li>
+<li>提高API之间的互操作性</li>
+<li>降低学习难度</li>
+<li>降低设计和实现相关API的难度</li>
+<li>增强程序的重用性</li>
+</ul>
+
+<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
+
+<h2 id="toc_1">泛型</h2>
+
+<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
+事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
+
+<pre><code class="language-java">//JDK 1.4 or before
+ArrayList list = new ArrayList();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = (String)list.get(i);//显式类型转换
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5 or latter
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = list.get(i);//隐式类型转换，编译器自动完成
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_2">内存管理</h2>
+
+<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
+
+<h2 id="toc_3">接口与实现</h2>
+
+<h3 id="toc_4">接口</h3>
+
+<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
+Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
+
+<h3 id="toc_5">实现</h3>
+
+<p>上述接口的通用实现类见下表：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
+
+<h2 id="toc_6">迭代器（Iterator）</h2>
+
+<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
+实例代码：</p>
+
+<pre><code class="language-java">//通过迭代器来访问容器元素
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+//得到迭代器
+Iterator&lt;String&gt; it = list.iterator();
+while(it.hasNext()){
+    String weekday = it.next();//访问元素
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
+//使用foreach迭代
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(String weekday : list){
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_7">声明</h2>
+
+<p>本系列博文装载自本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java内存管理]]></title>
@@ -3470,111 +3568,6 @@ customer = nil;
 <p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
 
 <pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
-</code></pre>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GeekBand.Swift-集合类型]]></title>
-    <link href="http://swuzjb.github.io/14635750426080.html"/>
-    <updated>2016-05-18T20:37:22+08:00</updated>
-    <id>http://swuzjb.github.io/14635750426080.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">数组(Array)</h2>
-
-<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
-索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
-在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
-
-<h3 id="toc_1">内存模型</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
-
-<h3 id="toc_2">使用数组</h3>
-
-<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
-
-<pre><code class="language-swift">//数组声明与实例化
-var array1=[1,2,3,4,5];
-var array2:[Int];
-var array3:Array&lt;Int&gt;;
-array2=[Int](count:10, repeatedValue:10);
-array3=[Int]();
-
-//变量数组和常量数组
-var array5=[1,2,3]
-let array6=[1,2,3]
-</code></pre>
-
-<h4 id="toc_3">数组遍历</h4>
-
-<ul>
-<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
-<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
-</ul>
-
-<pre><code class="language-swift">for item in array5{
-    print(item);
-}
-
-for(index, value) in array5.enumerate(){
-    print(&quot;\(index): \(value)&quot;);
-}
-
-for index in 0..&lt;array5.count {
-    print(array5[index]);
-}
-</code></pre>
-
-<h4 id="toc_4">缓存容量与增长</h4>
-
-<ul>
-<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
-<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
-
-<ul>
-<li>分配新的堆内存 2*capacity</li>
-<li>将原来堆内存上的元素拷贝到新内存</li>
-<li>释放原来的内存</li>
-</ul></li>
-<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
-</ul>
-
-<h4 id="toc_5">copy-on-write共享技术</h4>
-
-<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
-但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
-copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
-更改前：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
-更改后：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
-
-<h2 id="toc_6">集合类型(Set)</h2>
-
-<p>Set是一个无序集合，其存储的值不能重复。<br/>
-Set中的值必须有哈希值，即支持Hashable协议。<br/>
-Set被定义为Struct，值类型，与Array类似。</p>
-
-<pre><code class="language-swift">var set = Set&lt;String&gt;();
-var set2:Set&lt;String&gt;;
-set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
-</code></pre>
-
-<h2 id="toc_7">字典类型(Dictionary)</h2>
-
-<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
-Dictionary中的Key必须支持Hashable协议。<br/>
-Dictionary被定义为Struct，值类型，特征与Array一致。</p>
-
-<pre><code class="language-swift">var dictionary1 = [String:Int]()；
-var dictionary2 : Dictionary&lt;String,Int&gt;；
-dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
-
-for(name, age) in dictionary2{
-    print(&quot;The Age of \(name) is: \(age)&quot;)
-}
 </code></pre>
 
 ]]></content>

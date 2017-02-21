@@ -101,6 +101,247 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14689148951216.html">
+                
+                  <h1>Java康复性训练——MyBatis3(2)</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+</blockquote>
+
+<h2 id="toc_0">Mapper的XML配置</h2>
+
+<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import java.util.List;
+
+import site.zhanjingbo.model.User;
+
+public interface UserMapper {
+    public int addUser(User user);
+    public int updateUser(User user);
+    public int deleteUser(Integer id);
+    
+    public User getUserById(Integer id);
+    public List&lt;User&gt; getAllUser();
+    
+}
+</code></pre>
+
+<h3 id="toc_1">添加XML配置</h3>
+
+<p>配置文件如下：</p>
+
+<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+</code></pre>
+
+<h3 id="toc_2">修改XML配置</h3>
+
+<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+</code></pre>
+
+<h3 id="toc_3">删除XML配置</h3>
+
+<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+</code></pre>
+
+<h3 id="toc_4">查询XML配置</h3>
+
+<ol>
+<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
+    select * from user where id=#{id}
+&lt;/select&gt;
+</code></pre></li>
+<li><p>返回结构List。</p>
+
+<ol>
+<li><p>先声明一个返回类型</p>
+
+<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+&lt;/resultMap&gt;
+</code></pre></li>
+<li><p>声明SQL语句映射</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
+    select * from user
+&lt;/select&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h2 id="toc_5">关系映射</h2>
+
+<h3 id="toc_6">一对一关系</h3>
+
+<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
+
+<ol>
+<li><p>建立Role的POJO对象</p>
+
+<pre><code class="language-java">package site.zhanjingbo.model;
+public class Role {
+    private Integer id;
+    private String roleName;
+
+    public Role(){
+        super();
+    }
+    public Role(Integer id, String roleName) {
+        super();
+        this.id = id;
+        this.roleName = roleName;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    public String getRoleName() {
+        return roleName;
+    }
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
+    }
+}
+</code></pre></li>
+<li><p>建立Role的Mapper接口</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import site.zhanjingbo.model.Role;
+
+public interface RoleMapper {
+    public Role getRoleById(Integer id);
+}
+</code></pre></li>
+<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
+        select * from role where id=#{id}
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
+    &lt;/resultMap&gt;
+
+    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user where id=#{id}
+    &lt;/select&gt;
+    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_7">一对多关系</h3>
+
+<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
+为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
+
+<ol>
+<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
+<li>在UserMapper.xml中完善这个方法的SQL语句</li>
+<li>在Role中增加UserList属性，并添加getter和setter方法</li>
+<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
+
+<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
+    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
+&lt;/resultMap&gt;
+&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
+    select * from role where id=#{id}
+&lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_8">多对多关系</h3>
+
+<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/19</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689148951216.html" data-count-type="comments" href="14689148951216.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14687533604786.html">
                 
                   <h1>Java康复性训练——MyBatis3(1)</h1>
@@ -1124,135 +1365,6 @@ customer = nil;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14635750426080.html">
-                
-                  <h1>GeekBand.Swift-集合类型</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">数组(Array)</h2>
-
-<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
-索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
-在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
-
-<h3 id="toc_1">内存模型</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
-
-<h3 id="toc_2">使用数组</h3>
-
-<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
-
-<pre><code class="language-swift">//数组声明与实例化
-var array1=[1,2,3,4,5];
-var array2:[Int];
-var array3:Array&lt;Int&gt;;
-array2=[Int](count:10, repeatedValue:10);
-array3=[Int]();
-
-//变量数组和常量数组
-var array5=[1,2,3]
-let array6=[1,2,3]
-</code></pre>
-
-<h4 id="toc_3">数组遍历</h4>
-
-<ul>
-<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
-<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
-</ul>
-
-<pre><code class="language-swift">for item in array5{
-    print(item);
-}
-
-for(index, value) in array5.enumerate(){
-    print(&quot;\(index): \(value)&quot;);
-}
-
-for index in 0..&lt;array5.count {
-    print(array5[index]);
-}
-</code></pre>
-
-<h4 id="toc_4">缓存容量与增长</h4>
-
-<ul>
-<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
-<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
-
-<ul>
-<li>分配新的堆内存 2*capacity</li>
-<li>将原来堆内存上的元素拷贝到新内存</li>
-<li>释放原来的内存</li>
-</ul></li>
-<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
-</ul>
-
-<h4 id="toc_5">copy-on-write共享技术</h4>
-
-<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
-但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
-copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
-更改前：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
-更改后：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
-
-<h2 id="toc_6">集合类型(Set)</h2>
-
-<p>Set是一个无序集合，其存储的值不能重复。<br/>
-Set中的值必须有哈希值，即支持Hashable协议。<br/>
-Set被定义为Struct，值类型，与Array类似。</p>
-
-<pre><code class="language-swift">var set = Set&lt;String&gt;();
-var set2:Set&lt;String&gt;;
-set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
-</code></pre>
-
-<h2 id="toc_7">字典类型(Dictionary)</h2>
-
-<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
-Dictionary中的Key必须支持Hashable协议。<br/>
-Dictionary被定义为Struct，值类型，特征与Array一致。</p>
-
-<pre><code class="language-swift">var dictionary1 = [String:Int]()；
-var dictionary2 : Dictionary&lt;String,Int&gt;；
-dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
-
-for(name, age) in dictionary2{
-    print(&quot;The Age of \(name) is: \(age)&quot;)
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/18</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1339,6 +1451,12 @@ for(name, age) in dictionary2{
 	      
 		      
 			      <li class="post">
+			        <a href="14876629153312.html">Java容器框架分析（一）——相关概念综述</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14875782735365.html">Java内存管理</a>
 			      </li>
 		     
@@ -1358,12 +1476,6 @@ for(name, age) in dictionary2{
 		      
 			      <li class="post">
 			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14766902757975.html">网易Java Web微专业Spring-数据访问单元作业</a>
 			      </li>
 		     
 		  

@@ -101,6 +101,128 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14876629153312.html">
+                
+                  <h1>Java容器框架分析（一）——相关概念综述</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">概述</h2>
+
+<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
+
+<ul>
+<li>降低编程难度<br/></li>
+<li>提高程序性能</li>
+<li>提高API之间的互操作性</li>
+<li>降低学习难度</li>
+<li>降低设计和实现相关API的难度</li>
+<li>增强程序的重用性</li>
+</ul>
+
+<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
+
+<h2 id="toc_1">泛型</h2>
+
+<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
+事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
+
+<pre><code class="language-java">//JDK 1.4 or before
+ArrayList list = new ArrayList();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = (String)list.get(i);//显式类型转换
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5 or latter
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = list.get(i);//隐式类型转换，编译器自动完成
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_2">内存管理</h2>
+
+<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
+
+<h2 id="toc_3">接口与实现</h2>
+
+<h3 id="toc_4">接口</h3>
+
+<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
+Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
+
+<h3 id="toc_5">实现</h3>
+
+<p>上述接口的通用实现类见下表：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
+
+<h2 id="toc_6">迭代器（Iterator）</h2>
+
+<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
+实例代码：</p>
+
+<pre><code class="language-java">//通过迭代器来访问容器元素
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+//得到迭代器
+Iterator&lt;String&gt; it = list.iterator();
+while(it.hasNext()){
+    String weekday = it.next();//访问元素
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
+//使用foreach迭代
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(String weekday : list){
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_7">声明</h2>
+
+<p>本系列博文装载自本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876629153312.html" data-count-type="comments" href="14876629153312.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14875782735365.html">
                 
                   <h1>Java内存管理</h1>
@@ -1106,257 +1228,6 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14766902757975.html">
-                
-                  <h1>网易Java Web微专业Spring-数据访问单元作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>根据本单介绍的Spring JDBC，事务管理，MyBatis等内容，分别使用Spring JDBC及MyBatis提供一个转帐服务（保证事务），提供一个transferMoney接口：<br/>
-transferMoney(Long srcUserId, Long targetUserId, double count)；// srcUserId及targetUserId为转帐用户标识</p>
-</blockquote>
-
-<h2 id="toc_0">相关表结构</h2>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">列名</th>
-<th style="text-align: center">类型</th>
-<th style="text-align: center">备注</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">userId</td>
-<td style="text-align: center">Long</td>
-<td style="text-align: center">唯一用户标识</td>
-</tr>
-<tr>
-<td style="text-align: center">balance</td>
-<td style="text-align: center">double</td>
-<td style="text-align: center">账户余额</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="toc_1">程序架构</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-17-14766906872633.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_2">说明</h3>
-
-<ul>
-<li>UserDao 为统一的User数据库访问接口</li>
-<li>UserService 为外部服务提供直接调用的接口</li>
-</ul>
-
-<h2 id="toc_3">实现说明</h2>
-
-<ol>
-<li><p>application-config配置，相关配置均有注释说明。其中事务的处理可以采用注解或AOP的XML配置方式，下列代码均有体现。</p>
-
-<pre><code class="language-java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-xmlns:context=&quot;http://www.springframework.org/schema/context&quot; xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
-xmlns:mybatis=&quot;http://mybatis.org/schema/mybatis-spring&quot;
-xsi:schemaLocation=&quot;
-http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/aop
-http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
-http://www.springframework.org/schema/tx
-http://www.springframework.org/schema/tx/spring-tx.xsd
-http://mybatis.org/schema/mybatis-spring
-http://mybatis.org/schema/mybatis-spring.xsd
-http://www.springframework.org/schema/context
-http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
-
-    &lt;!-- 数据库连接配置文件导入 --&gt;
-    &lt;context:property-placeholder location=&quot;db.properties&quot; /&gt;
-    &lt;!-- 扫描注解 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-    &lt;!-- 使用注解声明事务 --&gt;
-    &lt;tx:annotation-driven transaction-manager=&quot;txManager&quot; /&gt;
-    &lt;!-- MyBatis的自动扫描 --&gt;
-    &lt;mybatis:scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-
-    &lt;!-- 数据源配置 --&gt;
-    &lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot;
-        destroy-method=&quot;close&quot;&gt;
-        &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
-        &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
-        &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
-        &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
-    &lt;/bean&gt;
-    &lt;!-- 事务管理器 --&gt;
-    &lt;bean id=&quot;txManager&quot;
-        class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-    &lt;/bean&gt;
-
-    &lt;!-- 使用AOP-XML声明事务 --&gt;
-    &lt;!-- &lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;txManager&quot;&gt; &lt;tx:attributes&gt; 
-        &lt;tx:method name=&quot;transfer*&quot; /&gt; &lt;/tx:attributes&gt; &lt;/tx:advice&gt; &lt;aop:config&gt; 
-        &lt;aop:pointcut id=&quot;daoOperation&quot; expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; 
-        /&gt; &lt;aop:advisor advice-ref=&quot;txAdvice&quot; pointcut-ref=&quot;daoOperation&quot; /&gt; &lt;/aop:config&gt; --&gt;
-
-    &lt;!-- 配置myBatis的sqlSessionFactory --&gt;
-    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-        &lt;!-- 自动扫描mappers.xml文件 --&gt;
-        &lt;property name=&quot;mapperLocations&quot;
-            value=&quot;classpath:site/zhanjingbo/dao/myBatiesImpl/*.xml&quot;&gt;&lt;/property&gt;
-        &lt;!-- myBatis配置文件 --&gt;
-        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;&gt;&lt;/property&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>UserDao的接口声明</p>
-
-<pre><code class="language-java">public interface UserDao {
-    public void reset();
-    public List&lt;User&gt; getUserList();
-    public void updateMoney(Long userId, double count);
-}
-</code></pre></li>
-<li><p>UserDao的JDBC实现，其中JdbcTemplete由Spring进行装载。</p>
-
-<pre><code class="language-java">@Component(&quot;UserJDBCDao&quot;)
-public class UserDaoJDBCImpl implements UserDao {
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-    public void reset() {
-        this.jdbcTemplate.execute(&quot;update UserBalance set balance=1000&quot;);
-    }
-    public List&lt;User&gt; getUserList() {
-        return this.jdbcTemplate.query(&quot;select * from UserBalance&quot;, new RowMapper&lt;User&gt;() {
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                User user = new User();
-                user.setUserId(rs.getLong(&quot;userId&quot;));
-                user.setBalance(rs.getDouble(&quot;balance&quot;));
-                return user;
-            }
-        });
-    }
-    public void updateMoney(Long userId, double count) {
-        this.jdbcTemplate.update(&quot;update UserBalance set balance=balance+? where userId=?&quot;, count, userId);
-    }
-}
-</code></pre></li>
-<li><p>UserDao的MyBatis实现，采用Mapper.xml的方式进行声明实现</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.dao.UserDao&quot;&gt;
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
-        &lt;result property=&quot;balance&quot; column=&quot;balance&quot; /&gt;
-    &lt;/resultMap&gt;
-    &lt;update id=&quot;reset&quot;&gt;
-        update UserBalance set balance=500
-    &lt;/update&gt;
-
-    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from userBalance
-    &lt;/select&gt;
-    &lt;update id=&quot;updateMoney&quot;&gt;
-        update UserBalance set balance=balance+#{param2} where userId=#{param1}
-    &lt;/update&gt;
-&lt;/mapper&gt; 
-</code></pre></li>
-<li><p>UserService的实现，其中主要为transferMoney方法的实现。由于该方法的业务逻辑，该方法应该确保事务性。采用注解的方式声明事务，则在该方法前添加<code>@Transactional</code>注解。采用配置文件方式对事务进行声明参考第1小节中的配置文件。</p>
-
-<pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRED)
-public void transferMoney(Long srcUserId, Long targetUserId, double count) {
-    userDao.updateMoney(srcUserId, 0 - count);
-    userDao.updateMoney(targetUserId, count);
-}
-</code></pre>
-
-<p>在UserService的实现过程中，我们需要调用UserDao的具体实例，在本次作业过程中我们采用了两种方法来实现UserDao。在测试不同的实现方式时只需要修改注入的UserDao的具体实例就可完成。为了明显区分两种实例的实现，我们在reset的方法中做了区别。其中JDBC实现方式Reset之后balance的值为1000，MyBatis实现方式reset之后的balance值为500。</p></li>
-<li><p>Application调用代码</p>
-
-<pre><code class="language-java">    public static void main(String[] args) {
-        //加载Spring
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
-        //获取UserService实例
-        UserService userService = applicationContext.getBean(UserService.class);
-        userService.reset();
-        try {
-            userService.transferMoney(new Long(10000), new Long(10001), 100);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        List&lt;User&gt; userList = userService.getUserList();
-        for (User user : userList) {
-            System.out.println(user);
-        }
-
-        ((ConfigurableApplicationContext) applicationContext).close();
-    }
-</code></pre></li>
-</ol>
-
-<h2 id="toc_4">运行结果</h2>
-
-<h3 id="toc_5">JDBC运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766935577292.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766935207561.jpg" alt=""/></p></li>
-</ol>
-
-<h3 id="toc_6">MyBatis运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766936235948.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766936425847.jpg" alt=""/></p></li>
-</ol>
-
-<h2 id="toc_7">程序地址</h2>
-
-<p><a href="http://git.oschina.net/cobber/SpringHomework4_1">SpringHomework4_1</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/10/17</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14766902757975.html" data-count-type="comments" href="14766902757975.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1443,6 +1314,12 @@ public void transferMoney(Long srcUserId, Long targetUserId, double count) {
 	      
 		      
 			      <li class="post">
+			        <a href="14876629153312.html">Java容器框架分析（一）——相关概念综述</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14875782735365.html">Java内存管理</a>
 			      </li>
 		     
@@ -1462,12 +1339,6 @@ public void transferMoney(Long srcUserId, Long targetUserId, double count) {
 		      
 			      <li class="post">
 			        <a href="14773646522828.html">网易Java Web微专业Spring-Web框架单元作业</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14766902757975.html">网易Java Web微专业Spring-数据访问单元作业</a>
 			      </li>
 		     
 		  
