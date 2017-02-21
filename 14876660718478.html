@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  数据库连接池 - Zhan's Blog
+  Java容器框架分析（二）——ArrayList源码解析 - Zhan's Blog
   
   </title>
   
@@ -101,10 +101,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>数据库连接池</h1>
+          <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/9/4</span>
+          <span class="date">2017/2/21</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -115,7 +115,7 @@
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14729975970385.html" data-count-type="comments" href="14729975970385.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14876660718478.html" data-count-type="comments" href="14876660718478.html#ds-thread"></a>
             
           </span>
 
@@ -123,155 +123,89 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>建立数据库连接是一个非常耗时耗资源的行为，在大量并发的情况下，会降低服务器性能。同时，如果连接数超过最大的数据库允许连接值，数据库会直接抛出异常，非常不友好。为了解决上述的问题，我们引入了数据连接池的概念。<br/>
-数据库连接池类似于线程池，通过连接池预先同数据库建立一些连接，放在内存中，应用程序需要建立数据库连接时直接到连接池中申请一个就行，用完后再放回去，避免频繁的新建和关闭连接对象</p>
+      <h2 id="toc_0">ArrayList简介</h2>
 
-<h2 id="toc_0">DBCP</h2>
+<p>ArrayList实现了List接口，是顺序容器（即元素存放的顺序和加入列表的顺序相同），允许放入<code>null</code>元素，底层通过数组实现。该实现除了没有实现多线程同步之外，其余跟Vector大致相同，即ArrayList是线程不安全的。<br/>
+每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
+size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
+为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
+<img src="media/14876660718478/14876663843643.png" alt=""/></p>
 
-<p>DBCP（DataBase Connection Pool）数据库连接池，是java数据库连接池的一种，由Apache开发，通过数据库连接池，可以让程序自动管理数据库连接的释放和断开。同时DBCP也是tomcat所使用的连接池组价。</p>
+<h2 id="toc_1">常用方法剖析</h2>
 
-<h3 id="toc_1">DBCP的简单使用DEMO</h3>
+<h3 id="toc_2">set(int index, E element)</h3>
 
-<pre><code class="language-java">package site.zhanjingbo.HelloDB;
+<p>set()方法可以直接设定某个下标对应的元素。既然ArrayList的底层是数组实现的，set()方法的实现也就变得极为简单，直接赋值即可，复杂度为<em>O(1)</em>。</p>
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.apache.commons.dbcp2.BasicDataSource;
-
-public class HelloDBCP {
-
-    static final String DRIVER_NAME = &quot;com.mysql.jdbc.Driver&quot;;
-    static final String DB_URL = &quot;jdbc:mysql://localhost:3307/cloud_study?characterEncoding=utf8&quot;;
-    static final String DB_USER = &quot;root&quot;;
-    static final String DB_PASSWORD = &quot;&quot;;
-
-    public static BasicDataSource ds = null;
-
-    public static void init() {
-        ds = new BasicDataSource();
-        ds.setDriverClassName(DRIVER_NAME);
-        ds.setUsername(DB_USER);
-        ds.setUrl(DB_URL);
-        ds.setPassword(DB_PASSWORD);
-    }
-
-    public static void search() {
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = ds.getConnection();
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(&quot;select username from user&quot;);
-            while (rs.next()) {
-                System.out.println(&quot;Hello &quot; + rs.getString(&quot;username&quot;));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        init();
-        search();
-    }
+<pre><code class="language-java">public E set(int index, E element) {
+    rangeCheck(index);//下标越界检查
+    E oldValue = elementData(index);
+    elementData[index] = element;//赋值到指定位置，复制的仅仅是引用
+    return oldValue;
 }
-
 </code></pre>
 
-<p>通过上述的demo可见，使用DBCP对数据进行访问实际操作与JDBC并无不同。唯一的区别就是Connection对象的获取是通过BasicDataSource对象来获得而不是DriverManage对象。<br/>
-注：释放Connection对象同样是调用Connection的close()方法，不过这里的close()方法是被DBCP重写过的，是将连接对象重新放回连接池，而不是释放销毁。</p>
+<h3 id="toc_3">get(int index)</h3>
 
-<h3 id="toc_2">DBCP高级API</h3>
+<p>get()方法可以获取指定下标对应的对象，唯一需要注意的是由于底层数组是Object[]，得到元素后需要进行类型转换，复杂度为<em>O(1)</em>。</p>
 
-<p>为了更好的设置和使用DBCP连接池，使数据库连接池效率更高，DBCP还提供了多个API接口供我们使用。</p>
+<pre><code class="language-java">public E get(int index) {
+    rangeCheck(index);
+    return (E) elementData[index];//注意类型转换
+}
+</code></pre>
 
-<table>
-<thead>
-<tr>
-<th style="text-align: center">接口</th>
-<th style="text-align: center">作用</th>
-<th style="text-align: center">建议</th>
-</tr>
-</thead>
+<h3 id="toc_4">add(E element)和add（int index,E element）</h3>
 
-<tbody>
-<tr>
-<td style="text-align: center">.setInitialSize()</td>
-<td style="text-align: center">设置初始化连接数</td>
-<td style="text-align: center">设置为项目预期访问量</td>
-</tr>
-<tr>
-<td style="text-align: center">.setMaxTotal()</td>
-<td style="text-align: center">最大连接数</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">ds.setMaxWaitMillis()</td>
-<td style="text-align: center">线程最大等待时间</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">.setMaxIdle()</td>
-<td style="text-align: center">最大空闲连接数</td>
-<td style="text-align: center">与MinIdle相同</td>
-</tr>
-<tr>
-<td style="text-align: center">.setMinIdle()</td>
-<td style="text-align: center">最小空闲连接数</td>
-<td style="text-align: center">与MaxIdle相同</td>
-</tr>
-</tbody>
-</table>
+<p>跟C++的vector不同，ArrayList没有push_back()方法，对应的方法是add(E e)，ArrayList也没有insert()方法，对应的方法是add(int index, E e)。这两个方法都是向容器中添加新元素，这可能会导致 capacity 不足，因此在添加元素之前，都需要进行剩余空间检查，如果需要则自动扩容。扩容操作最终是通过grow()方法完成的。</p>
 
-<h4 id="toc_3">DBCP定期检查</h4>
+<pre><code class="language-java">private void grow(int minCapacity) {
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);//原来的1.5倍
+    if (newCapacity - minCapacity &lt; 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+        newCapacity = hugeCapacity(minCapacity);
+    elementData = Arrays.copyOf(elementData, newCapacity);//扩展空间并复制
+}
+</code></pre>
 
-<p>为了保证连接池中的连接都是有效的，我们需要定期的对连接池中的连接进行检查，对失效的连接及时进行关闭。相关API如下：</p>
+<p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
+<img src="media/14876660718478/14876673586219.png" alt=""/><br/>
+空间的问题解决之后，插入就变得非常简单了。<br/>
+<img src="media/14876660718478/14876674357716.png" alt=""/><br/>
+<code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
 
-<table>
-<thead>
-<tr>
-<th style="text-align: center">API</th>
-<th style="text-align: center">作用</th>
-<th style="text-align: center">建议</th>
-</tr>
-</thead>
+<h3 id="toc_5">addAll()</h3>
 
-<tbody>
-<tr>
-<td style="text-align: center">.setTestWhileIdle(true)</td>
-<td style="text-align: center">是否开启定期检查</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">.setMinEvictableIdle</td>
-<td style="text-align: center">最小空闲时间，超过该值被销毁</td>
-<td style="text-align: center">小于服务器连接失效时间(一般为8小时)</td>
-</tr>
-<tr>
-<td style="text-align: center">.setTimeBetweenEvictionRunsMillis</td>
-<td style="text-align: center">检查时间间隔</td>
-<td style="text-align: center"></td>
-</tr>
-</tbody>
-</table>
+<p>addAll()方法可以一次添加多个元素，根据插入的起始位置不同也用两个版本：一个是在末尾添加<code>addAll(Collection&lt;? extends E&gt; c)</code>;一个是从指定位置开始插入的<code>addAll(int index, Collection&lt;? extends E&gt; c)</code>方法。对应的实现方式和上述的add方法类似，在插入之前，需要对容量进行判断，如果需要则自动扩容，如果从指定位置插入，还需要先对数组元素进行移动。</p>
+
+<h3 id="toc_6">remove()</h3>
+
+<p>remove方法可以删除列表中的元素，其也有两个版本：一个是<code>remove(int index)</code>删除指定位置的元素；一个是<code>remove(Object o)</code>删除第一个满足<code>o.equals(elementData[index])</code>的元素。删除操作是<code>add()</code>的逆过程，需要将删除点之后的元素向前移动一个位置。需要注意的是为了让GC起作用，必选显示的为最后一个位置赋<code>null</code>值。</p>
+
+<pre><code class="language-java">public E remove(int index) {
+    rangeCheck(index);
+    modCount++;
+    E oldValue = elementData(index);
+    int numMoved = size - index - 1;
+    if (numMoved &gt; 0)
+        System.arraycopy(elementData, index+1, elementData, index, numMoved);
+    elementData[--size] = null; //清除该位置的引用，让GC起作用
+    return oldValue;
+}
+</code></pre>
+
+<p>关于Java GC 这里需要特别说明一下，<strong>有了垃圾收集器并不意味着一定不会有内存泄漏</strong>。对象能否被 GC 的依据是是否还有引用指向它，上面代码中如果不手动赋null值，除非对应的位置被其他元素覆盖，否则原来的对象就一直不会被回收。</p>
+
+<h2 id="toc_7">使用技巧</h2>
+
+<p>关于List的容量，可以在一开始就给定一个比较合理的值，避免内存复制所带来的不必要的时间开销。</p>
+
+<h2 id="toc_8">转载声明</h2>
+
+<p>本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
 
       </div>
 
@@ -279,16 +213,13 @@ public class HelloDBCP {
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14748062329626.html" 
-          title="Previous Post: 网易Java Web微专业Spring-IoC容器作业">&laquo; 网易Java Web微专业Spring-IoC容器作业</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14728168486763.html" 
-          title="Next Post: Cookie与Session">Cookie与Session &raquo;</a>
+          <a  href="14876629153312.html" 
+          title="Next Post: Java容器框架分析（一）——相关概念综述">Java容器框架分析（一）——相关概念综述 &raquo;</a>
       
       </p>
         </div>
@@ -300,7 +231,7 @@ public class HelloDBCP {
           
 
           
-              <div class="ds-thread" data-thread-key="14729975970385.html" data-url="http://swuzjb.github.io/14729975970385.html" data-title="数据库连接池"></div>
+              <div class="ds-thread" data-thread-key="14876660718478.html" data-url="http://swuzjb.github.io/14876660718478.html" data-title="Java容器框架分析（二）——ArrayList源码解析"></div>
           
         </div>
       </div>
