@@ -4,13 +4,372 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-21T16:33:11+08:00</updated>
+  <updated>2017-02-21T17:31:50+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(四)——ArrayDeque源码分析]]></title>
+    <link href="http://swuzjb.github.io/14878305448928.html"/>
+    <updated>2017-02-23T14:15:44+08:00</updated>
+    <id>http://swuzjb.github.io/14878305448928.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">ArrayDeque简介</h2>
+
+<p>Java中有一个叫做Stack的实现类，却没有Queue的实现类（只有Queue接口）。当需要使用栈时，Java官方已经不推荐使用Stack而是推荐使用更高效的ArrayDeque；既然Queue只是一个接口，当需要使用队列是也就首选ArrayDeque了，其次就是LinkedList啦。</p>
+
+<h2 id="toc_1">Deque接口</h2>
+
+<p>要将栈和队列，首先需要介绍Deque接口，Deque全称Double Ended Queue，即双端队列。它既可以当做栈使用，也可以当做队列使用。<br/>
+下标展示Deque和Queue的接口对照表：</p>
+
+<table>
+<thead>
+<tr>
+<th>Queue方法</th>
+<th>Deque方法</th>
+<th>方法说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>add(e)</td>
+<td>addLast(e)</td>
+<td>向队尾插入元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>offer(e)</td>
+<td>offerLast(e)</td>
+<td>向队尾插入元素，失败则返回false</td>
+</tr>
+<tr>
+<td>remove()</td>
+<td>removeFirst()</td>
+<td>获取并删除队首元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>poll()</td>
+<td>pollFrist()</td>
+<td>获取并删除队首元素，失败则返回null</td>
+</tr>
+<tr>
+<td>element()</td>
+<td>getFirst()</td>
+<td>获取但不删除队首元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>peek()</td>
+<td>peekFirst()</td>
+<td>获取但不删除队首元素，失败则返回null</td>
+</tr>
+</tbody>
+</table>
+
+<p>下表列出了Deque和Stack的接口对应关系：</p>
+
+<table>
+<thead>
+<tr>
+<th>Stack方法</th>
+<th>Deque方法</th>
+<th>方法说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>push(e)</td>
+<td>addFirst(e)</td>
+<td>向栈顶插入元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>offerFirst(e)</td>
+<td>向栈顶插入元素，失败则返回false</td>
+</tr>
+<tr>
+<td>pop()</td>
+<td>removeFirst(e)</td>
+<td>获取并删除栈顶元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>pollFirst()</td>
+<td>获取并删除栈顶元素，失败则返回null</td>
+</tr>
+<tr>
+<td>peek()</td>
+<td>getFirst()</td>
+<td>获取但不删除栈顶元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>peekFirst()</td>
+<td>获取但不删除栈顶元素，失败则返回null</td>
+</tr>
+</tbody>
+</table>
+
+<p>上面两个表共定义了Deque的12个接口，添加、删除、查询都有2套接口，它们功能相同，区别就在于对于失败情况的处理方式是不同的。<strong>一套接口遇到失败就会抛出异常，另一套遇到失败会返回特殊值（false或者null）</strong>。除非某种实现对于容量有限制，大多数情况之下，添加操作是不会失败的。虽然上面列举了12个接口，但是无非就是对容器的两端进行添加、删除、查询操作。</p>
+
+<h2 id="toc_2">ArrayDeque简介</h2>
+
+<p>ArrayDeque和LinkedList是Deque的两个通用实现，由于官方更加推荐使用ArrayDeque用作栈和队列，加之上一篇已经对LinkedList进行了讲解，本文着重讲解ArrayDeque的具体实现。<br/>
+从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
+ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
+
+<p><img src="media/14878305448928/14878324914756.png" alt=""/></p>
+
+<p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
+
+<h2 id="toc_3">常用方法剖析</h2>
+
+<h3 id="toc_4">addFirst()</h3>
+
+<p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
+<img src="media/14878305448928/14878327863308.png" alt=""/></p>
+
+<p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
+
+<pre><code class="language-java">public void addFirst(E e) {
+    if (e == null)//不允许放入null
+        throw new NullPointerException();
+    elements[head = (head - 1) &amp; (elements.length - 1)] = e;//2.下标是否越界
+    if (head == tail)//1.空间是否够用
+        doubleCapacity();//扩容
+}
+</code></pre>
+
+<p>上述代码我们看到，<strong>空间问题是在插入之后解决的</strong>。因为tail总是指向下一个可插入的空位，也就意味着<code>elements</code>数组至少有一个空位，所以插入元素的时候不需要考虑空间问题。<br/>
+下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
+
+<p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
+<img src="media/14878305448928/14878340364545.png" alt=""/></p>
+
+<pre><code class="language-java">private void doubleCapacity() {
+    assert head == tail;
+    int p = head;
+    int n = elements.length;
+    int r = n - p; // head右边元素的个数
+    int newCapacity = n &lt;&lt; 1;//原空间的2倍
+    if (newCapacity &lt; 0)
+        throw new IllegalStateException(&quot;Sorry, deque too big&quot;);
+    Object[] a = new Object[newCapacity];
+    System.arraycopy(elements, p, a, 0, r);//复制右半部分，对应上图中绿色部分
+    System.arraycopy(elements, 0, a, r, p);//复制左半部分，对应上图中灰色部分
+    elements = (E[])a;
+    head = 0;
+    tail = n;
+}
+</code></pre>
+
+<h3 id="toc_5">addLast()</h3>
+
+<p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
+<img src="media/14878305448928/14878375459017.png" alt=""/></p>
+
+<pre><code class="language-java">public void addLast(E e) {
+    if (e == null)//不允许放入null
+        throw new NullPointerException();
+    elements[tail] = e;//赋值
+    if ( (tail = (tail + 1) &amp; (elements.length - 1)) == head)//下标越界处理
+        doubleCapacity();//扩容
+}
+</code></pre>
+
+<h3 id="toc_6">pollFirst()</h3>
+
+<p><code>pollFirst()</code>的作用是返回并删除Deque的首部元素，也就是head位置的元素。如果容器不空，只需要直接返回<code>elements[head]</code>即可，当然还需要处理下标的问题，由于ArrayDeque不允许放入<code>null</code>值，则当<code>elements[head]=null</code>时，意味着容器为空。</p>
+
+<pre><code class="language-java">public E pollFirst() {
+    E result = elements[head];
+    if (result == null)//null值意味着deque为空
+        return null;
+    elements[head] = null;//let GC work
+    head = (head + 1) &amp; (elements.length - 1);//下标越界处理
+    return result;
+}
+</code></pre>
+
+<h3 id="toc_7">pollLast()</h3>
+
+<p><code>pollLast()</code>的作用是返回并删除Deque的尾端元素，也就是<code>tail</code>位置前面的那个元素。</p>
+
+<pre><code class="language-java">public E pollLast() {
+    int t = (tail - 1) &amp; (elements.length - 1);//tail的上一个位置是最后一个元素
+    E result = elements[t];
+    if (result == null)//null值意味着deque为空
+        return null;
+    elements[t] = null;//let GC work
+    tail = t;
+    return result;
+}
+</code></pre>
+
+<h3 id="toc_8">peekFirst()</h3>
+
+<p><code>peekFrist()</code>的作用是返回但不删除Deque的首端元素，也就是<code>head</code>位置的元素，只需要直接返回element[head]即可。</p>
+
+<pre><code class="language-java">public E peekFirst() {
+    return elements[head]; // 如果Deque为空，则返回null
+}
+</code></pre>
+
+<h3 id="toc_9">peekLast()</h3>
+
+<p><code>peekLast()</code>的作用是返回单不删除Deque的尾端函数，也就是<code>tail</code>的前一个位置的元素，只需要处理一下坐标位置即可。</p>
+
+<pre><code class="language-java">public E peekLast() {
+    return elements[(tail - 1) &amp; (elements.length - 1)];
+}
+</code></pre>
+
+<h2 id="toc_10">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(三)——LinkedList源码分析]]></title>
+    <link href="http://swuzjb.github.io/14878187570598.html"/>
+    <updated>2017-02-23T10:59:17+08:00</updated>
+    <id>http://swuzjb.github.io/14878187570598.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">LinkedList简介</h2>
+
+<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
+LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
+双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
+
+<pre><code class="language-java">//Node内部类
+private static class Node&lt;E&gt; {
+    E item;
+    Node&lt;E&gt; next;
+    Node&lt;E&gt; prev;
+    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+</code></pre>
+
+<p><img src="media/14878187570598/14878256240088.png" alt="LinkedList示意图"/></p>
+
+<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
+
+<h2 id="toc_1">常用方法剖析</h2>
+
+<h3 id="toc_2">add()</h3>
+
+<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
+<img src="media/14878187570598/14878263883597.png" alt="add方法示意"/></p>
+
+<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    final Node&lt;E&gt; l = last;
+    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
+    last = newNode;
+    if (l == null)
+        first = newNode;//原来链表为空，这是插入的第一个元素
+    else
+        l.next = newNode;
+    size++;
+    return true;
+}
+</code></pre>
+
+<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
+
+<pre><code class="language-java">public void add(int index, E element) {
+     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
+    checkPositionIndex(index);
+    if (index == size)//插入位置是末尾，包括列表为空的情况
+        add(element);
+    else{
+        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
+        //2.修改引用，完成插入操作。
+        final Node&lt;E&gt; pred = succ.prev;
+        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
+        succ.prev = newNode;
+        if (pred == null)//插入位置为0
+            first = newNode;
+        else
+            pred.next = newNode;
+        size++;
+    }
+}
+</code></pre>
+
+<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
+两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
+
+<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
+    final E element = x.item;
+    final Node&lt;E&gt; next = x.next;
+    final Node&lt;E&gt; prev = x.prev;
+    if (prev == null) {//删除的是第一个元素
+        first = next;
+    } else {
+        prev.next = next;
+        x.prev = null;
+    }
+    if (next == null) {//删除的是最后一个元素
+        last = prev;
+    } else {
+        next.prev = prev;
+        x.next = null;
+    }
+    x.item = null;//let GC work
+    size--;
+    return element;
+}
+</code></pre>
+
+<h3 id="toc_4">get()</h3>
+
+<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
+
+<pre><code class="language-java">public E get(int index) {
+    //检测index是否越界
+    checkElementIndex(index);
+    return node(index).item;
+}
+</code></pre>
+
+<h3 id="toc_5">set()</h3>
+
+<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
+
+<pre><code class="language-java">public E set(int index, E element) {
+    checkElementIndex(index);
+    Node&lt;E&gt; x = node(index);
+    E oldVal = x.item;
+    x.item = element;//替换新值
+    return oldVal;
+}
+</code></pre>
+
+<h2 id="toc_6">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java容器框架分析（二）——ArrayList源码解析]]></title>
@@ -2975,520 +3334,6 @@ public interface UserMapper {
 </code></pre>
 
 <p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练-JDBC]]></title>
-    <link href="http://swuzjb.github.io/14686724239639.html"/>
-    <updated>2016-07-16T20:33:43+08:00</updated>
-    <id>http://swuzjb.github.io/14686724239639.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">什么是JDBC</h2>
-
-<blockquote>
-<p>JDBC(Java Data Base Connectivity，Java数据库链接)是一种用于执行SQL语句的Java API。可以为多种关系数据库提供统一的访问，它由一组Java语言编写的类和接口组成。JDBC提供了一种标准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
-</blockquote>
-
-<h3 id="toc_1">JDBC原理</h3>
-
-<p>JDBC原理：JDBC是以前SUN公司定义的一套访问数据库的接口（没有具体实现），具体实现是由各大数据库厂商自己实现的。每个数据库厂商都有自己的JDBC实现，也被称为JDBC驱动实现类。Java应用程序连接指定数据库，需要使用厂家提供的JDBC驱动才能连接。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-16-14686740816527.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_2">JDBC链接数据库步骤</h2>
-
-<ol>
-<li>加载驱动</li>
-<li>链接数据库</li>
-<li>使用语句操作数据库</li>
-<li>关闭数据库，释放资源</li>
-</ol>
-
-<h3 id="toc_3">在项目中配置数据库驱动（Eclipse）</h3>
-
-<p>右击项目-&gt;Build Path-&gt;Configure Build Path-&gt; Add External JARS</p>
-
-<h3 id="toc_4">加载JDBC驱动</h3>
-
-<p>MySQL JDBC 驱动名称：<em>com.mysql.jdbc.Driver</em><br/>
-加载方式：<code>Class.forName(&quot;驱动名&quot;);</code></p>
-
-<h3 id="toc_5">连接及关闭数据库</h3>
-
-<ol>
-<li><p>DriverManager 驱动管理类，主要负责一个数据的连接。<code>static Connection getConnection(String url, String user, String password)</code>试图建立到给定数据库 URL 的连接。</p></li>
-<li><p>Mysql 数据的连接地址格式：</p>
-
-<ul>
-<li>jdbc:mysql://127.0.0.1:3306/DataBaseName</li>
-<li>jdbc协议：JDBC URL 中的协议总是jdbc</li>
-<li>子协议： 驱动程序名称或数据库连接机制（这种驱动可由一个或多个驱动程序支持）的名称如：mysql</li>
-<li>子名称：一种标示数据库的方法。必须遵循<em>//主机名：端口/数据库</em>的标准URL命名约定，如：<code>//localhost:3306/test</code></li>
-</ul></li>
-<li><p>Connection接口：与特定的数据库的连接(也称为会话)。</p>
-
-<ul>
-<li><code>void close()</code>立即释放此Connection对象的数据库和JDBC资源，而不是等待自动释放</li>
-</ul></li>
-</ol>
-
-<h4 id="toc_6">Demo Code</h4>
-
-<p>封装一个用于获取和关闭连接的工具类DBTool。</p>
-
-<pre><code class="language-Java">package com.swu.JDBC;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-public class DBTool {
-    public static Connection getConnection(){
-        String dbURL = &quot;jdbc:mysql://localhost:3306/test&quot;;
-        String username = &quot;root&quot;;
-        String password = &quot;&quot;;
-        Connection conn = null;
-        try {
-            //注册驱动类
-            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);
-            //获取连接
-            conn = DriverManager.getConnection(dbURL,username,password);
-            
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            System.out.println(&quot;加载驱动失败&quot;);
-            e.printStackTrace();
-        } catch (SQLException e) {
-            System.out.println(&quot;连接失败&quot;);
-            e.printStackTrace();
-        }
-        return conn;
-    }
-    public static void closeConnection(Connection conn){
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            System.out.println(&quot;关闭失败&quot;);
-            e.printStackTrace();
-        }
-    }
-}
-
-</code></pre>
-
-<h2 id="toc_7">使用Statement接口实现数据的增、删、改、查</h2>
-
-<h3 id="toc_8">Statement接口</h3>
-
-<ul>
-<li>作用：用于执行静态SQL语句并返回它所产生的结果的对象。</li>
-<li><code>int executeUpdate(String sql)</code> 执行给定SQL语句。该语句可能为INSERT,UPDATE,DELETE语句或者不返回人格内容的SQL语句。</li>
-<li><code>void close()</code> 立即释放此Statement对象的数据库和JDBC资源，而不是等待对象自动关闭时发生此操作。</li>
-</ul>
-
-<h4 id="toc_9">Statement接口实现添加数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">public void addUser(String username,String password){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;insert into user(username,password) values(&#39;&quot;+username+&quot;&#39;,&#39;&quot;+password+&quot;&#39;)&quot;;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            
-        }
-    }
-</code></pre>
-
-<h4 id="toc_10">Statement接口实现修改数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void updateUser(int id,String username,String password){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;update user set username=&#39;&quot;+username+&quot;&#39;,password=&#39;&quot;+password+&quot;&#39; where id=&quot;+id;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {              e.printStackTrace();
-            }
-            
-        }
-    }
-</code></pre>
-
-<h4 id="toc_11">Statement接口实现删除数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void deleteUser(int id){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;delete from user where id=&quot;+id;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-</code></pre>
-
-<h4 id="toc_12">Statment接口实现数据查询</h4>
-
-<p>demo如下（里面的ResultSet后面详细介绍）:</p>
-
-<pre><code class="language-java">public void getAllUser(){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;select * from user&quot;;
-        Statement stmt = null;
-        //保存查询返回结果
-        ResultSet rs = null;
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-            while(rs.next()){
-                System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
-            }
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }finally {
-            try {
-                rs.close();
-                stmt.close();
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-        }
-}
-</code></pre>
-
-<h3 id="toc_13">PreparedStatement接口</h3>
-
-<p>PreparedStatement是Statement的子接口，是一个SQL语句预处理Statement。与直接Statement不同的是PreparedStatement在操作时，是先在数据表中准备好了一条SQL语句，但是此SQL语句的内容暂时不设置，而是之后再进行设置。<em>实际开发过程中建议使用PreparedStatement，可以避免一定的SQL注入问题</em></p>
-
-<h4 id="toc_14">PreparedStatement接口实现数据添加</h4>
-
-<p>demo如下:</p>
-
-<pre><code class="language-java">    public void addUser(String username,String password) throws Exception{
-        //预处理SQL语句
-        String sql = &quot;insert into user(username,password) values(?,?)&quot;;
-        Connection conn = DBTool.getConnection();
-        //获得PreparedStatement对象
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        //设置预处理占位符的实际值
-        stmt.setString(1, username);
-        stmt.setString(2, password);
-        //执行添加
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h4 id="toc_15">PreparedStatement接口实现数据修改</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void updateUser(int id,String username,String password) throws SQLException{
-        String sql = &quot;update user set username=?,password=? where id=?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setString(1, username);
-        stmt.setString(2, password);
-        stmt.setInt(3, id);
-        
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-        
-    }
-</code></pre>
-
-<h3 id="toc_16">PreparedStatement接口实现数据删除</h3>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void deleteUser(int id) throws SQLException{
-        String sql = &quot;delete from user where id = ?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setInt(1, id);
-    
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h4 id="toc_17">PreparedStatement接口实现数据查询</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void getUserByUsername(String username) throws SQLException{
-        String sql = &quot;select * from user where username=?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setString(1, username);
-    
-        ResultSet rs = stmt.executeQuery();
-        
-        while(rs.next()){
-            System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
-        }
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h3 id="toc_18">ResultSet结果集</h3>
-
-<blockquote>
-<p>当我们对数据库的数据进行查询的时候，返回的是一个二维的结果集。我们这个时候需要使用ResultSet来遍历结果集，获取每一行的数据。</p>
-</blockquote>
-
-<h4 id="toc_19">获取数据</h4>
-
-<ul>
-<li><code>boolean next()</code>将光标从当前位置向前移动一行</li>
-<li><code>String getString(int columnIndex)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
-<li><code>String getString(String columnLabel)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
-</ul>
-
-<h4 id="toc_20">使用例子</h4>
-
-<p>见上方实现的数据查询。</p>
-
-<h3 id="toc_21">处理大数据对象</h3>
-
-<blockquote>
-<p>大数据对象处理主要有CLOB(character large object)和BLOB(binary large object)两种类型的字段。在CLOB中可以存储大字符数据对象，比如长篇小说;在BLOB中可以存放二进制大数据对象，比如图片、电影、音乐</p>
-</blockquote>
-
-<h4 id="toc_22">处理CLOB数据</h4>
-
-<ul>
-<li>使用PreparedStatement插入数据。<code>statement.setAsciiStream(parameterIndex, x, length);</code></li>
-<li>使用ResultSet读取数据。<code>resultSet.getClob(String columnLabel);</code>获得一个Clob对象，然后可以转为字符串对象。</li>
-</ul>
-
-<h4 id="toc_23">处理BLOB数据</h4>
-
-<ul>
-<li>使用PreparedStatement插入数据。<code>statement.setBinaryStream(parameterIndex, x, length);</code></li>
-<li>使用ResultSet读取数据。<code>resultSet.getBlob(String columnLabel);</code>获得一个Blob对象，然后可以转为目标对象。</li>
-</ul>
-
-<h3 id="toc_24">使用CallableStatement接口调用存储过程</h3>
-
-<blockquote>
-<p>CallableStatement 主要是调用数据库中的存储过程,CallableStatement 也是 Statement 接口的子接口。在使用 CallableStatement 时可以接收存储过程的返回值。 </p>
-</blockquote>
-
-<h3 id="toc_25">使用DatabaseMetaData分析数据库</h3>
-
-<blockquote>
-<p>DatabaseMetaData可以得到数据库的一些基本信息,包括数据库的名称、版本,以及得到表的信息。 </p>
-</blockquote>
-
-<ul>
-<li><code>String getDatabaseProductName()</code> 获取此数据库产品的名称。</li>
-<li><code>int getDriverMajorVersion()</code>获取此 JDBC 驱动程序的主版本号。</li>
-<li><code>int getDriverMinorVersion()</code> 获取此 JDBC 驱动程序的次版本号。 </li>
-</ul>
-
-<h3 id="toc_26">使用 ResultSetMetaData 获取 ResultSet 对象中的信息</h3>
-
-<blockquote>
-<p>ResultSetMetaData 可获取关于 ResultSet 对象中列的基本信息;</p>
-</blockquote>
-
-<ul>
-<li><code>int getColumnCount()</code> 返回此 ResultSet 对象中的列数。</li>
-<li><code>String getColumnName(int column)</code> 获取指定列的名称。 </li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——Java基础1]]></title>
-    <link href="http://swuzjb.github.io/14676190809439.html"/>
-    <updated>2016-07-04T15:58:00+08:00</updated>
-    <id>http://swuzjb.github.io/14676190809439.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">开发环境搭建</h2>
-
-<h3 id="toc_1">JDK的安装与配置</h3>
-
-<ol>
-<li>下载JavaSE版本的安装包。</li>
-<li>双击安装，选定安装目录</li>
-<li>配置环境变量
-
-<ul>
-<li>JAVA_HOME JDK的安装目录</li>
-<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
-</ul></li>
-</ol>
-
-<h3 id="toc_2">开发工具eclipse</h3>
-
-<p>下载地址：<a href="http://eclipse.org"></a></p>
-
-<h2 id="toc_3">Hello Java</h2>
-
-<pre><code class="language-java">
-public class Hello {
-
-    public static void main(String[] args) {
-        System.out.println(&quot;Hello Java&quot;);
-    }
-
-}
-
-</code></pre>
-
-<h2 id="toc_4">输入</h2>
-
-<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
-
-<h2 id="toc_5">变量</h2>
-
-<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
-
-<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
-
-<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
-
-<h2 id="toc_6">赋值</h2>
-
-<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
-
-<h2 id="toc_7">浮点数</h2>
-
-<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
-带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
-
-<h2 id="toc_8">优先级</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
-
-<h2 id="toc_9">类型转换</h2>
-
-<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
-
-<pre><code class="language-java">float a = 1.0;
-int b = (int)a;
-</code></pre>
-
-<h2 id="toc_10">关系运算</h2>
-
-<p>计算两个值之间的关系，叫做关系运算<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
-判断两个浮点数是否相等</p>
-
-<pre><code class="language-java">double a = 1.0;
-double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
-System.out.println(Math.abs(a-b)&lt;1e6);
-</code></pre>
-
-<h2 id="toc_11">IF语句</h2>
-
-<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
-
-<pre><code class="language-java">if(?){
-    //do something
-}else{
-    //do something
-}
-</code></pre>
-
-<h2 id="toc_12">多路分支（Switch-Case）</h2>
-
-<pre><code class="language-java">switch (整型或字符型变量){
-    case 变量可能值1: 
-      　  分支一;
-        　break;
-   case 变量可能值2: 
-      　  分支二;
-        　break;
-   case 变量可能值3: 
-      　  分支三;
-        　break;
-   ...
-   default:
-       最后分支;
-｝
-</code></pre>
-
-<h2 id="toc_13">循环</h2>
-
-<h3 id="toc_14">while循环</h3>
-
-<p>可能一次都不执行</p>
-
-<pre><code class="language-java">while(true){
-    //doSomthing..
-}
-</code></pre>
-
-<h3 id="toc_15">do-while循环</h3>
-
-<p>至少执行一次</p>
-
-<pre><code class="language-java">do{
-    //doSomething..
-}while();
-</code></pre>
-
-<h3 id="toc_16">for循环</h3>
-
-<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
-    //doSomething
-}
-</code></pre>
 
 ]]></content>
   </entry>
