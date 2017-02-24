@@ -101,6 +101,340 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14691739607250.html">
+                
+                  <h1>Java康复性训练——Spring（2）</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">AOP</h2>
+
+<blockquote>
+<p>AOP(Aspect Oriented Programming,面向切面编程)，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是软件开发的一个热点，也是Spring框架中的一个重要内容。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发效率。<br/>
+主要功能是：日志记录、性能统计、安全控制、事务处理、异常处理等</p>
+</blockquote>
+
+<h2 id="toc_1">Spring AOP实例</h2>
+
+<p>AOP的使用可以让我们在某个业务逻辑或事务执行的各个不同时期加入灵活的代码，让我们的权限控制、日志记录、性能统计等基础功能与业务逻辑彻底分离，降低耦合。这种执行方式称之为通知，通知有以下几种类型：</p>
+
+<ol>
+<li>前置通知：在业务逻辑开始之前执行。</li>
+<li>后置通知：在业务逻辑结束之后执行。</li>
+<li>环绕通知：可以灵活配置业务逻辑的执行时间或是否执行业务逻辑，功能上有点类似于Filter。</li>
+<li>返回通知：当业务逻辑执行完并返回非空数据时执行。</li>
+<li>异常通知：当业务逻辑执行过程中产生异常时执行。</li>
+</ol>
+
+<h3 id="toc_2">实例demo：</h3>
+
+<ol>
+<li><p>通知具体内容类：</p>
+
+<pre><code class="language-java">package site.zhanjingbo.advice;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+
+public class UserServiceAspect {
+    public void doBefore(JoinPoint jp){
+        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
+        System.out.println(&quot;开始添加用户：&quot;+jp.getArgs()[0]);
+    }
+    public void doAfter(JoinPoint jp){
+        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
+        System.out.println(&quot;完成添加用户：&quot;+jp.getArgs()[0]);
+    }
+    public Object doAround(ProceedingJoinPoint pjp) throws Throwable{
+        System.out.println(&quot;环绕前&quot;);
+        Object retVal = pjp.proceed();
+        System.out.println(&quot;环绕后&quot;);
+        return retVal;
+    }   
+    public void doAfterThrowing(JoinPoint jp,Throwable ex){
+        System.out.println(&quot;异常通知信息：&quot;+ex.getMessage());
+    }
+    public void doAfterReturning(JoinPoint jp){
+        System.out.println(&quot;返回通知&quot;);
+    }
+}
+</code></pre></li>
+<li><p>beans.xml的配置</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+    xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
+
+        &lt;bean id=&quot;userService&quot; class=&quot;site.zhanjingbo.service.impl.UserServiceImpl&quot;/&gt;
+        &lt;bean id=&quot;userServiceAspect&quot; class=&quot;site.zhanjingbo.advice.UserServiceAspect&quot; /&gt;
+
+        &lt;aop:config&gt;
+            &lt;aop:aspect id=&quot;userServiceAspect&quot; ref=&quot;userServiceAspect&quot;&gt;
+                &lt;!-- 声明一个切点 --&gt;
+                &lt;aop:pointcut expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; id=&quot;businessService&quot;/&gt;  
+                &lt;!-- 为切点添加通知 --&gt;
+                &lt;aop:before method=&quot;doBefore&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after method=&quot;doAfter&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot; /&gt;
+                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after-returning method=&quot;doAfterReturning&quot; pointcut-ref=&quot;businessService&quot;/&gt;
+                &lt;aop:after-throwing method=&quot;doAfterThrowing&quot; pointcut-ref=&quot;businessService&quot; throwing=&quot;ex&quot;/&gt;
+            &lt;/aop:aspect&gt;
+        &lt;/aop:config&gt;
+&lt;/beans&gt;
+</code></pre></li>
+<li><p>执行顺序<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-22-14691852095800.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+</ol>
+
+<h2 id="toc_3">Spring对Dao的支持</h2>
+
+<p>Spring发布以来很好的支持了Hibernate和Mybatis等ORM框架，只需要简单的配置，就可以很方便的实现dao的注入。</p>
+
+<h2 id="toc_4">Spring对事务的支持</h2>
+
+<p>事务,是业务逻辑非常重要的一个概念。事务具有的原子性、一致性、隔离性、永久性是数据正确的保证。Spring为开发人员实现事务这个特性提供了非常方便的实现方式。</p>
+
+<ol>
+<li>编程式事务管理：通过Spring提供的事务模板类<code>org.springframework.transaction.support.TranscationTemplate</code>来实现事务处理。</li>
+<li>声明式事务管理：通过XML或注解配置的方式自动添加事务处理。</li>
+<li><p>事务传播行为：Spring中，当一个service方法调用另外一个service方法的时候，因为每个service方法都有事务，这时候就出现了事务的嵌套，就产生了事务传播行为。</p>
+
+<ol>
+<li>PROPAGATION_REQUIRED--支持当前事务,如果当前没有事务,就新建一个事务。这是最常见的选择。</li>
+<li>PROPAGATION_SUPPORTS--支持当前事务,如果当前没有事务,就以非事务方式执行。</li>
+<li>PROPAGATION_MANDATORY--支持当前事务,如果当前没有事务,就抛出异常。</li>
+<li>PROPAGATION_REQUIRES_NEW--新建事务,如果当前存在事务,把当前事务挂起。</li>
+<li>PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作,如果当前存在事务,就把当前事务挂起。</li>
+<li>PROPAGATION_NEVER--以非事务方式执行,如果当前存在事务,则抛出异常。</li>
+</ol>
+
+<pre><code class="language-xml">&lt;!-- (事务管理)transaction manager, use JtaTransactionManager for global tx --&gt;
+&lt;bean id=&quot;transactionManager&quot;
+    class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+&lt;/bean&gt;
+
+&lt;!-- 配置事务通知属性 --&gt;  
+&lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;transactionManager&quot;&gt;  
+    &lt;!-- 定义事务传播属性 --&gt;  
+    &lt;tx:attributes&gt;  
+        &lt;tx:method name=&quot;insert*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;update*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;edit*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;save*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;add*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;new*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;set*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;remove*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;delete*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;change*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
+        &lt;tx:method name=&quot;get*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;find*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;load*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+        &lt;tx:method name=&quot;*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
+    &lt;/tx:attributes&gt;  
+&lt;/tx:advice&gt;  
+</code></pre></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/22</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14691739607250.html" data-count-type="comments" href="14691739607250.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14690817459253.html">
+                
+                  <h1>Java康复性训练——Spring（1）</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
+</blockquote>
+
+<h2 id="toc_0">Spring IOC</h2>
+
+<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
+Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
+
+<h3 id="toc_1">依赖注入</h3>
+
+<ol>
+<li><p>装配一个Bean</p>
+
+<ol>
+<li><p>在Spring的bean.xml文件中填写如下配置：</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
+</code></pre></li>
+<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
+
+<pre><code class="language-java">public static void main(String[] args) {
+
+    //加载Spring-bean配置信息
+    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+
+    //获取id为user1的bean的实例
+    User user1 = (User)ac.getBean(&quot;user1&quot;);
+    System.out.println(user1);
+}
+</code></pre></li>
+</ol></li>
+<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;!-- 通过索引来设置参数值 --&gt;
+    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过类型来设置参数值 --&gt;
+    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过参数名来设置参数值 --&gt;
+    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
+
+<ol>
+<li><p>静态工厂方法，在beans.xml中调用。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h3 id="toc_2">注入参数</h3>
+
+<ol>
+<li>基本类型值：参考上一节属性注入。</li>
+<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
+<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
+<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
+<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
+<li><p>集合类型属性，可以用下列配置来实现。</p>
+
+<pre><code class="language-xml">&lt;!-- list--&gt;
+&lt;property name=&quot;list&quot;&gt;
+    &lt;list&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/list&gt;
+&lt;/property&gt;
+&lt;!--set--&gt;
+&lt;property name=&quot;set&quot;&gt;
+    &lt;set&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/set&gt;
+&lt;/property&gt;
+&lt;!--map--&gt;
+&lt;property name=&quot;map&quot;&gt;
+    &lt;map&gt;
+        &lt;entry&gt;
+            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
+            &lt;value&gt;value&lt;/value&gt;
+        &lt;/entry&gt;
+    &lt;/map&gt;
+&lt;/property&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_3">自动装配</h3>
+
+<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
+- byName:通过名称进行自动匹配<br/>
+- byType:根据类型进行自动匹配<br/>
+- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
+<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
+
+<h3 id="toc_4">方法注入</h3>
+
+<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
+在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
+
+<h3 id="toc_5">bean之间关系</h3>
+
+<ol>
+<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
+<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
+<li>引用：见上部</li>
+</ol>
+
+<h3 id="toc_6">bean的作用范围</h3>
+
+<ol>
+<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
+<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
+<li>request:每次Http请求时都会创建一个新的实例</li>
+<li>session:同一个Http Session共享一个Bean</li>
+<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
+<li>application:同一个Application共享一个bean</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14689923975384.html">
                 
                   <h1>Java康复性训练——MyBatis3(3)</h1>
@@ -812,568 +1146,6 @@ public interface UserMapper {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14686724239639.html">
-                
-                  <h1>Java康复性训练-JDBC</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">什么是JDBC</h2>
-
-<blockquote>
-<p>JDBC(Java Data Base Connectivity，Java数据库链接)是一种用于执行SQL语句的Java API。可以为多种关系数据库提供统一的访问，它由一组Java语言编写的类和接口组成。JDBC提供了一种标准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
-</blockquote>
-
-<h3 id="toc_1">JDBC原理</h3>
-
-<p>JDBC原理：JDBC是以前SUN公司定义的一套访问数据库的接口（没有具体实现），具体实现是由各大数据库厂商自己实现的。每个数据库厂商都有自己的JDBC实现，也被称为JDBC驱动实现类。Java应用程序连接指定数据库，需要使用厂家提供的JDBC驱动才能连接。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-16-14686740816527.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_2">JDBC链接数据库步骤</h2>
-
-<ol>
-<li>加载驱动</li>
-<li>链接数据库</li>
-<li>使用语句操作数据库</li>
-<li>关闭数据库，释放资源</li>
-</ol>
-
-<h3 id="toc_3">在项目中配置数据库驱动（Eclipse）</h3>
-
-<p>右击项目-&gt;Build Path-&gt;Configure Build Path-&gt; Add External JARS</p>
-
-<h3 id="toc_4">加载JDBC驱动</h3>
-
-<p>MySQL JDBC 驱动名称：<em>com.mysql.jdbc.Driver</em><br/>
-加载方式：<code>Class.forName(&quot;驱动名&quot;);</code></p>
-
-<h3 id="toc_5">连接及关闭数据库</h3>
-
-<ol>
-<li><p>DriverManager 驱动管理类，主要负责一个数据的连接。<code>static Connection getConnection(String url, String user, String password)</code>试图建立到给定数据库 URL 的连接。</p></li>
-<li><p>Mysql 数据的连接地址格式：</p>
-
-<ul>
-<li>jdbc:mysql://127.0.0.1:3306/DataBaseName</li>
-<li>jdbc协议：JDBC URL 中的协议总是jdbc</li>
-<li>子协议： 驱动程序名称或数据库连接机制（这种驱动可由一个或多个驱动程序支持）的名称如：mysql</li>
-<li>子名称：一种标示数据库的方法。必须遵循<em>//主机名：端口/数据库</em>的标准URL命名约定，如：<code>//localhost:3306/test</code></li>
-</ul></li>
-<li><p>Connection接口：与特定的数据库的连接(也称为会话)。</p>
-
-<ul>
-<li><code>void close()</code>立即释放此Connection对象的数据库和JDBC资源，而不是等待自动释放</li>
-</ul></li>
-</ol>
-
-<h4 id="toc_6">Demo Code</h4>
-
-<p>封装一个用于获取和关闭连接的工具类DBTool。</p>
-
-<pre><code class="language-Java">package com.swu.JDBC;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-public class DBTool {
-    public static Connection getConnection(){
-        String dbURL = &quot;jdbc:mysql://localhost:3306/test&quot;;
-        String username = &quot;root&quot;;
-        String password = &quot;&quot;;
-        Connection conn = null;
-        try {
-            //注册驱动类
-            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);
-            //获取连接
-            conn = DriverManager.getConnection(dbURL,username,password);
-            
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            System.out.println(&quot;加载驱动失败&quot;);
-            e.printStackTrace();
-        } catch (SQLException e) {
-            System.out.println(&quot;连接失败&quot;);
-            e.printStackTrace();
-        }
-        return conn;
-    }
-    public static void closeConnection(Connection conn){
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            System.out.println(&quot;关闭失败&quot;);
-            e.printStackTrace();
-        }
-    }
-}
-
-</code></pre>
-
-<h2 id="toc_7">使用Statement接口实现数据的增、删、改、查</h2>
-
-<h3 id="toc_8">Statement接口</h3>
-
-<ul>
-<li>作用：用于执行静态SQL语句并返回它所产生的结果的对象。</li>
-<li><code>int executeUpdate(String sql)</code> 执行给定SQL语句。该语句可能为INSERT,UPDATE,DELETE语句或者不返回人格内容的SQL语句。</li>
-<li><code>void close()</code> 立即释放此Statement对象的数据库和JDBC资源，而不是等待对象自动关闭时发生此操作。</li>
-</ul>
-
-<h4 id="toc_9">Statement接口实现添加数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">public void addUser(String username,String password){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;insert into user(username,password) values(&#39;&quot;+username+&quot;&#39;,&#39;&quot;+password+&quot;&#39;)&quot;;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            
-        }
-    }
-</code></pre>
-
-<h4 id="toc_10">Statement接口实现修改数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void updateUser(int id,String username,String password){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;update user set username=&#39;&quot;+username+&quot;&#39;,password=&#39;&quot;+password+&quot;&#39; where id=&quot;+id;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {              e.printStackTrace();
-            }
-            
-        }
-    }
-</code></pre>
-
-<h4 id="toc_11">Statement接口实现删除数据操作</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void deleteUser(int id){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;delete from user where id=&quot;+id;
-        Statement stmt = null;
-        try {
-            //通过Connection获取Statement
-            stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
-            System.out.println(result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            try {
-                stmt.close();
-                DBTool.closeConnection(conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-</code></pre>
-
-<h4 id="toc_12">Statment接口实现数据查询</h4>
-
-<p>demo如下（里面的ResultSet后面详细介绍）:</p>
-
-<pre><code class="language-java">public void getAllUser(){
-        Connection conn = DBTool.getConnection();
-        String sql = &quot;select * from user&quot;;
-        Statement stmt = null;
-        //保存查询返回结果
-        ResultSet rs = null;
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-            while(rs.next()){
-                System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
-            }
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }finally {
-            try {
-                rs.close();
-                stmt.close();
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-        }
-}
-</code></pre>
-
-<h3 id="toc_13">PreparedStatement接口</h3>
-
-<p>PreparedStatement是Statement的子接口，是一个SQL语句预处理Statement。与直接Statement不同的是PreparedStatement在操作时，是先在数据表中准备好了一条SQL语句，但是此SQL语句的内容暂时不设置，而是之后再进行设置。<em>实际开发过程中建议使用PreparedStatement，可以避免一定的SQL注入问题</em></p>
-
-<h4 id="toc_14">PreparedStatement接口实现数据添加</h4>
-
-<p>demo如下:</p>
-
-<pre><code class="language-java">    public void addUser(String username,String password) throws Exception{
-        //预处理SQL语句
-        String sql = &quot;insert into user(username,password) values(?,?)&quot;;
-        Connection conn = DBTool.getConnection();
-        //获得PreparedStatement对象
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        //设置预处理占位符的实际值
-        stmt.setString(1, username);
-        stmt.setString(2, password);
-        //执行添加
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h4 id="toc_15">PreparedStatement接口实现数据修改</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void updateUser(int id,String username,String password) throws SQLException{
-        String sql = &quot;update user set username=?,password=? where id=?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setString(1, username);
-        stmt.setString(2, password);
-        stmt.setInt(3, id);
-        
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-        
-    }
-</code></pre>
-
-<h3 id="toc_16">PreparedStatement接口实现数据删除</h3>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void deleteUser(int id) throws SQLException{
-        String sql = &quot;delete from user where id = ?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setInt(1, id);
-    
-        stmt.executeUpdate();
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h4 id="toc_17">PreparedStatement接口实现数据查询</h4>
-
-<p>demo如下：</p>
-
-<pre><code class="language-java">    public void getUserByUsername(String username) throws SQLException{
-        String sql = &quot;select * from user where username=?&quot;;
-        Connection conn = DBTool.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        stmt.setString(1, username);
-    
-        ResultSet rs = stmt.executeQuery();
-        
-        while(rs.next()){
-            System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
-        }
-        
-        DBTool.closeConnection(stmt, conn);
-    }
-</code></pre>
-
-<h3 id="toc_18">ResultSet结果集</h3>
-
-<blockquote>
-<p>当我们对数据库的数据进行查询的时候，返回的是一个二维的结果集。我们这个时候需要使用ResultSet来遍历结果集，获取每一行的数据。</p>
-</blockquote>
-
-<h4 id="toc_19">获取数据</h4>
-
-<ul>
-<li><code>boolean next()</code>将光标从当前位置向前移动一行</li>
-<li><code>String getString(int columnIndex)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
-<li><code>String getString(String columnLabel)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
-</ul>
-
-<h4 id="toc_20">使用例子</h4>
-
-<p>见上方实现的数据查询。</p>
-
-<h3 id="toc_21">处理大数据对象</h3>
-
-<blockquote>
-<p>大数据对象处理主要有CLOB(character large object)和BLOB(binary large object)两种类型的字段。在CLOB中可以存储大字符数据对象，比如长篇小说;在BLOB中可以存放二进制大数据对象，比如图片、电影、音乐</p>
-</blockquote>
-
-<h4 id="toc_22">处理CLOB数据</h4>
-
-<ul>
-<li>使用PreparedStatement插入数据。<code>statement.setAsciiStream(parameterIndex, x, length);</code></li>
-<li>使用ResultSet读取数据。<code>resultSet.getClob(String columnLabel);</code>获得一个Clob对象，然后可以转为字符串对象。</li>
-</ul>
-
-<h4 id="toc_23">处理BLOB数据</h4>
-
-<ul>
-<li>使用PreparedStatement插入数据。<code>statement.setBinaryStream(parameterIndex, x, length);</code></li>
-<li>使用ResultSet读取数据。<code>resultSet.getBlob(String columnLabel);</code>获得一个Blob对象，然后可以转为目标对象。</li>
-</ul>
-
-<h3 id="toc_24">使用CallableStatement接口调用存储过程</h3>
-
-<blockquote>
-<p>CallableStatement 主要是调用数据库中的存储过程,CallableStatement 也是 Statement 接口的子接口。在使用 CallableStatement 时可以接收存储过程的返回值。 </p>
-</blockquote>
-
-<h3 id="toc_25">使用DatabaseMetaData分析数据库</h3>
-
-<blockquote>
-<p>DatabaseMetaData可以得到数据库的一些基本信息,包括数据库的名称、版本,以及得到表的信息。 </p>
-</blockquote>
-
-<ul>
-<li><code>String getDatabaseProductName()</code> 获取此数据库产品的名称。</li>
-<li><code>int getDriverMajorVersion()</code>获取此 JDBC 驱动程序的主版本号。</li>
-<li><code>int getDriverMinorVersion()</code> 获取此 JDBC 驱动程序的次版本号。 </li>
-</ul>
-
-<h3 id="toc_26">使用 ResultSetMetaData 获取 ResultSet 对象中的信息</h3>
-
-<blockquote>
-<p>ResultSetMetaData 可获取关于 ResultSet 对象中列的基本信息;</p>
-</blockquote>
-
-<ul>
-<li><code>int getColumnCount()</code> 返回此 ResultSet 对象中的列数。</li>
-<li><code>String getColumnName(int column)</code> 获取指定列的名称。 </li>
-</ul>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14686724239639.html" data-count-type="comments" href="14686724239639.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14676190809439.html">
-                
-                  <h1>Java康复性训练——Java基础1</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">开发环境搭建</h2>
-
-<h3 id="toc_1">JDK的安装与配置</h3>
-
-<ol>
-<li>下载JavaSE版本的安装包。</li>
-<li>双击安装，选定安装目录</li>
-<li>配置环境变量
-
-<ul>
-<li>JAVA_HOME JDK的安装目录</li>
-<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
-</ul></li>
-</ol>
-
-<h3 id="toc_2">开发工具eclipse</h3>
-
-<p>下载地址：<a href="http://eclipse.org"></a></p>
-
-<h2 id="toc_3">Hello Java</h2>
-
-<pre><code class="language-java">
-public class Hello {
-
-    public static void main(String[] args) {
-        System.out.println(&quot;Hello Java&quot;);
-    }
-
-}
-
-</code></pre>
-
-<h2 id="toc_4">输入</h2>
-
-<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
-
-<h2 id="toc_5">变量</h2>
-
-<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
-
-<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
-
-<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
-
-<h2 id="toc_6">赋值</h2>
-
-<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
-
-<h2 id="toc_7">浮点数</h2>
-
-<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
-带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
-
-<h2 id="toc_8">优先级</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
-
-<h2 id="toc_9">类型转换</h2>
-
-<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
-
-<pre><code class="language-java">float a = 1.0;
-int b = (int)a;
-</code></pre>
-
-<h2 id="toc_10">关系运算</h2>
-
-<p>计算两个值之间的关系，叫做关系运算<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
-判断两个浮点数是否相等</p>
-
-<pre><code class="language-java">double a = 1.0;
-double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
-System.out.println(Math.abs(a-b)&lt;1e6);
-</code></pre>
-
-<h2 id="toc_11">IF语句</h2>
-
-<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
-
-<pre><code class="language-java">if(?){
-    //do something
-}else{
-    //do something
-}
-</code></pre>
-
-<h2 id="toc_12">多路分支（Switch-Case）</h2>
-
-<pre><code class="language-java">switch (整型或字符型变量){
-    case 变量可能值1: 
-      　  分支一;
-        　break;
-   case 变量可能值2: 
-      　  分支二;
-        　break;
-   case 变量可能值3: 
-      　  分支三;
-        　break;
-   ...
-   default:
-       最后分支;
-｝
-</code></pre>
-
-<h2 id="toc_13">循环</h2>
-
-<h3 id="toc_14">while循环</h3>
-
-<p>可能一次都不执行</p>
-
-<pre><code class="language-java">while(true){
-    //doSomthing..
-}
-</code></pre>
-
-<h3 id="toc_15">do-while循环</h3>
-
-<p>至少执行一次</p>
-
-<pre><code class="language-java">do{
-    //doSomething..
-}while();
-</code></pre>
-
-<h3 id="toc_16">for循环</h3>
-
-<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
-    //doSomething
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/4</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1385,7 +1157,7 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			
+			 <a href="Java_4.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
@@ -1460,6 +1232,18 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 	      
 		      
 			      <li class="post">
+			        <a href="14879172287548.html">Java容器框架分析(六)——HashSet与HashMap</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14879027517066.html">Java容器框架分析(五)——TreeSet与TreeMap</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14878305448928.html">Java容器框架分析(四)——ArrayDeque源码分析</a>
 			      </li>
 		     
@@ -1473,18 +1257,6 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 		      
 			      <li class="post">
 			        <a href="14876660718478.html">Java容器框架分析（二）——ArrayList源码解析</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14876629153312.html">Java容器框架分析（一）——相关概念综述</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14875782735365.html">Java内存管理</a>
 			      </li>
 		     
 		  

@@ -4,13 +4,499 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-21T17:31:50+08:00</updated>
+  <updated>2017-02-23T16:28:35+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(六)——HashSet与HashMap]]></title>
+    <link href="http://swuzjb.github.io/14879172287548.html"/>
+    <updated>2017-02-24T14:20:28+08:00</updated>
+    <id>http://swuzjb.github.io/14879172287548.html</id>
+    <content type="html"><![CDATA[
+<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
+
+<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
+
+<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
+
+<p><img src="media/14879172287548/14879180909568.png" alt=""/></p>
+
+<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
+
+<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
+当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
+
+<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">get()</h3>
+
+<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
+算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
+<img src="media/14879172287548/14879194728200.png" alt=""/><br/>
+上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
+
+<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
+         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
+        Object k;
+        //依据equals()方法判断是否相等
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+            return e;
+    }
+    return null;
+}
+</code></pre>
+
+<h3 id="toc_2">put()</h3>
+
+<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
+
+<p><img src="media/14879172287548/14879200695663.png" alt=""/></p>
+
+<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);//自动扩容，并重新哈希
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = hash &amp; (table.length-1);//hash%table.length
+    }
+    //在冲突链表头部插入新的entry
+    Entry&lt;K,V&gt; e = table[bucketIndex];
+    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
+    size++;
+}
+</code></pre>
+
+<h3 id="toc_3">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
+<img src="media/14879172287548/14879203192877.png" alt=""/></p>
+
+<pre><code class="language-java">//removeEntryForKey()
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
+    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
+    Entry&lt;K,V&gt; e = prev;
+    while (e != null) {//遍历冲突链表
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
+            modCount++; size--;
+            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
+            else prev.next = next;
+            return e;
+        }
+        prev = e; e = next;
+    }
+    return e;
+}
+</code></pre>
+
+<h2 id="toc_4">HashSet</h2>
+
+<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
+
+<pre><code class="language-java">public class HashSet&lt;E&gt;
+{
+    ......
+    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+    public HashSet() {
+        map = new HashMap&lt;&gt;();
+    }
+    ......
+    public boolean add(E e) {//简单的方法转换
+        return map.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(五)——TreeSet与TreeMap]]></title>
+    <link href="http://swuzjb.github.io/14879027517066.html"/>
+    <updated>2017-02-24T10:19:11+08:00</updated>
+    <id>http://swuzjb.github.io/14879027517066.html</id>
+    <content type="html"><![CDATA[
+<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
+
+<h2 id="toc_0">TreeMap简介</h2>
+
+<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
+
+<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
+<img src="media/14879027517066/14879037942508.png" alt=""/></p>
+
+<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
+
+<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
+</code></pre>
+
+<h2 id="toc_1">红黑树</h2>
+
+<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
+
+<ol>
+<li>每个节点要么是红色要么是黑色。</li>
+<li>根节点必须是黑色。</li>
+<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
+<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
+在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
+</ol>
+
+<h3 id="toc_2">预备知识</h3>
+
+<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
+
+<h4 id="toc_3">左旋</h4>
+
+<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
+<img src="media/14879027517066/14879047657614.png" alt=""/></p>
+
+<p>TreeMap中的左旋操作代码：<br/>
+<code>java<br/>
+private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
+    if (p != null) {<br/>
+        Entry&lt;K,V&gt; r = p.right;<br/>
+        p.right = r.left;<br/>
+        if (r.left != null)<br/>
+            r.left.parent = p;<br/>
+        r.parent = p.parent;<br/>
+        if (p.parent == null)<br/>
+            root = r;<br/>
+        else if (p.parent.left == p)<br/>
+            p.parent.left = r;<br/>
+        else<br/>
+            p.parent.right = r;<br/>
+        r.left = p;<br/>
+        p.parent = r;<br/>
+    }<br/>
+}<br/>
+</code></p>
+
+<h3 id="toc_4">右旋</h3>
+
+<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
+<img src="media/14879027517066/14879049484921.png" alt=""/></p>
+
+<p>TreeMap中的右旋代码：</p>
+
+<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
+    if (p != null) {
+        Entry&lt;K,V&gt; l = p.left;
+        p.left = l.right;
+        if (l.right != null) l.right.parent = p;
+        l.parent = p.parent;
+        if (p.parent == null)
+            root = l;
+        else if (p.parent.right == p)
+            p.parent.right = l;
+        else p.parent.left = l;
+        l.right = p;
+        p.parent = l;
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">寻找节点后继</h3>
+
+<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
+
+<ol>
+<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
+<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
+</ol>
+
+<p>TreeMap中寻找节点后继的代码如下：</p>
+
+<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
+    if (t == null)
+        return null;
+    else if (t.right != null) {
+            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
+        Entry&lt;K,V&gt; p = t.right;
+        while (p.left != null)
+            p = p.left;
+        return p;
+    } else {
+            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
+        Entry&lt;K,V&gt; p = t.parent;
+        Entry&lt;K,V&gt; ch = t;
+        while (p != null &amp;&amp; ch == p.right) {
+            ch = p;
+            p = p.parent;
+        }
+        return p;
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">常用方法剖析</h2>
+
+<h3 id="toc_7">get()</h3>
+
+<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
+<img src="media/14879027517066/14879118892511.png" alt=""/></p>
+
+<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
+    ......
+    if (key == null)//不允许key值为null
+        throw new NullPointerException();
+    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
+    Entry&lt;K,V&gt; p = root;
+    while (p != null) {
+        int cmp = k.compareTo(p.key);
+        if (cmp &lt; 0)//向左找
+            p = p.left;
+        else if (cmp &gt; 0)//向右找
+            p = p.right;
+        else
+            return p;
+    }
+    return null;
+}
+</code></pre>
+
+<h3 id="toc_8">put()</h3>
+
+<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
+
+<pre><code class="language-java">public V put(K key, V value) {
+    ......
+    int cmp;
+    Entry&lt;K,V&gt; parent;
+    if (key == null)
+        throw new NullPointerException();
+    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
+    do {
+        parent = t;
+        cmp = k.compareTo(t.key);
+        if (cmp &lt; 0) t = t.left;//向左找
+        else if (cmp &gt; 0) t = t.right;//向右找
+        else return t.setValue(value);
+    } while (t != null);
+    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
+    if (cmp &lt; 0) parent.left = e;
+    else parent.right = e;
+    fixAfterInsertion(e);//调整
+    size++;
+    return null;
+}
+</code></pre>
+
+<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
+<img src="media/14879027517066/14879127618711.png" alt=""/></p>
+
+<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
+private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
+    x.color = RED;
+    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
+        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
+            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
+            if (colorOf(y) == RED) {
+                setColor(parentOf(x), BLACK);              // 情况1
+                setColor(y, BLACK);                        // 情况1
+                setColor(parentOf(parentOf(x)), RED);      // 情况1
+                x = parentOf(parentOf(x));                 // 情况1
+            } else {
+                if (x == rightOf(parentOf(x))) {
+                    x = parentOf(x);                       // 情况2
+                    rotateLeft(x);                         // 情况2
+                }
+                setColor(parentOf(x), BLACK);              // 情况3
+                setColor(parentOf(parentOf(x)), RED);      // 情况3
+                rotateRight(parentOf(parentOf(x)));        // 情况3
+            }
+        } else {
+            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
+            if (colorOf(y) == RED) {
+                setColor(parentOf(x), BLACK);              // 情况4
+                setColor(y, BLACK);                        // 情况4
+                setColor(parentOf(parentOf(x)), RED);      // 情况4
+                x = parentOf(parentOf(x));                 // 情况4
+            } else {
+                if (x == leftOf(parentOf(x))) {
+                    x = parentOf(x);                       // 情况5
+                    rotateRight(x);                        // 情况5
+                }
+                setColor(parentOf(x), BLACK);              // 情况6
+                setColor(parentOf(parentOf(x)), RED);      // 情况6
+                rotateLeft(parentOf(parentOf(x)));         // 情况6
+            }
+        }
+    }
+    root.color = BLACK;
+}
+</code></pre>
+
+<h3 id="toc_9">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
+<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
+
+<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
+
+<ol>
+<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
+<li>删除点p的左右子树都非空。</li>
+</ol>
+
+<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
+基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
+
+<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
+    modCount++;
+    size--;
+    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
+        Entry&lt;K,V&gt; s = successor(p);// 后继
+        p.key = s.key;
+        p.value = s.value;
+        p = s;
+    }
+    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
+    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
+        replacement.parent = p.parent;
+        if (p.parent == null)
+            root = replacement;
+        else if (p == p.parent.left)
+            p.parent.left  = replacement;
+        else
+            p.parent.right = replacement;
+        p.left = p.right = p.parent = null;
+        if (p.color == BLACK)
+            fixAfterDeletion(replacement);// 调整
+    } else if (p.parent == null) {
+        root = null;
+    } else { // 1. 删除点p的左右子树都为空
+        if (p.color == BLACK)
+            fixAfterDeletion(p);// 调整
+        if (p.parent != null) {
+            if (p == p.parent.left)
+                p.parent.left = null;
+            else if (p == p.parent.right)
+                p.parent.right = null;
+            p.parent = null;
+        }
+    }
+}
+</code></pre>
+
+<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
+跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
+
+<p><img src="media/14879027517066/14879160078690.png" alt=""/></p>
+
+<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
+
+<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
+
+<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
+    while (x != root &amp;&amp; colorOf(x) == BLACK) {
+        if (x == leftOf(parentOf(x))) {
+            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
+            if (colorOf(sib) == RED) {
+                setColor(sib, BLACK);                   // 情况1
+                setColor(parentOf(x), RED);             // 情况1
+                rotateLeft(parentOf(x));                // 情况1
+                sib = rightOf(parentOf(x));             // 情况1
+            }
+            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
+                colorOf(rightOf(sib)) == BLACK) {
+                setColor(sib, RED);                     // 情况2
+                x = parentOf(x);                        // 情况2
+            } else {
+                if (colorOf(rightOf(sib)) == BLACK) {
+                    setColor(leftOf(sib), BLACK);       // 情况3
+                    setColor(sib, RED);                 // 情况3
+                    rotateRight(sib);                   // 情况3
+                    sib = rightOf(parentOf(x));         // 情况3
+                }
+                setColor(sib, colorOf(parentOf(x)));    // 情况4
+                setColor(parentOf(x), BLACK);           // 情况4
+                setColor(rightOf(sib), BLACK);          // 情况4
+                rotateLeft(parentOf(x));                // 情况4
+                x = root;                               // 情况4
+            }
+        } else { // 跟前四种情况对称
+            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
+            if (colorOf(sib) == RED) {
+                setColor(sib, BLACK);                   // 情况5
+                setColor(parentOf(x), RED);             // 情况5
+                rotateRight(parentOf(x));               // 情况5
+                sib = leftOf(parentOf(x));              // 情况5
+            }
+            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
+                colorOf(leftOf(sib)) == BLACK) {
+                setColor(sib, RED);                     // 情况6
+                x = parentOf(x);                        // 情况6
+            } else {
+                if (colorOf(leftOf(sib)) == BLACK) {
+                    setColor(rightOf(sib), BLACK);      // 情况7
+                    setColor(sib, RED);                 // 情况7
+                    rotateLeft(sib);                    // 情况7
+                    sib = leftOf(parentOf(x));          // 情况7
+                }
+                setColor(sib, colorOf(parentOf(x)));    // 情况8
+                setColor(parentOf(x), BLACK);           // 情况8
+                setColor(leftOf(sib), BLACK);           // 情况8
+                rotateRight(parentOf(x));               // 情况8
+                x = root;                               // 情况8
+            }
+        }
+    }
+    setColor(x, BLACK);
+}
+</code></pre>
+
+<h2 id="toc_10">TreeSet</h2>
+
+<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
+
+<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
+    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
+    ......
+    private transient NavigableMap&lt;E,Object&gt; m;
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+    public TreeSet() {
+        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
+    }
+    ......
+    public boolean add(E e) {
+        return m.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_11">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java容器框架分析(四)——ArrayDeque源码分析]]></title>
@@ -2876,464 +3362,6 @@ public User getUserById(Integer id);
 <h4 id="toc_14">动态SQL</h4>
 
 <p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——MyBatis3(2)]]></title>
-    <link href="http://swuzjb.github.io/14689148951216.html"/>
-    <updated>2016-07-19T15:54:55+08:00</updated>
-    <id>http://swuzjb.github.io/14689148951216.html</id>
-    <content type="html"><![CDATA[
-<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
-</blockquote>
-
-<h2 id="toc_0">Mapper的XML配置</h2>
-
-<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
-
-<pre><code class="language-java">package site.zhanjingbo.mapper;
-
-import java.util.List;
-
-import site.zhanjingbo.model.User;
-
-public interface UserMapper {
-    public int addUser(User user);
-    public int updateUser(User user);
-    public int deleteUser(Integer id);
-    
-    public User getUserById(Integer id);
-    public List&lt;User&gt; getAllUser();
-    
-}
-</code></pre>
-
-<h3 id="toc_1">添加XML配置</h3>
-
-<p>配置文件如下：</p>
-
-<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-</code></pre>
-
-<h3 id="toc_2">修改XML配置</h3>
-
-<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_3">删除XML配置</h3>
-
-<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-</code></pre>
-
-<h3 id="toc_4">查询XML配置</h3>
-
-<ol>
-<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
-
-<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
-    select * from user where id=#{id}
-&lt;/select&gt;
-</code></pre></li>
-<li><p>返回结构List。</p>
-
-<ol>
-<li><p>先声明一个返回类型</p>
-
-<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-&lt;/resultMap&gt;
-</code></pre></li>
-<li><p>声明SQL语句映射</p>
-
-<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
-    select * from user
-&lt;/select&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h2 id="toc_5">关系映射</h2>
-
-<h3 id="toc_6">一对一关系</h3>
-
-<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
-
-<ol>
-<li><p>建立Role的POJO对象</p>
-
-<pre><code class="language-java">package site.zhanjingbo.model;
-public class Role {
-    private Integer id;
-    private String roleName;
-
-    public Role(){
-        super();
-    }
-    public Role(Integer id, String roleName) {
-        super();
-        this.id = id;
-        this.roleName = roleName;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-    public String getRoleName() {
-        return roleName;
-    }
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    @Override
-    public String toString() {
-        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
-    }
-}
-</code></pre></li>
-<li><p>建立Role的Mapper接口</p>
-
-<pre><code class="language-java">package site.zhanjingbo.mapper;
-
-import site.zhanjingbo.model.Role;
-
-public interface RoleMapper {
-    public Role getRoleById(Integer id);
-}
-</code></pre></li>
-<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
-        select * from role where id=#{id}
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
-    &lt;/resultMap&gt;
-
-    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user where id=#{id}
-    &lt;/select&gt;
-    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_7">一对多关系</h3>
-
-<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
-为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
-
-<ol>
-<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
-<li>在UserMapper.xml中完善这个方法的SQL语句</li>
-<li>在Role中增加UserList属性，并添加getter和setter方法</li>
-<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
-
-<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
-    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
-&lt;/resultMap&gt;
-&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
-    select * from role where id=#{id}
-&lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_8">多对多关系</h3>
-
-<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——MyBatis3(1)]]></title>
-    <link href="http://swuzjb.github.io/14687533604786.html"/>
-    <updated>2016-07-17T19:02:40+08:00</updated>
-    <id>http://swuzjb.github.io/14687533604786.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">MyBatis</h2>
-
-<blockquote>
-<p>MyBatis是一个支持普通SQL查询，存储过程和高级映射的优秀持久层框架。MyBatis消除了几乎所有的JDBC代码和参数的手工设置以及对结果集的检索封装。MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。</p>
-</blockquote>
-
-<h2 id="toc_1">MyBatis3使用-Hell,World项目</h2>
-
-<p>MyBatis3的使用比较简单。新建一个基本的Mybatis项目需要如下步骤：</p>
-
-<ol>
-<li>新建一个Java项目（这句是废话）。</li>
-<li>导入相关Jar包。
-
-<ol>
-<li>JDBC相关包：mysql-connector-java-5.1.39-bin.jar</li>
-<li>MyBatis核心包：mybatis-3.4.1.jar</li>
-</ol></li>
-<li><p>创建Mybatis配置文件：mybatis-config.xml 位于src目录下</p>
-
-<pre><code class="language-xml">    &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-    &lt;!DOCTYPE configuration
-      PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;
-      &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;
-    &lt;configuration&gt;
-
-      &lt;!--  引入相关JDBC配置文件 --&gt;
-      &lt;properties  resource=&quot;jdbc.properties&quot;/&gt;
-
-      &lt;!-- 配置Mybatis运行的数据库环境 --&gt;
-      &lt;environments default=&quot;development&quot;&gt;
-            &lt;environment id=&quot;development&quot;&gt;
-                  &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-                  &lt;dataSource type=&quot;POOLED&quot;&gt;
-                    &lt;property name=&quot;driver&quot; value=&quot;${jdbc.driverClassName}&quot;/&gt;
-                    &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                    &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                    &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-                  &lt;/dataSource&gt;
-            &lt;/environment&gt;
-      &lt;/environments&gt;
-
-      &lt;!-- 对象与数据库映射文件 --&gt;
-      &lt;mappers&gt;
-        &lt;mapper resource=&quot;site/zhanjingbo/mapper/UserMapper.xml&quot;/&gt;
-      &lt;/mappers&gt;
-    &lt;/configuration&gt;
-</code></pre></li>
-<li><p>创建JDBC配置文件:jdbc.properties。（也可直接在上文配置）</p>
-
-<pre><code class="language-txt">jdbc.dirverClassName=com.mysql.jdbc.Dirver
-jdbc.url=jdbc:mysql://localhost:3307/user
-jdbc.username=root
-jdbc.password=
-
-</code></pre></li>
-<li><p>创建MyBatis的连接工厂类:</p>
-
-<pre><code class="language-Java">package site.zhanjingbo.util;
-import java.io.IOException;
-import java.io.InputStream;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-
-public class SqlSessionFactoryUtil {
-    private static SqlSessionFactory sqlSessionFactory; 
-    private static SqlSessionFactory getSqlSessionFactory(){
-
-        if(sqlSessionFactory == null){
-            InputStream is = null;
-            try {
-                is = Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);
-                sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                System.out.println(&quot;配置文件加载失败&quot;);
-                e.printStackTrace();
-            }
-        }
-        return sqlSessionFactory;
-    }
-    public static SqlSession openSession(){
-        return getSqlSessionFactory().openSession();
-    }
-}
-</code></pre></li>
-<li><p>创建实体数据库访问<em>接口</em>：</p>
-
-<pre><code class="language-java">package site.zhanjingbo.dao;
-import site.zhanjingbo.model.User;
-public interface UserMapper {
-    public int addUser(User user);
-}
-</code></pre></li>
-<li><p>创建映射Mapper配置文件</p>
-
-<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;
-    &lt;insert id=&quot;addUser&quot; parameterType=&quot;site.zhanjingbo.model.User&quot;&gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>创建测试类 </p>
-
-<pre><code class="language-java"> package site.zhanjingbo.test;
- import org.apache.ibatis.session.SqlSession;
- import site.zhanjingbo.mapper.UserMapper;
- import site.zhanjingbo.model.User;
- import site.zhanjingbo.util.SqlSessionFactoryUtil;
- public class MyBatisTest {
-    public static void main(String[] args) {
-        //获取SqlSession实例
-        SqlSession sqlSession = SqlSessionFactoryUtil.openSession();
-        //根据sqlSession生成对应的Mapper对象
-        UserMapper userDao = sqlSession.getMapper(UserMapper.class);
-
-        User user = new User(&quot;test&quot;, &quot;123&quot;);
-        int flag = userDao.addUser(user);
-
-        if(flag &gt; 0){
-            System.out.println(&quot;添加成功&quot;);
-        }
-
-        //提交事务
-        sqlSession.commit();
-        //关闭SQLSession
-        sqlSession.close();
-
-    }
-}
-</code></pre></li>
-</ol>
-
-<h2 id="toc_2">Mybatis-Config.xml配置文件</h2>
-
-<p>本部分简要描述一下Mybatis-config配置文件的各项内容。<br/>
-<code>&lt;configuration&gt;&lt;/configuration&gt;</code>是配置文件xml的根节点，所有配置项都其中。主要包含以下几项：</p>
-
-<h3 id="toc_3">properties参数配置</h3>
-
-<ul>
-<li>properties主要包含各类配置信息，可以直接引入properties文件。也可以直接设置键值对。</li>
-<li><code>&lt;properties  resource=&quot;jdbc.properties&quot;/&gt;</code> 通过resource来指定配置文件</li>
-<li><p>直接写入键值对，写法</p>
-
-<pre><code class="language-xml">&lt;properties&gt;
-    &lt;property name=&quot;jdbc.dirverCLassName&quot; value=&quot;com.mysql.jdbc.Driver&quot;/&gt;
- &lt;/properties&gt;
-</code></pre></li>
-</ul>
-
-<h3 id="toc_4">environments 环境配置</h3>
-
-<p>MyBatis支持多环境配置。可以同时配置多个数据库信息。用<code>&lt;environment&gt;</code>标签表示。</p>
-
-<h4 id="toc_5">environment标签</h4>
-
-<p>每一对<code>&lt;environment&gt;&lt;/environment&gt;</code>标签标示一个数据库环境信息。包含transactionManager、dataSource两个子节点。<br/>
-样例代码：</p>
-
-<pre><code class="language-xml">&lt;environments default=&quot;development&quot;&gt;
-        &lt;environment id=&quot;development&quot;&gt;
-              &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-              &lt;dataSource type=&quot;POOLED&quot;&gt;
-                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
-                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-              &lt;/dataSource&gt;
-        &lt;/environment&gt;
-        &lt;environment id=&quot;test&quot;&gt;
-            &lt;transactionManager type=&quot;JDBC&quot;/&gt;
-            &lt;dataSource type=&quot;POOLED&quot;&gt;
-                &lt;property name=&quot;driver&quot; value=&quot;${jdbc.dirverClassName}&quot;/&gt;
-                &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot;/&gt;
-                &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot;/&gt;
-                &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot;/&gt;
-              &lt;/dataSource&gt;
-        &lt;/environment&gt;
- &lt;/environments&gt;
-</code></pre>
-
-<h5 id="toc_6">transactionManager事务管理方式</h5>
-
-<p>MyBatis支持两种类型的事务管理器：JDBC和MANAGED(托管)：</p>
-
-<ul>
-<li>JDBC：应用程序负责管理数据库连接的声明周期</li>
-<li>MANAGED：由应用服务器管理数据库连接的声明周期。（一般商业服务器才有此功能，如JBOSS，WebLogic）</li>
-<li><code>&lt;transactionManager type=&quot;JDBC&quot;/&gt;</code></li>
-</ul>
-
-<h5 id="toc_7">dataSource数据源</h5>
-
-<p>用来配置数据库数据源信息。类型分为：UNPOOLED,POOLED,JNDI：</p>
-
-<ul>
-<li>UNPOOLED：没有连接池，每次数据库操作MyBatis都会新建一个数据库连接，用完后，关闭。适合小并发项目。</li>
-<li>POOLED：启用连接池</li>
-<li>JNDI：使用服务器配置JNDI数据源获取数据库连接</li>
-</ul>
-
-<h3 id="toc_8">typeAliases</h3>
-
-<p>类型别名，通过设置该项目可以给类的完整限定名取别名，方便使用。<br/>
-如在上面部分 UserMapper.xml中addUser的参数类别写为<code>site.zhanjingbo.model.User</code>。不方便使用。我们可以在Mybatis-config.xml中加入如下代码：</p>
-
-<pre><code class="language-xml">&lt;typeAliases&gt;
-    &lt;typeAlias type=&quot;site.zhanjingbo.model.User&quot; alias=&quot;User&quot;/&gt;
-&lt;/typeAliases&gt;
-</code></pre>
-
-<p>便可以使用<em>User</em>来指代<em>site.zhanjingbo.model.User</em>。</p>
-
-<h3 id="toc_9">Mappers映射</h3>
-
-<p>用于引入Mapper映射文件。有三种比较推荐的配置方式，如下代码：</p>
-
-<pre><code class="language-xml">  &lt;mappers&gt;
-    &lt;mapper resource=&quot;site/zhanjingbo/dao/UserMapper.xml&quot;/&gt;
-    &lt;mapper class=&quot;site.zhanjingbo.dao.UserMapper&quot;/&gt;
-    &lt;!-- 包含这个包下的所有 --&gt;
-    &lt;package name=&quot;site.zhanjingbo.dao&quot;/&gt;
-  &lt;/mappers&gt;
-</code></pre>
-
-<p>示例代码见：<a href="https://github.com/swuzjb/MybatisDemo">https://github.com/swuzjb/MybatisDemo</a></p>
 
 ]]></content>
   </entry>
