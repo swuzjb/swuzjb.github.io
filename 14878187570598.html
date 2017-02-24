@@ -142,7 +142,7 @@ private static class Node&lt;E&gt; {
 }
 </code></pre>
 
-<p><img src="media/14878187570598/14878256240088.png" alt="LinkedList示意图"/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
 
 <p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
 
@@ -151,7 +151,7 @@ private static class Node&lt;E&gt; {
 <h3 id="toc_2">add()</h3>
 
 <p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="media/14878187570598/14878263883597.png" alt="add方法示意"/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
 
 <p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
 

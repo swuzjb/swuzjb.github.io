@@ -130,7 +130,7 @@
 <p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
 
 <p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="media/14879027517066/14879037942508.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
 
 <p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
 
@@ -156,7 +156,7 @@
 <h4 id="toc_3">左旋</h4>
 
 <p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="media/14879027517066/14879047657614.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
 
 <p>TreeMap中的左旋操作代码：<br/>
 <code>java<br/>
@@ -182,7 +182,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 <h3 id="toc_4">右旋</h3>
 
 <p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="media/14879027517066/14879049484921.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
 
 <p>TreeMap中的右旋代码：</p>
 
@@ -241,7 +241,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 <h3 id="toc_7">get()</h3>
 
 <p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="media/14879027517066/14879118892511.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
 
 <pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
     ......
@@ -290,7 +290,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 </code></pre>
 
 <p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="media/14879027517066/14879127618711.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
 
 <pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
 private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
@@ -389,7 +389,7 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 <p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
 跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
 
-<p><img src="media/14879027517066/14879160078690.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
 
 <p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
 

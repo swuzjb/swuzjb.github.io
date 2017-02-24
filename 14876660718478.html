@@ -129,7 +129,7 @@
 每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
 size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
 为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
-<img src="media/14876660718478/14876663843643.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
 
 <h2 id="toc_1">常用方法剖析</h2>
 
@@ -171,9 +171,9 @@ size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方
 </code></pre>
 
 <p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
-<img src="media/14876660718478/14876673586219.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
 空间的问题解决之后，插入就变得非常简单了。<br/>
-<img src="media/14876660718478/14876674357716.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
 <code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
 
 <h3 id="toc_5">addAll()</h3>

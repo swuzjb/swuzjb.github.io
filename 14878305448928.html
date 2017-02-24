@@ -228,7 +228,7 @@
 从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
 ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
 
-<p><img src="media/14878305448928/14878324914756.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878324914756.png" alt=""/></p>
 
 <p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
 
@@ -237,7 +237,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 <h3 id="toc_4">addFirst()</h3>
 
 <p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
-<img src="media/14878305448928/14878327863308.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878327863308.png" alt=""/></p>
 
 <p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
 
@@ -254,7 +254,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
 
 <p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
-<img src="media/14878305448928/14878340364545.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878340364545.png" alt=""/></p>
 
 <pre><code class="language-java">private void doubleCapacity() {
     assert head == tail;
@@ -276,7 +276,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 <h3 id="toc_5">addLast()</h3>
 
 <p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
-<img src="media/14878305448928/14878375459017.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878375459017.png" alt=""/></p>
 
 <pre><code class="language-java">public void addLast(E e) {
     if (e == null)//不允许放入null

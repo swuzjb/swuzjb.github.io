@@ -114,7 +114,7 @@
 
 <p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
 
-<p><img src="media/14879172287548/14879180909568.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
 
 <p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
 
@@ -129,7 +129,7 @@
 
 <p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
 算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
-<img src="media/14879172287548/14879194728200.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
 上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
 
 <pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
@@ -151,7 +151,7 @@
 
 <p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
 
-<p><img src="media/14879172287548/14879200695663.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
 
 <pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
     if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
@@ -169,7 +169,7 @@
 <h3 id="toc_3">remove()</h3>
 
 <p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
-<img src="media/14879172287548/14879203192877.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
 
 <pre><code class="language-java">//removeEntryForKey()
 final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
@@ -260,7 +260,7 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 <p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
 
 <p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="media/14879027517066/14879037942508.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
 
 <p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
 
@@ -286,7 +286,7 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 <h4 id="toc_3">左旋</h4>
 
 <p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="media/14879027517066/14879047657614.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
 
 <p>TreeMap中的左旋操作代码：<br/>
 <code>java<br/>
@@ -312,7 +312,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 <h3 id="toc_4">右旋</h3>
 
 <p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="media/14879027517066/14879049484921.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
 
 <p>TreeMap中的右旋代码：</p>
 
@@ -371,7 +371,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 <h3 id="toc_7">get()</h3>
 
 <p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="media/14879027517066/14879118892511.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
 
 <pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
     ......
@@ -420,7 +420,7 @@ private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
 </code></pre>
 
 <p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="media/14879027517066/14879127618711.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
 
 <pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
 private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
@@ -519,7 +519,7 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 <p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
 跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
 
-<p><img src="media/14879027517066/14879160078690.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
 
 <p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
 
@@ -747,7 +747,7 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
 ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
 
-<p><img src="media/14878305448928/14878324914756.png" alt=""/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878324914756.png" alt=""/></p>
 
 <p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
 
@@ -756,7 +756,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 <h3 id="toc_4">addFirst()</h3>
 
 <p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
-<img src="media/14878305448928/14878327863308.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878327863308.png" alt=""/></p>
 
 <p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
 
@@ -773,7 +773,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
 
 <p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
-<img src="media/14878305448928/14878340364545.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878340364545.png" alt=""/></p>
 
 <pre><code class="language-java">private void doubleCapacity() {
     assert head == tail;
@@ -795,7 +795,7 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 <h3 id="toc_5">addLast()</h3>
 
 <p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
-<img src="media/14878305448928/14878375459017.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878375459017.png" alt=""/></p>
 
 <pre><code class="language-java">public void addLast(E e) {
     if (e == null)//不允许放入null
@@ -910,7 +910,7 @@ private static class Node&lt;E&gt; {
 }
 </code></pre>
 
-<p><img src="media/14878187570598/14878256240088.png" alt="LinkedList示意图"/></p>
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
 
 <p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
 
@@ -919,7 +919,7 @@ private static class Node&lt;E&gt; {
 <h3 id="toc_2">add()</h3>
 
 <p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="media/14878187570598/14878263883597.png" alt="add方法示意"/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
 
 <p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
 
@@ -1055,7 +1055,7 @@ private static class Node&lt;E&gt; {
 每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
 size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
 为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
-<img src="media/14876660718478/14876663843643.png" alt=""/></p>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
 
 <h2 id="toc_1">常用方法剖析</h2>
 
@@ -1097,9 +1097,9 @@ size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方
 </code></pre>
 
 <p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
-<img src="media/14876660718478/14876673586219.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
 空间的问题解决之后，插入就变得非常简单了。<br/>
-<img src="media/14876660718478/14876674357716.png" alt=""/><br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
 <code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
 
 <h3 id="toc_5">addAll()</h3>
