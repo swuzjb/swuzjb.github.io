@@ -101,6 +101,212 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14595674718251.html">
+                
+                  <h1>GeekBand.iOS-View的定位</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
+UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+
+<h2 id="toc_0">View的层次</h2>
+
+<p>View的层次结构是一个树状结构：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
+上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+
+<h2 id="toc_1">UIKit坐标系</h2>
+
+<p>-CGPoint{x,y}用于描述坐标<br/>
+-CGSize{width,height}用于描述宽和高<br/>
+-CGRect{origin,size}描述一个矩形区域<br/>
+坐标系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+
+<h2 id="toc_2">View的定位-Frame</h2>
+
+<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
+
+<pre><code>-(CGRect)frame{
+    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<h2 id="toc_3">View的定位-Bounds</h2>
+
+<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
+
+<pre><code>-(CGRect)bounds{
+    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
+}
+</code></pre>
+
+<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
+
+<h2 id="toc_4">View的定位-Center</h2>
+
+<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
+
+<h2 id="toc_5">Demo展示</h2>
+
+<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
+[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
+view1.backgroundColor = [UIColor redColor];  
+[self.view addSubview:view1];//添加到self.view  
+NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
+  
+UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
+view2.backgroundColor = [UIColor yellowColor];  
+[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
+NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14592472421509.html">
+                
+                  <h1>GeekBand.iOS-UICollectionView</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
+为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
+它对TableView的优化：
+- 对表格的自然扩展：网格式界面
+- 对表格内部职责进一步细分：分离Layout
+</code></pre>
+
+<h2 id="toc_0">CollectionView实例</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
+
+<h2 id="toc_1">CollectionView界面构成</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
+
+<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
+
+<h2 id="toc_2">说明</h2>
+
+<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
+- cell在collection中被称为item<br/>
+- header/footer被称为supplementary view<br/>
+- item view必须register<br/>
+- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
+
+<h2 id="toc_3">Cell（Item）供应</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
+
+<h2 id="toc_4">基本使用</h2>
+
+<ol>
+<li>创建CollectionView对象</li>
+<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
+
+<pre><code>//返回item的数量
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
+
+//返回item实例
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+</code></pre></li>
+</ol>
+
+<h2 id="toc_5">交互</h2>
+
+<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。实现UICollectionViewDelegate协议</p>
+
+<ul>
+<li>点选</li>
+<li><p>编辑格子</p>
+
+<ul>
+<li>插入、删除</li>
+<li>移动格子的位置</li>
+</ul></li>
+<li><p>刷新数据</p></li>
+<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
+<li><p>滚动到某个格子</p></li>
+<li><p>动态更换布局</p></li>
+</ul>
+
+<h3 id="toc_6">交互响应机会</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
+
+<h3 id="toc_7">刷新CollectionView</h3>
+
+<ul>
+<li>reloadData  全部刷新</li>
+<li>reloadSection  刷新某个section</li>
+<li>reloadItemsAtIndexPaths 刷新某个cell</li>
+</ul>
+
+<h3 id="toc_8">手工移动格子</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
+
+<h2 id="toc_9">参考资料</h2>
+
+<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
+<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/29</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14592472421509.html" data-count-type="comments" href="14592472421509.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14591709450392.html">
                 
                   <h1>GeekBand.iOS-UILocalized​Indexed​Collation</h1>
@@ -446,122 +652,6 @@ UIView* view =(UIView *) [cell viewWithTag:int];
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14586526599234.html">
-                
-                  <h1>GeekBand.iOS-UIKIT继承关系</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-22-uikit_classes.jpg-Watermark.jpeg" alt="UIKIT继承关系"/></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/22</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14586526599234.html" data-count-type="comments" href="14586526599234.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14585764912552.html">
-                
-                  <h1>GeekBand.iOS-StoryBoard</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
-</blockquote>
-
-<p>本文主要介绍segue。</p>
-
-<h2 id="toc_0">使用storyboard进行页面跳转</h2>
-
-<ol>
-<li><p>纯storyBoard操作</p>
-
-<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
-松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
-从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
-此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
-我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
-<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
-<li><p>使用代码调用segue跳转<br/>
-需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
-使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
-</ol>
-
-<h2 id="toc_1">使用segue传递数据</h2>
-
-<ol>
-<li><p>使用prepareForSegue进行传值</p>
-
-<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // segue.identifier：获取连线的ID
-    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
-        // segue.destinationViewController：获取连线时所指的界面（VC）
-        //方法1：设置属性
-        ReceiveViewController *receive = segue.destinationViewController;
-        receive.name = @&quot;Garvey&quot;;
-        receive.age = 110;
-        //2:使用KVC给目标场景传值
-        [destinationController setValue:@119 forKey:@number];
-     }
-}
-</code></pre></li>
-<li><p>返回上级的某个页面<br/>
-使用unwindForSegue进行返回（iOS9+）。<br/>
-<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
-</ol>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/22</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -648,6 +738,18 @@ UIView* view =(UIView *) [cell viewWithTag:int];
 	      
 		      
 			      <li class="post">
+			        <a href="14879958366746.html">Java容器框架分析(八)——PriorityQueue</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14879892493054.html">Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14879172287548.html">Java容器框架分析(六)——HashSet与HashMap</a>
 			      </li>
 		     
@@ -661,18 +763,6 @@ UIView* view =(UIView *) [cell viewWithTag:int];
 		      
 			      <li class="post">
 			        <a href="14878305448928.html">Java容器框架分析(四)——ArrayDeque源码分析</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14878187570598.html">Java容器框架分析(三)——LinkedList源码分析</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14876660718478.html">Java容器框架分析（二）——ArrayList源码解析</a>
 			      </li>
 		     
 		  

@@ -4,13 +4,317 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-24T15:14:05+08:00</updated>
+  <updated>2017-02-25T14:41:42+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(八)——PriorityQueue]]></title>
+    <link href="http://swuzjb.github.io/14879958366746.html"/>
+    <updated>2017-02-25T12:10:36+08:00</updated>
+    <id>http://swuzjb.github.io/14879958366746.html</id>
+    <content type="html"><![CDATA[
+<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
+
+<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
+
+<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
+
+<ul>
+<li><code>leftNo = parentNo*2+1</code></li>
+<li><code>rightNo = parentNo*2+2</code></li>
+<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
+</ul>
+
+<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
+
+<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">add()&amp;offer()</h3>
+
+<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
+
+<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
+
+<pre><code class="language-java">public boolean offer(E e) {
+    if (e == null)//不允许放入null元素
+        throw new NullPointerException();
+    modCount++;
+    int i = size;
+    if (i &gt;= queue.length)
+        grow(i + 1);//自动扩容
+    size = i + 1;
+    if (i == 0)//队列原来为空，这是插入的第一个元素
+        queue[0] = e;
+    else
+        siftUp(i, e);//调整
+    return true;
+}
+</code></pre>
+
+<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
+
+<pre><code class="language-java">private void siftUp(int k, E x) {
+    while (k &gt; 0) {
+        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
+        Object e = queue[parent];
+        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
+            break;
+        queue[k] = e;
+        k = parent;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
+
+<h3 id="toc_2">element()&amp;peek()</h3>
+
+<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
+
+<pre><code class="language-java">//peek()
+public E peek() {
+    if (size == 0)
+        return null;
+    return (E) queue[0];//0下标处的那个元素就是最小的那个
+}
+</code></pre>
+
+<h3 id="toc_3">remove()&amp;poll()</h3>
+
+<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
+代码如下：</p>
+
+<pre><code class="language-java">public E poll() {
+    if (size == 0)
+        return null;
+    int s = --size;
+    modCount++;
+    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
+    E x = (E) queue[s];
+    queue[s] = null;
+    if (s != 0)
+        siftDown(0, x);//调整
+    return result;
+}
+</code></pre>
+
+<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
+
+<pre><code class="language-java">//siftDown()
+private void siftDown(int k, E x) {
+    int half = size &gt;&gt;&gt; 1;
+    while (k &lt; half) {
+        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
+        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
+        Object c = queue[child];
+        int right = child + 1;
+        if (right &lt; size &amp;&amp;
+            comparator.compare((E) c, (E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (comparator.compare(x, (E) c) &lt;= 0)
+            break;
+        queue[k] = c;//然后用c取代原来的值
+        k = child;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<h3 id="toc_4">remove(Object o)</h3>
+
+<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
+
+<pre><code class="language-java">//remove(Object o)
+public boolean remove(Object o) {
+    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
+    int i = indexOf(o);
+    if (i == -1)
+        return false;
+    int s = --size;
+    if (s == i) //情况1
+        queue[i] = null;
+    else {
+        E moved = (E) queue[s];
+        queue[s] = null;
+        siftDown(i, moved);//情况2
+        ......
+    }
+    return true;
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(七)——LinkedHashSet与LinkedHashMap]]></title>
+    <link href="http://swuzjb.github.io/14879892493054.html"/>
+    <updated>2017-02-25T10:20:49+08:00</updated>
+    <id>http://swuzjb.github.io/14879892493054.html</id>
+    <content type="html"><![CDATA[
+<p>如果你已经看过前面关于HashSet和HashMap，以及TreeSet和TreeMap的讲解，一定能够想到本文要讲解的LinkedSet和LinkedHashMap在Java中也有着相同的实现，前者仅仅是对后者做了一层包装，也就是说<strong>LinkedHashSet里面有一个LinkedHashMap(适配器模式)</strong>。因此本文将重点介绍LinkedHashMap。</p>
+
+<p>LinkedHashMap实现了Map接口，即允许放入key为null的元素，也允许插入value为null的元素。从名字上可以看出该容器是LinkedList和HashMap的混合体，也就是说它同时满足HashMap和LinkedList的某些特性。可以将LinkedHashMap看作采用LinkedList增强的HashMap。</p>
+
+<p>事实上LinkedHashMap是HashMap的直接子类，二者的唯一区别是LinkedHashMap在HashMap的基础上，采用双向链表的形式将所有entry连接起来，这样是为保证元素的迭代顺序和插入顺序相同。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879901525374.png" alt=""/></p>
+
+<p>上图给出了LinkedHashMap的结构图，主体部分跟HashMap完全一样，多了header指向双向链表的头部，该双向链表的迭代顺序就是entry的插入顺序。<br/>
+除了可以保证迭代顺序，这种结构还有一个好处：迭代LinkedHashMap时不需要像HashMap那样遍历整个table，而是只需要直接遍历header指向的双向链表即可。也就说LinkedHashMap的迭代时间就只跟entry的个数有关，和table的大小无关。</p>
+
+<p>有两个参数可以影响 LinkedHashMap 的性能：初始容量（inital capacity）和负载系数（load factor）。初始容量指定了初始table的大小，负载系数用来指定自动扩容的临界值。当entry的数量超过<code>capacity*load_factor</code>时，容器将自动扩容并重新哈希。对于插入元素较多的场景，将初始容量设大可以减少重新哈希的次数。<br/>
+将对象放入到 LinkedHashMap 或 LinkedHashSet 中时，有两个方法需要特别关心：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>方法决定了对象会被放到哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是 “同一个对象”。所以，如果要将自定义的对象放入到LinkedHashMap或LinkedHashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
+
+<p>通过如下方式可以得到一个跟源Map迭代顺序一样的LinkedHashMap：</p>
+
+<pre><code class="language-java">void foo(Map m) {
+    Map copy = new LinkedHashMap(m);
+    ...
+}
+</code></pre>
+
+<p>出于性能原因，LinkedHashMap是非线程安全的，如果需要在多线程环境使用，需要程序呀手动进行同步；或者通过如下方式将LinkedHashMap包装成同步的：</p>
+
+<pre><code class="language-java">Map m = Collections.synchronizedMap(new LinkedHashMap(...));
+</code></pre>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">get()</h3>
+
+<p>get(Object key)方法根据指定的key值返回对应的value.该方法的流程和HashMap的实现方式基本一样，可参考前文。</p>
+
+<h3 id="toc_2">put()</h3>
+
+<p><code>put(K key,V value)</code>方法是将指定的<code>key,value</code>对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>get()</code>方法；如没有找到则会通过<code>addEntry(int hash,K key,V value,int bucketIndex)</code>方法插入新的entry。<br/>
+PS.这里的插入有两重含义：</p>
+
+<ol>
+<li>从table的角度来看，新的entry需要插入到对应的bucket里，当有哈希冲突时，采用头插法将新的entry插入到冲突链表的头部。</li>
+<li>从header的角度，新的entry需要插入到双向链表的尾部。</li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879912929279.png" alt=""/></p>
+
+<p>addEntry()代码如下：</p>
+
+<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);// 自动扩容，并重新哈希
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = hash &amp; (table.length-1);// hash%table.length
+    }
+    // 1.在冲突链表头部插入新的entry
+    HashMap.Entry&lt;K,V&gt; old = table[bucketIndex];
+    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(hash, key, value, old);
+    table[bucketIndex] = e;
+    // 2.在双向链表的尾部插入新的entry
+    e.addBefore(header);
+    size++;
+}
+</code></pre>
+
+<p>上述代码中用到了<code>addBefore()</code>方法将新<code>entry e</code>插入到双向链表引用<code>header</code>的前面，这样e就成为了双向链表中的最后一个元素。<code>addBefore()</code>的代码如下：</p>
+
+<pre><code class="language-java">// LinkedHashMap.Entry.addBefor()，将this插入到existingEntry的前面
+private void addBefore(Entry&lt;K,V&gt; existingEntry) {
+    after  = existingEntry;
+    before = existingEntry.before;
+    before.after = this;
+    after.before = this;
+}
+</code></pre>
+
+<p>仅需要简单修改相关entry的引用而已。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里实现的。<code>removeEntryForKey()</code>方法会首先找到key值对应的entry，然后删除entry(修改链表的引用)。查找过程和get()方法类似。<br/>
+注意，这里的删除也有两层含义：</p>
+
+<ol>
+<li>从table的角度看，需要将该entry从对应的bucket里删除，如果对应的冲突链表不空，需要修改冲突链表的相应引用。</li>
+<li>从header的角度来看，需要将该entry从双向链表中删除，同时修改链表中前面以及后面元素的相应引用。</li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879925343738.png" alt=""/></p>
+
+<p><code>removeEntryForKey()</code>对应的代码如下：</p>
+
+<pre><code class="language-java">// LinkedHashMap.removeEntryForKey()，删除key值对应的entry
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    int i = indexFor(hash, table.length);// hash&amp;(table.length-1)
+    Entry&lt;K,V&gt; prev = table[i];// 得到冲突链表
+    Entry&lt;K,V&gt; e = prev;
+    while (e != null) {// 遍历冲突链表
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {// 找到要删除的entry
+            modCount++; size--;
+            // 1. 将e从对应bucket的冲突链表中删除
+            if (prev == e) table[i] = next;
+            else prev.next = next;
+            // 2. 将e从双向链表中删除
+            e.before.after = e.after;
+            e.after.before = e.before;
+            return e;
+        }
+        prev = e; e = next;
+    }
+    return e;
+}
+</code></pre>
+
+<h2 id="toc_4">LinkedHashSet</h2>
+
+<p>前面已经说过 LinkedHashSet 是对 LinkedHashMap 的简单包装，对 LinkedHashSet 的函数调用都会转换成合适的 LinkedHashMap 方法，因此 LinkedHashSet 的实现非常简单，这里不再赘述。</p>
+
+<pre><code class="language-java">public class LinkedHashSet&lt;E&gt;
+    extends HashSet&lt;E&gt;
+    implements Set&lt;E&gt;, Cloneable, java.io.Serializable {
+    ......
+    // LinkedHashSet里面有一个LinkedHashMap
+    public LinkedHashSet(int initialCapacity, float loadFactor) {
+        map = new LinkedHashMap&lt;&gt;(initialCapacity, loadFactor);
+    }
+    ......
+    public boolean add(E e) {//简单的方法转换
+        return map.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java容器框架分析(六)——HashSet与HashMap]]></title>
@@ -3039,329 +3343,6 @@ public class UserServiceAspect {
 &lt;/tx:advice&gt;  
 </code></pre></li>
 </ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——Spring（1）]]></title>
-    <link href="http://swuzjb.github.io/14690817459253.html"/>
-    <updated>2016-07-21T14:15:45+08:00</updated>
-    <id>http://swuzjb.github.io/14690817459253.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
-</blockquote>
-
-<h2 id="toc_0">Spring IOC</h2>
-
-<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
-Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
-
-<h3 id="toc_1">依赖注入</h3>
-
-<ol>
-<li><p>装配一个Bean</p>
-
-<ol>
-<li><p>在Spring的bean.xml文件中填写如下配置：</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
-</code></pre></li>
-<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
-
-<pre><code class="language-java">public static void main(String[] args) {
-
-    //加载Spring-bean配置信息
-    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
-
-    //获取id为user1的bean的实例
-    User user1 = (User)ac.getBean(&quot;user1&quot;);
-    System.out.println(user1);
-}
-</code></pre></li>
-</ol></li>
-<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
-&lt;/bean&gt;
-</code></pre></li>
-<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;!-- 通过索引来设置参数值 --&gt;
-    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过类型来设置参数值 --&gt;
-    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过参数名来设置参数值 --&gt;
-    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
-&lt;/bean&gt;
-</code></pre></li>
-<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
-
-<ol>
-<li><p>静态工厂方法，在beans.xml中调用。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
-&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h3 id="toc_2">注入参数</h3>
-
-<ol>
-<li>基本类型值：参考上一节属性注入。</li>
-<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
-<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
-<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
-<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
-<li><p>集合类型属性，可以用下列配置来实现。</p>
-
-<pre><code class="language-xml">&lt;!-- list--&gt;
-&lt;property name=&quot;list&quot;&gt;
-    &lt;list&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/list&gt;
-&lt;/property&gt;
-&lt;!--set--&gt;
-&lt;property name=&quot;set&quot;&gt;
-    &lt;set&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/set&gt;
-&lt;/property&gt;
-&lt;!--map--&gt;
-&lt;property name=&quot;map&quot;&gt;
-    &lt;map&gt;
-        &lt;entry&gt;
-            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
-            &lt;value&gt;value&lt;/value&gt;
-        &lt;/entry&gt;
-    &lt;/map&gt;
-&lt;/property&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_3">自动装配</h3>
-
-<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
-- byName:通过名称进行自动匹配<br/>
-- byType:根据类型进行自动匹配<br/>
-- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
-<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
-
-<h3 id="toc_4">方法注入</h3>
-
-<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
-在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
-
-<h3 id="toc_5">bean之间关系</h3>
-
-<ol>
-<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
-<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
-<li>引用：见上部</li>
-</ol>
-
-<h3 id="toc_6">bean的作用范围</h3>
-
-<ol>
-<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
-<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
-<li>request:每次Http请求时都会创建一个新的实例</li>
-<li>session:同一个Http Session共享一个Bean</li>
-<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
-<li>application:同一个Application共享一个bean</li>
-</ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——MyBatis3(3)]]></title>
-    <link href="http://swuzjb.github.io/14689923975384.html"/>
-    <updated>2016-07-20T13:26:37+08:00</updated>
-    <id>http://swuzjb.github.io/14689923975384.html</id>
-    <content type="html"><![CDATA[
-<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
-</blockquote>
-
-<h2 id="toc_0">动态SQL</h2>
-
-<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
-
-<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
-
-<h3 id="toc_1">IF标签</h3>
-
-<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
-以实现一个用户检索为例：</p>
-
-<ol>
-<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
-<li><p>在UserMapper.xml中对接口进行实现：</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-    select * from user where 1=1
-    &lt;if test=&quot;username!=null&quot;&gt;
-        and username like #{username}
-    &lt;/if&gt;
-    &lt;if test=&quot;id!=null&quot;&gt;
-        and id=#{id}
-    &lt;/if&gt;
-    &lt;if test=&quot;role!=null&quot;&gt;
-        and roleId=#{role.id}
-    &lt;/if&gt;
-&lt;/select&gt;
-</code></pre></li>
-<li><p>调用查询，传入查询条件的Map即可。</p>
-
-<pre><code class="language-java">public void testSearch(){
-    Role role = new Role();
-    role.setId(1);
-    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
-    map.put(&quot;role&quot;, role);  
-    List&lt;User&gt; userList = userMapper.searchUser(map);
-    for(User user:userList){
-        System.out.println(user);
-    }   
-}
-</code></pre></li>
-</ol>
-
-<h3 id="toc_2">Choose、when和otherwise标签</h3>
-
-<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
-当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
-
-<pre><code class="language-xml">&lt;choose&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;otherwise&gt;&lt;/otherwise&gt;
-&lt;/choose&gt;
-</code></pre>
-
-<h3 id="toc_3">where标签</h3>
-
-<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user 
-        &lt;where&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                and username like #{username}
-            &lt;/if&gt;
-            &lt;if test=&quot;id!=null&quot;&gt;
-                and id=#{id}
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                and roleId=#{role.id}
-            &lt;/if&gt;
-        &lt;/where&gt;
-    &lt;/select&gt;
-</code></pre>
-
-<h3 id="toc_4">trim标签</h3>
-
-<p>与where语句类似，给语句增加前后缀。</p>
-
-<h3 id="toc_5">Foreach标签</h3>
-
-<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
-
-<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
-#{itemName}
-&lt;/foreach&gt;
-</code></pre>
-
-<h3 id="toc_6">set标签</h3>
-
-<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
-
-<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user 
-        &lt;set&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                username=#{username},
-            &lt;/if&gt;
-            &lt;if test=&quot;password!=null&quot;&gt;
-                password=#{password},
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                roleId=#{role.id},
-            &lt;/if&gt;
-        &lt;/set&gt;
-        where id=#{id}
-&lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
-
-<ul>
-<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
-<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
-</ul>
-
-<h3 id="toc_8">传入多个输入参数</h3>
-
-<ul>
-<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
-<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
-</ul>
-
-<h3 id="toc_9">MyBatis分页</h3>
-
-<ul>
-<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
-<li>物理分页，使用limit子句来实现分页</li>
-</ul>
-
-<h3 id="toc_10">MyBatis缓存</h3>
-
-<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
-开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
-
-<h3 id="toc_11">使用注解配置SQL映射器</h3>
-
-<h4 id="toc_12">基本映射语句</h4>
-
-<ol>
-<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
-<li>@Update：同上；</li>
-<li>@delete：同上；</li>
-<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
-<li><p>@select：当需要返回集合时：</p>
-
-<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
-@Results({
-    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
-    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
-    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
-})
-public User getUserById(Integer id);
-</code></pre></li>
-</ol>
-
-<h4 id="toc_13">关系映射</h4>
-
-<ol>
-<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
-<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
-</ol>
-
-<h4 id="toc_14">动态SQL</h4>
-
-<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
 
 ]]></content>
   </entry>
