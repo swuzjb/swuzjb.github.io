@@ -4,13 +4,94 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-25T14:41:42+08:00</updated>
+  <updated>2017-02-28T10:35:19+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Java容器框架分析(九)——WeakHashMap]]></title>
+    <link href="http://swuzjb.github.io/14880758779206.html"/>
+    <updated>2017-02-26T10:24:37+08:00</updated>
+    <id>http://swuzjb.github.io/14880758779206.html</id>
+    <content type="html"><![CDATA[
+<p>在Java容器框架系列文章的最后，笔者打算介绍一个特殊的成员：WeakHashMap，从名字可以看出它是某种Map。它的特殊之处在于WeakHashMap里的entry可能会被GC自动删除，即使程序员没有调用remove()或者clear()方法。</p>
+
+<p>更直观的说，当使用WeakHashMap时，即使没有显示的添加或者删除任何元素，也可能发生如下情况：</p>
+
+<ul>
+<li>调用两次<code>size()</code>方法返回不同的值</li>
+<li>两次调用<code>isEmpty()</code>方法，第一次返回<code>false</code>，第二次返回<code>true</code></li>
+<li>两次调用<code>containsKey()</code>方法，第一次返回<code>true</code>，第二次返回<code>false</code>，尽管是同一个<code>key</code></li>
+<li>两次调用<code>get()</code>方法，第一次返回一个<code>value</code>，第二次返回<code>null</code>，尽管两次使用的是同一个对象</li>
+</ul>
+
+<p>遇到这么奇葩的现象，你是不是觉得使用者一定疯掉？其实不然，<strong>WeekHashMap的这个特点特别适用于需要缓存的场景</strong>。在缓存场景下，由于内存是有限的，不能缓存所有对象；对象缓存命中可以提高效率，但缓存Miss也不会造成错误，因为可以通过计算重新得到。</p>
+
+<p>要明白WeakHashMap的工作原理，还需要引入一个概念：<strong>弱引用</strong>。我们知道Java中的内存是通过GC自动管理的，GC会在程序运行过程中自动判断哪些对象时可以被回收的，并在合适的时机进行内存释放。GC判断某个对象是否可以回收的依据是：<strong>是否有有效的引用指向该对象</strong>。如果没有有效引用指向该对象（意味着不存在访问该对象的方式），那么该对象就是可回收的。这里的<strong>有效引用并不包括弱引用</strong>。也就是说，虽然<strong>弱引用可以用来访问对象，但进行垃圾回收时弱引用并不会被考虑在内，仅有弱引用指向的对象仍然会被GC回收</strong>。</p>
+
+<p>WeakHashMap内部使用弱引用来管理entry，弱引用的特性对应到WeakHashMap上意味着什么呢？将一对key,value放入到WeakHashMap里并不能避免该key值被GC回收，除非在WeakHashMap之外还有对该key的强引用。</p>
+
+<h2 id="toc_0">具体实现</h2>
+
+<p>WeakHashMap的储存结构类似于HashMap，可参考前文。</p>
+
+<h3 id="toc_1">WeakHashSet？</h3>
+
+<p>如果你看过前几篇关于Map和Set的讲解，一定会问：既然有 WeekHashMap，是否有WeekHashSet呢？答案是没有！不过Java Collections工具类给出了解决方案，<code>Collections.newSetFromMap(Map&lt;E,Boolean&gt; map)</code>方法可以将任何Map包装成一个Set。通过如下方式可以快速得到一个 Weak HashSet：<br/>
+<code>java<br/>
+// 将WeakHashMap包装成一个Set<br/>
+Set&lt;Object&gt; weakHashSet = Collections.newSetFromMap(<br/>
+        new WeakHashMap&lt;Object, Boolean&gt;());<br/>
+</code><br/>
+其内部只是对传入的Map进行了简单的封装：</p>
+
+<pre><code class="language-java">// Collections.newSetFromMap()用于将任何Map包装成一个Set
+public static &lt;E&gt; Set&lt;E&gt; newSetFromMap(Map&lt;E, Boolean&gt; map) {
+    return new SetFromMap&lt;&gt;(map);
+}
+
+private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
+    implements Set&lt;E&gt;, Serializable
+{
+    private final Map&lt;E, Boolean&gt; m;  // The backing map
+    private transient Set&lt;E&gt; s;       // Its keySet
+    SetFromMap(Map&lt;E, Boolean&gt; map) {
+        if (!map.isEmpty())
+            throw new IllegalArgumentException(&quot;Map is non-empty&quot;);
+        m = map;
+        s = map.keySet();
+    }
+    public void clear()               {        m.clear(); }
+    public int size()                 { return m.size(); }
+    public boolean isEmpty()          { return m.isEmpty(); }
+    public boolean contains(Object o) { return m.containsKey(o); }
+    public boolean remove(Object o)   { return m.remove(o) != null; }
+    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
+    public Iterator&lt;E&gt; iterator()     { return s.iterator(); }
+    public Object[] toArray()         { return s.toArray(); }
+    public &lt;T&gt; T[] toArray(T[] a)     { return s.toArray(a); }
+    public String toString()          { return s.toString(); }
+    public int hashCode()             { return s.hashCode(); }
+    public boolean equals(Object o)   { return o == this || s.equals(o); }
+    public boolean containsAll(Collection&lt;?&gt; c) {return s.containsAll(c);}
+    public boolean removeAll(Collection&lt;?&gt; c)   {return s.removeAll(c);}
+    public boolean retainAll(Collection&lt;?&gt; c)   {return s.retainAll(c);}
+    // addAll is the only inherited implementation
+    ......
+}
+</code></pre>
+
+<h2 id="toc_2">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java容器框架分析(八)——PriorityQueue]]></title>
@@ -3198,151 +3279,6 @@ ${message }
 </ul></li>
 <li><p>SpringMVC对json的支持：这个有很多实例，建议直接上搜索引擎。</p></li>
 </ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——Spring（2）]]></title>
-    <link href="http://swuzjb.github.io/14691739607250.html"/>
-    <updated>2016-07-22T15:52:40+08:00</updated>
-    <id>http://swuzjb.github.io/14691739607250.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">AOP</h2>
-
-<blockquote>
-<p>AOP(Aspect Oriented Programming,面向切面编程)，通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是软件开发的一个热点，也是Spring框架中的一个重要内容。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发效率。<br/>
-主要功能是：日志记录、性能统计、安全控制、事务处理、异常处理等</p>
-</blockquote>
-
-<h2 id="toc_1">Spring AOP实例</h2>
-
-<p>AOP的使用可以让我们在某个业务逻辑或事务执行的各个不同时期加入灵活的代码，让我们的权限控制、日志记录、性能统计等基础功能与业务逻辑彻底分离，降低耦合。这种执行方式称之为通知，通知有以下几种类型：</p>
-
-<ol>
-<li>前置通知：在业务逻辑开始之前执行。</li>
-<li>后置通知：在业务逻辑结束之后执行。</li>
-<li>环绕通知：可以灵活配置业务逻辑的执行时间或是否执行业务逻辑，功能上有点类似于Filter。</li>
-<li>返回通知：当业务逻辑执行完并返回非空数据时执行。</li>
-<li>异常通知：当业务逻辑执行过程中产生异常时执行。</li>
-</ol>
-
-<h3 id="toc_2">实例demo：</h3>
-
-<ol>
-<li><p>通知具体内容类：</p>
-
-<pre><code class="language-java">package site.zhanjingbo.advice;
-
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-
-public class UserServiceAspect {
-    public void doBefore(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;开始添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public void doAfter(JoinPoint jp){
-        System.out.println(&quot;请求类型:&quot;+jp.getTarget().getClass().getName()+&quot;,请求方法:&quot;+jp.getSignature().getName());
-        System.out.println(&quot;完成添加用户：&quot;+jp.getArgs()[0]);
-    }
-    public Object doAround(ProceedingJoinPoint pjp) throws Throwable{
-        System.out.println(&quot;环绕前&quot;);
-        Object retVal = pjp.proceed();
-        System.out.println(&quot;环绕后&quot;);
-        return retVal;
-    }   
-    public void doAfterThrowing(JoinPoint jp,Throwable ex){
-        System.out.println(&quot;异常通知信息：&quot;+ex.getMessage());
-    }
-    public void doAfterReturning(JoinPoint jp){
-        System.out.println(&quot;返回通知&quot;);
-    }
-}
-</code></pre></li>
-<li><p>beans.xml的配置</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-    xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-    xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop.xsd&quot;&gt;
-
-        &lt;bean id=&quot;userService&quot; class=&quot;site.zhanjingbo.service.impl.UserServiceImpl&quot;/&gt;
-        &lt;bean id=&quot;userServiceAspect&quot; class=&quot;site.zhanjingbo.advice.UserServiceAspect&quot; /&gt;
-
-        &lt;aop:config&gt;
-            &lt;aop:aspect id=&quot;userServiceAspect&quot; ref=&quot;userServiceAspect&quot;&gt;
-                &lt;!-- 声明一个切点 --&gt;
-                &lt;aop:pointcut expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; id=&quot;businessService&quot;/&gt;  
-                &lt;!-- 为切点添加通知 --&gt;
-                &lt;aop:before method=&quot;doBefore&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after method=&quot;doAfter&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot; /&gt;
-                &lt;aop:around method=&quot;doAround&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-returning method=&quot;doAfterReturning&quot; pointcut-ref=&quot;businessService&quot;/&gt;
-                &lt;aop:after-throwing method=&quot;doAfterThrowing&quot; pointcut-ref=&quot;businessService&quot; throwing=&quot;ex&quot;/&gt;
-            &lt;/aop:aspect&gt;
-        &lt;/aop:config&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>执行顺序<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-22-14691852095800.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-</ol>
-
-<h2 id="toc_3">Spring对Dao的支持</h2>
-
-<p>Spring发布以来很好的支持了Hibernate和Mybatis等ORM框架，只需要简单的配置，就可以很方便的实现dao的注入。</p>
-
-<h2 id="toc_4">Spring对事务的支持</h2>
-
-<p>事务,是业务逻辑非常重要的一个概念。事务具有的原子性、一致性、隔离性、永久性是数据正确的保证。Spring为开发人员实现事务这个特性提供了非常方便的实现方式。</p>
-
-<ol>
-<li>编程式事务管理：通过Spring提供的事务模板类<code>org.springframework.transaction.support.TranscationTemplate</code>来实现事务处理。</li>
-<li>声明式事务管理：通过XML或注解配置的方式自动添加事务处理。</li>
-<li><p>事务传播行为：Spring中，当一个service方法调用另外一个service方法的时候，因为每个service方法都有事务，这时候就出现了事务的嵌套，就产生了事务传播行为。</p>
-
-<ol>
-<li>PROPAGATION_REQUIRED--支持当前事务,如果当前没有事务,就新建一个事务。这是最常见的选择。</li>
-<li>PROPAGATION_SUPPORTS--支持当前事务,如果当前没有事务,就以非事务方式执行。</li>
-<li>PROPAGATION_MANDATORY--支持当前事务,如果当前没有事务,就抛出异常。</li>
-<li>PROPAGATION_REQUIRES_NEW--新建事务,如果当前存在事务,把当前事务挂起。</li>
-<li>PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作,如果当前存在事务,就把当前事务挂起。</li>
-<li>PROPAGATION_NEVER--以非事务方式执行,如果当前存在事务,则抛出异常。</li>
-</ol>
-
-<pre><code class="language-xml">&lt;!-- (事务管理)transaction manager, use JtaTransactionManager for global tx --&gt;
-&lt;bean id=&quot;transactionManager&quot;
-    class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-&lt;/bean&gt;
-
-&lt;!-- 配置事务通知属性 --&gt;  
-&lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;transactionManager&quot;&gt;  
-    &lt;!-- 定义事务传播属性 --&gt;  
-    &lt;tx:attributes&gt;  
-        &lt;tx:method name=&quot;insert*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;update*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;edit*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;save*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;add*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;new*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;set*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;remove*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;delete*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;change*&quot; propagation=&quot;REQUIRED&quot; /&gt;  
-        &lt;tx:method name=&quot;get*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;find*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;load*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-        &lt;tx:method name=&quot;*&quot; propagation=&quot;REQUIRED&quot; read-only=&quot;true&quot; /&gt;  
-    &lt;/tx:attributes&gt;  
-&lt;/tx:advice&gt;  
-</code></pre></li>
-</ol>
 
 ]]></content>
   </entry>

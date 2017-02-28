@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Java容器框架分析（二）——ArrayList源码解析 - Zhan's Blog
+  Java容器框架分析(九)——WeakHashMap - Zhan's Blog
   
   </title>
   
@@ -105,10 +105,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
+          <h1>Java容器框架分析(九)——WeakHashMap</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2017/2/21</span>
+          <span class="date">2017/2/26</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -119,7 +119,7 @@
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14876660718478.html" data-count-type="comments" href="14876660718478.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14880758779206.html" data-count-type="comments" href="14880758779206.html#ds-thread"></a>
             
           </span>
 
@@ -127,88 +127,76 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">ArrayList简介</h2>
+      <p>在Java容器框架系列文章的最后，笔者打算介绍一个特殊的成员：WeakHashMap，从名字可以看出它是某种Map。它的特殊之处在于WeakHashMap里的entry可能会被GC自动删除，即使程序员没有调用remove()或者clear()方法。</p>
 
-<p>ArrayList实现了List接口，是顺序容器（即元素存放的顺序和加入列表的顺序相同），允许放入<code>null</code>元素，底层通过数组实现。该实现除了没有实现多线程同步之外，其余跟Vector大致相同，即ArrayList是线程不安全的。<br/>
-每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
-size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
-为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
+<p>更直观的说，当使用WeakHashMap时，即使没有显示的添加或者删除任何元素，也可能发生如下情况：</p>
 
-<h2 id="toc_1">常用方法剖析</h2>
+<ul>
+<li>调用两次<code>size()</code>方法返回不同的值</li>
+<li>两次调用<code>isEmpty()</code>方法，第一次返回<code>false</code>，第二次返回<code>true</code></li>
+<li>两次调用<code>containsKey()</code>方法，第一次返回<code>true</code>，第二次返回<code>false</code>，尽管是同一个<code>key</code></li>
+<li>两次调用<code>get()</code>方法，第一次返回一个<code>value</code>，第二次返回<code>null</code>，尽管两次使用的是同一个对象</li>
+</ul>
 
-<h3 id="toc_2">set(int index, E element)</h3>
+<p>遇到这么奇葩的现象，你是不是觉得使用者一定疯掉？其实不然，<strong>WeekHashMap的这个特点特别适用于需要缓存的场景</strong>。在缓存场景下，由于内存是有限的，不能缓存所有对象；对象缓存命中可以提高效率，但缓存Miss也不会造成错误，因为可以通过计算重新得到。</p>
 
-<p>set()方法可以直接设定某个下标对应的元素。既然ArrayList的底层是数组实现的，set()方法的实现也就变得极为简单，直接赋值即可，复杂度为<em>O(1)</em>。</p>
+<p>要明白WeakHashMap的工作原理，还需要引入一个概念：<strong>弱引用</strong>。我们知道Java中的内存是通过GC自动管理的，GC会在程序运行过程中自动判断哪些对象时可以被回收的，并在合适的时机进行内存释放。GC判断某个对象是否可以回收的依据是：<strong>是否有有效的引用指向该对象</strong>。如果没有有效引用指向该对象（意味着不存在访问该对象的方式），那么该对象就是可回收的。这里的<strong>有效引用并不包括弱引用</strong>。也就是说，虽然<strong>弱引用可以用来访问对象，但进行垃圾回收时弱引用并不会被考虑在内，仅有弱引用指向的对象仍然会被GC回收</strong>。</p>
 
-<pre><code class="language-java">public E set(int index, E element) {
-    rangeCheck(index);//下标越界检查
-    E oldValue = elementData(index);
-    elementData[index] = element;//赋值到指定位置，复制的仅仅是引用
-    return oldValue;
+<p>WeakHashMap内部使用弱引用来管理entry，弱引用的特性对应到WeakHashMap上意味着什么呢？将一对key,value放入到WeakHashMap里并不能避免该key值被GC回收，除非在WeakHashMap之外还有对该key的强引用。</p>
+
+<h2 id="toc_0">具体实现</h2>
+
+<p>WeakHashMap的储存结构类似于HashMap，可参考前文。</p>
+
+<h3 id="toc_1">WeakHashSet？</h3>
+
+<p>如果你看过前几篇关于Map和Set的讲解，一定会问：既然有 WeekHashMap，是否有WeekHashSet呢？答案是没有！不过Java Collections工具类给出了解决方案，<code>Collections.newSetFromMap(Map&lt;E,Boolean&gt; map)</code>方法可以将任何Map包装成一个Set。通过如下方式可以快速得到一个 Weak HashSet：<br/>
+<code>java<br/>
+// 将WeakHashMap包装成一个Set<br/>
+Set&lt;Object&gt; weakHashSet = Collections.newSetFromMap(<br/>
+        new WeakHashMap&lt;Object, Boolean&gt;());<br/>
+</code><br/>
+其内部只是对传入的Map进行了简单的封装：</p>
+
+<pre><code class="language-java">// Collections.newSetFromMap()用于将任何Map包装成一个Set
+public static &lt;E&gt; Set&lt;E&gt; newSetFromMap(Map&lt;E, Boolean&gt; map) {
+    return new SetFromMap&lt;&gt;(map);
+}
+
+private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
+    implements Set&lt;E&gt;, Serializable
+{
+    private final Map&lt;E, Boolean&gt; m;  // The backing map
+    private transient Set&lt;E&gt; s;       // Its keySet
+    SetFromMap(Map&lt;E, Boolean&gt; map) {
+        if (!map.isEmpty())
+            throw new IllegalArgumentException(&quot;Map is non-empty&quot;);
+        m = map;
+        s = map.keySet();
+    }
+    public void clear()               {        m.clear(); }
+    public int size()                 { return m.size(); }
+    public boolean isEmpty()          { return m.isEmpty(); }
+    public boolean contains(Object o) { return m.containsKey(o); }
+    public boolean remove(Object o)   { return m.remove(o) != null; }
+    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
+    public Iterator&lt;E&gt; iterator()     { return s.iterator(); }
+    public Object[] toArray()         { return s.toArray(); }
+    public &lt;T&gt; T[] toArray(T[] a)     { return s.toArray(a); }
+    public String toString()          { return s.toString(); }
+    public int hashCode()             { return s.hashCode(); }
+    public boolean equals(Object o)   { return o == this || s.equals(o); }
+    public boolean containsAll(Collection&lt;?&gt; c) {return s.containsAll(c);}
+    public boolean removeAll(Collection&lt;?&gt; c)   {return s.removeAll(c);}
+    public boolean retainAll(Collection&lt;?&gt; c)   {return s.retainAll(c);}
+    // addAll is the only inherited implementation
+    ......
 }
 </code></pre>
 
-<h3 id="toc_3">get(int index)</h3>
+<h2 id="toc_2">声明</h2>
 
-<p>get()方法可以获取指定下标对应的对象，唯一需要注意的是由于底层数组是Object[]，得到元素后需要进行类型转换，复杂度为<em>O(1)</em>。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    rangeCheck(index);
-    return (E) elementData[index];//注意类型转换
-}
-</code></pre>
-
-<h3 id="toc_4">add(E element)和add（int index,E element）</h3>
-
-<p>跟C++的vector不同，ArrayList没有push_back()方法，对应的方法是add(E e)，ArrayList也没有insert()方法，对应的方法是add(int index, E e)。这两个方法都是向容器中添加新元素，这可能会导致 capacity 不足，因此在添加元素之前，都需要进行剩余空间检查，如果需要则自动扩容。扩容操作最终是通过grow()方法完成的。</p>
-
-<pre><code class="language-java">private void grow(int minCapacity) {
-    int oldCapacity = elementData.length;
-    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);//原来的1.5倍
-    if (newCapacity - minCapacity &lt; 0)
-        newCapacity = minCapacity;
-    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
-        newCapacity = hugeCapacity(minCapacity);
-    elementData = Arrays.copyOf(elementData, newCapacity);//扩展空间并复制
-}
-</code></pre>
-
-<p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
-空间的问题解决之后，插入就变得非常简单了。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
-<code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
-
-<h3 id="toc_5">addAll()</h3>
-
-<p>addAll()方法可以一次添加多个元素，根据插入的起始位置不同也用两个版本：一个是在末尾添加<code>addAll(Collection&lt;? extends E&gt; c)</code>;一个是从指定位置开始插入的<code>addAll(int index, Collection&lt;? extends E&gt; c)</code>方法。对应的实现方式和上述的add方法类似，在插入之前，需要对容量进行判断，如果需要则自动扩容，如果从指定位置插入，还需要先对数组元素进行移动。</p>
-
-<h3 id="toc_6">remove()</h3>
-
-<p>remove方法可以删除列表中的元素，其也有两个版本：一个是<code>remove(int index)</code>删除指定位置的元素；一个是<code>remove(Object o)</code>删除第一个满足<code>o.equals(elementData[index])</code>的元素。删除操作是<code>add()</code>的逆过程，需要将删除点之后的元素向前移动一个位置。需要注意的是为了让GC起作用，必选显示的为最后一个位置赋<code>null</code>值。</p>
-
-<pre><code class="language-java">public E remove(int index) {
-    rangeCheck(index);
-    modCount++;
-    E oldValue = elementData(index);
-    int numMoved = size - index - 1;
-    if (numMoved &gt; 0)
-        System.arraycopy(elementData, index+1, elementData, index, numMoved);
-    elementData[--size] = null; //清除该位置的引用，让GC起作用
-    return oldValue;
-}
-</code></pre>
-
-<p>关于Java GC 这里需要特别说明一下，<strong>有了垃圾收集器并不意味着一定不会有内存泄漏</strong>。对象能否被 GC 的依据是是否还有引用指向它，上面代码中如果不手动赋null值，除非对应的位置被其他元素覆盖，否则原来的对象就一直不会被回收。</p>
-
-<h2 id="toc_7">使用技巧</h2>
-
-<p>关于List的容量，可以在一开始就给定一个比较合理的值，避免内存复制所带来的不必要的时间开销。</p>
-
-<h2 id="toc_8">转载声明</h2>
-
-<p>本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
 作者：CarpenterLee</p>
 
       </div>
@@ -217,16 +205,13 @@ size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14878187570598.html" 
-          title="Previous Post: Java容器框架分析(三)——LinkedList源码分析">&laquo; Java容器框架分析(三)——LinkedList源码分析</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14876629153312.html" 
-          title="Next Post: Java容器框架分析（一）——相关概念综述">Java容器框架分析（一）——相关概念综述 &raquo;</a>
+          <a  href="14879958366746.html" 
+          title="Next Post: Java容器框架分析(八)——PriorityQueue">Java容器框架分析(八)——PriorityQueue &raquo;</a>
       
       </p>
         </div>
@@ -238,7 +223,7 @@ size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方
           
 
           
-              <div class="ds-thread" data-thread-key="14876660718478.html" data-url="http://swuzjb.github.io/14876660718478.html" data-title="Java容器框架分析（二）——ArrayList源码解析"></div>
+              <div class="ds-thread" data-thread-key="14880758779206.html" data-url="http://swuzjb.github.io/14880758779206.html" data-title="Java容器框架分析(九)——WeakHashMap"></div>
           
         </div>
       </div>
