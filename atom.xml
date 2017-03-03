@@ -4,7 +4,7 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-28T10:35:19+08:00</updated>
+  <updated>2017-02-28T10:37:01+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -559,26 +559,26 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 <p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
 <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
 
-<p>TreeMap中的左旋操作代码：<br/>
-<code>java<br/>
-private void rotateLeft(Entry&lt;K,V&gt; p) {<br/>
-    if (p != null) {<br/>
-        Entry&lt;K,V&gt; r = p.right;<br/>
-        p.right = r.left;<br/>
-        if (r.left != null)<br/>
-            r.left.parent = p;<br/>
-        r.parent = p.parent;<br/>
-        if (p.parent == null)<br/>
-            root = r;<br/>
-        else if (p.parent.left == p)<br/>
-            p.parent.left = r;<br/>
-        else<br/>
-            p.parent.right = r;<br/>
-        r.left = p;<br/>
-        p.parent = r;<br/>
-    }<br/>
-}<br/>
-</code></p>
+<p>TreeMap中的左旋操作代码：</p>
+
+<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
+    if (p != null) {
+        Entry&lt;K,V&gt; r = p.right;
+        p.right = r.left;
+        if (r.left != null)
+            r.left.parent = p;
+        r.parent = p.parent;
+        if (p.parent == null)
+            root = r;
+        else if (p.parent.left == p)
+            p.parent.left = r;
+        else
+            p.parent.right = r;
+        r.left = p;
+        p.parent = r;
+    }
+}
+</code></pre>
 
 <h3 id="toc_4">右旋</h3>
 
