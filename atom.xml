@@ -4,13 +4,279 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-02-28T10:37:01+08:00</updated>
+  <updated>2017-03-03T20:46:45+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-重建二叉树]]></title>
+    <link href="http://swuzjb.github.io/14890277021887.html"/>
+    <updated>2017-03-09T10:48:22+08:00</updated>
+    <id>http://swuzjb.github.io/14890277021887.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
+
+<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
+
+<h2 id="toc_1">代码</h2>
+
+<pre><code class="language-java">/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
+        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
+    }
+    
+    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
+        if(pStart &gt; pEnd || iStart &gt; iEnd ){
+            return null;
+        }
+        
+        TreeNode node = new TreeNode(pre[pStart]);
+        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
+        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
+        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
+        return node;
+        
+    }
+    
+    public int find(int[] array,int target,int start,int end){
+        for(int i = start;i&lt;=end;i++){
+            if(array[i] == target){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-从尾到头打印链表]]></title>
+    <link href="http://swuzjb.github.io/14890230803105.html"/>
+    <updated>2017-03-09T09:31:20+08:00</updated>
+    <id>http://swuzjb.github.io/14890230803105.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>输入一个链表，从尾到头打印链表每个节点的值。</p>
+</blockquote>
+
+<h2 id="toc_0">问题解答</h2>
+
+<p>要解决这个问题肯定要遍历链表。遍历的顺序是从头到尾的顺序，可是输出的要求顺序却是从尾到头。也就是说第一个遍历到的节点，最后一个输出，而最后一个遍历到的节点第一个输出。这就是典型的后进先出，我们可以用栈实现这个顺序。每经过一个节点的时候，把该节点放入到一个栈中。当遍历完整个链表后，再从栈顶开始逐个输出节点的值，此时，输出的节点顺序已经反转过来了。<br/>
+既然可以使用栈实现这个需求，那么我们就可以考虑使用递归，递归本质上就是一个栈结构。这样要实现反过来输出链表，我们每访问到一个结点的时候，先递归输出它后面的节点，在输出该节点自身，这样链表的输出就反过来了。</p>
+
+<h2 id="toc_1">递归实现</h2>
+
+<pre><code class="language-java">/**
+*    public class ListNode {
+*        int val;
+*        ListNode next = null;
+*
+*        ListNode(int val) {
+*            this.val = val;
+*        }
+*    }
+*
+*/
+import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        search(listNode);
+        return array;
+    }
+    public void  search(ListNode listNode){
+        if(listNode != null){
+            search(listNode.next);
+            array.add(listNode.val);
+        }
+        
+    }
+}
+</code></pre>
+
+<p>本题基于递归实现看起来很简洁，但是有个问题，当链表非常长的时候，就会导致函数调用层级很深，从而有可能导致函数调用栈溢出。</p>
+
+<h2 id="toc_2">显示栈实现</h2>
+
+<pre><code class="language-java">import java.util.*;
+
+public class Solution {
+    
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayDeque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
+        while(listNode != null){
+            stack.offerFirst(listNode.val);
+            listNode = listNode.next;
+        }
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;(stack.size());
+        while (stack.size()&gt;0) {
+            array.add(stack.pollFirst());
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+<h2 id="toc_3">翻转链表</h2>
+
+<p>如果可以改变原链表的结构，就可以对链表进行翻转。</p>
+
+<pre><code class="language-java">import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+        ListNode head = null;
+        ListNode next = null;
+        while (listNode != null) {
+            next = listNode.next;
+            listNode.next = head;
+            head = listNode;
+            listNode = next;
+        }
+        while (head != null) {
+            array.add(head.val);
+            head = head.next;
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-替换空格]]></title>
+    <link href="http://swuzjb.github.io/14889379059302.html"/>
+    <updated>2017-03-08T09:51:45+08:00</updated>
+    <id>http://swuzjb.github.io/14889379059302.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>请实现一个函数，将一个字符串中的空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>这个题目Java开发者可能一下就笑了，so easy啊，一个库函数就解决了。但是，我们还是要尝试去造一下轮子，追求原理。<br/>
+由于要将空格替换为%20，字符串前后的长度肯定不一样，那么就肯定涉及到了重新申请内存地址。</p>
+
+<p>最简单的思路，我们遍历字符串，发现空格，就将空格后面的字符进行移动，然后继续遍历。这样的做法时间复杂度为O(n<sup>2)，因为每次都移动了大量的字符。</sup></p>
+
+<p>所以我们提出一个简要的方法，重新申请一个字符串（C/C++中准确的成为字符数组），这个新字符串的长度为原字符串长度+空格个数*2（空格的个数，可以通过一次遍历获得），然后用两个指针变量分别指向两个字符串的首位，然后进行复制，当原字符串指针指向空格时，新字符串插入“%20”，直到末尾。</p>
+
+<h2 id="toc_1">实现代码</h2>
+
+<p>库函数解决：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        return str.toString().replaceAll(&quot; &quot;, &quot;%20&quot;);
+    }
+}
+</code></pre>
+
+<p>自己过不去版：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        StringBuffer newStr = new StringBuffer();
+        
+        int i = 0;
+        
+        while(i&lt;str.length()){
+            if(str.charAt(i) != &#39; &#39;){
+                newStr.append(str.charAt(i));
+            }else{
+                newStr.append(&quot;%20&quot;);
+            }
+            i++;
+        }
+        return newStr.toString();
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-二维数组中的查找]]></title>
+    <link href="http://swuzjb.github.io/14889364537323.html"/>
+    <updated>2017-03-08T09:27:33+08:00</updated>
+    <id>http://swuzjb.github.io/14889364537323.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
+</blockquote>
+
+<h2 id="toc_0">解题思路</h2>
+
+<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
+
+<ul>
+<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
+<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
+<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
+<li>若遍历到i<mark>n，j</mark>0,依旧没有找到匹配数据，则返回false；</li>
+</ul>
+
+<h2 id="toc_1">实现代码</h2>
+
+<pre><code class="language-java">public class Solution {
+    public boolean Find(int target, int [][] array) {
+        if(array.length == 0){
+            return false;
+        }
+        int i = 0;
+        int j = array[0].length - 1;
+        
+        while(i &lt; array.length &amp;&amp; j &gt;=0){
+            if(array[i][j] == target){
+                return true;
+            }
+            if(target &gt; array[i][j]){
+                i++;
+                continue;
+            }
+            if(target &lt; array[i][j]){
+                j--;
+                continue;
+            }
+        }
+        return false;
+
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java容器框架分析(九)——WeakHashMap]]></title>
@@ -2823,462 +3089,6 @@ public class FileWirterServiceImpl implements FileWirterService{
 <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-09-27-14749593122837.jpg" alt=""/></p></li>
 </ul></li>
 </ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[数据库连接池]]></title>
-    <link href="http://swuzjb.github.io/14729975970385.html"/>
-    <updated>2016-09-04T21:59:57+08:00</updated>
-    <id>http://swuzjb.github.io/14729975970385.html</id>
-    <content type="html"><![CDATA[
-<p>建立数据库连接是一个非常耗时耗资源的行为，在大量并发的情况下，会降低服务器性能。同时，如果连接数超过最大的数据库允许连接值，数据库会直接抛出异常，非常不友好。为了解决上述的问题，我们引入了数据连接池的概念。<br/>
-数据库连接池类似于线程池，通过连接池预先同数据库建立一些连接，放在内存中，应用程序需要建立数据库连接时直接到连接池中申请一个就行，用完后再放回去，避免频繁的新建和关闭连接对象</p>
-
-<h2 id="toc_0">DBCP</h2>
-
-<p>DBCP（DataBase Connection Pool）数据库连接池，是java数据库连接池的一种，由Apache开发，通过数据库连接池，可以让程序自动管理数据库连接的释放和断开。同时DBCP也是tomcat所使用的连接池组价。</p>
-
-<h3 id="toc_1">DBCP的简单使用DEMO</h3>
-
-<pre><code class="language-java">package site.zhanjingbo.HelloDB;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.apache.commons.dbcp2.BasicDataSource;
-
-public class HelloDBCP {
-
-    static final String DRIVER_NAME = &quot;com.mysql.jdbc.Driver&quot;;
-    static final String DB_URL = &quot;jdbc:mysql://localhost:3307/cloud_study?characterEncoding=utf8&quot;;
-    static final String DB_USER = &quot;root&quot;;
-    static final String DB_PASSWORD = &quot;&quot;;
-
-    public static BasicDataSource ds = null;
-
-    public static void init() {
-        ds = new BasicDataSource();
-        ds.setDriverClassName(DRIVER_NAME);
-        ds.setUsername(DB_USER);
-        ds.setUrl(DB_URL);
-        ds.setPassword(DB_PASSWORD);
-    }
-
-    public static void search() {
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = ds.getConnection();
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(&quot;select username from user&quot;);
-            while (rs.next()) {
-                System.out.println(&quot;Hello &quot; + rs.getString(&quot;username&quot;));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        init();
-        search();
-    }
-}
-
-</code></pre>
-
-<p>通过上述的demo可见，使用DBCP对数据进行访问实际操作与JDBC并无不同。唯一的区别就是Connection对象的获取是通过BasicDataSource对象来获得而不是DriverManage对象。<br/>
-注：释放Connection对象同样是调用Connection的close()方法，不过这里的close()方法是被DBCP重写过的，是将连接对象重新放回连接池，而不是释放销毁。</p>
-
-<h3 id="toc_2">DBCP高级API</h3>
-
-<p>为了更好的设置和使用DBCP连接池，使数据库连接池效率更高，DBCP还提供了多个API接口供我们使用。</p>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">接口</th>
-<th style="text-align: center">作用</th>
-<th style="text-align: center">建议</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">.setInitialSize()</td>
-<td style="text-align: center">设置初始化连接数</td>
-<td style="text-align: center">设置为项目预期访问量</td>
-</tr>
-<tr>
-<td style="text-align: center">.setMaxTotal()</td>
-<td style="text-align: center">最大连接数</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">ds.setMaxWaitMillis()</td>
-<td style="text-align: center">线程最大等待时间</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">.setMaxIdle()</td>
-<td style="text-align: center">最大空闲连接数</td>
-<td style="text-align: center">与MinIdle相同</td>
-</tr>
-<tr>
-<td style="text-align: center">.setMinIdle()</td>
-<td style="text-align: center">最小空闲连接数</td>
-<td style="text-align: center">与MaxIdle相同</td>
-</tr>
-</tbody>
-</table>
-
-<h4 id="toc_3">DBCP定期检查</h4>
-
-<p>为了保证连接池中的连接都是有效的，我们需要定期的对连接池中的连接进行检查，对失效的连接及时进行关闭。相关API如下：</p>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">API</th>
-<th style="text-align: center">作用</th>
-<th style="text-align: center">建议</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">.setTestWhileIdle(true)</td>
-<td style="text-align: center">是否开启定期检查</td>
-<td style="text-align: center"></td>
-</tr>
-<tr>
-<td style="text-align: center">.setMinEvictableIdle</td>
-<td style="text-align: center">最小空闲时间，超过该值被销毁</td>
-<td style="text-align: center">小于服务器连接失效时间(一般为8小时)</td>
-</tr>
-<tr>
-<td style="text-align: center">.setTimeBetweenEvictionRunsMillis</td>
-<td style="text-align: center">检查时间间隔</td>
-<td style="text-align: center"></td>
-</tr>
-</tbody>
-</table>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Cookie与Session]]></title>
-    <link href="http://swuzjb.github.io/14728168486763.html"/>
-    <updated>2016-09-02T19:47:28+08:00</updated>
-    <id>http://swuzjb.github.io/14728168486763.html</id>
-    <content type="html"><![CDATA[
-<p>在开发过程中我们经常需要保存一些状态信息如用户登录状态等，但是由于HTTP协议的无状态特性，这些功能无法直接实现。所以我们引入了Cookie与Session这两个概念用于保存一些信息。</p>
-
-<h2 id="toc_0">Cookie</h2>
-
-<p>Cookie的作用通俗地说就是当一个用户通过HTTP协议访问一个服务器的时候，这个服务器会将一些Key/Value键值对返回给客户端浏览器，并给这些数据加上一些限制条件，在条件符合时这个用户下次访问这个服务器的时候，数据又被完整地带回给服务器。</p>
-
-<h3 id="toc_1">Cookie如何工作</h3>
-
-<ol>
-<li>用户通过浏览器请求某个Servlet，在请求过程中如果本地有该站点的Cookie信息，浏览器会将这些信息放入request请求的请求头中；</li>
-<li>在Servlet中可以通过<code>request.getCookies();</code>获取当前的Cookie数组；</li>
-<li>根据自己的业务需求，新建Cookie对象实例，分别设置key和value的值；</li>
-<li>将需要添加的Cookie实例通过<code>response.addCookie();</code>方法添加到响应当中返回客户端，客户端根据Cookie的生命周期（MaxAge属性）来选择是否将此Cookie写入硬盘当中。</li>
-</ol>
-
-<h3 id="toc_2">DemoCode</h3>
-
-<pre><code class="language-java">    String getCookie(Cookie[] cookies, String key) { 
-        if (cookies != null) { 
-            for (Cookie cookie : cookies) { 
-                if (cookie.getName().equals(key)) { 
-                    return cookie.getValue(); 
-                } 
-            } 
-        } 
-        return null; 
-    } 
-
-    @Override 
-    public void doGet(HttpServletRequest request, 
-                      HttpServletResponse response) 
-            throws IOException, ServletException { 
-        Cookie[] cookies = request.getCookies(); 
-        String userName = getCookie(cookies, &quot;userName&quot;); 
-        String userAge = getCookie(cookies, &quot;userAge&quot;); 
-        if (userName == null) { 
-            response.addCookie(new Cookie(&quot;userName&quot;, &quot;user&quot;)); 
-        } 
-        if (userAge == null) { 
-            response.addCookie(new Cookie(&quot;userAge&quot;, &quot;28&quot;)); 
-        } 
-         
- }
-</code></pre>
-
-<h3 id="toc_3">使用Cookie的限制</h3>
-
-<p>Cookie是 HTTP 协议头中的一个字段，虽然HTTP协议本身对这个字段并没有多少限制，但是 Cookie 最终还是存储在浏览器里，所以不同的浏览器对Cookie的存储都有一些限制，下表是一些通常的浏览器对 Cookie的大小和数量的限制。</p>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">浏览器版本</th>
-<th style="text-align: center">Cookie数限制（个/域名）</th>
-<th style="text-align: center">总大小限制</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">IE6</td>
-<td style="text-align: center">20</td>
-<td style="text-align: center">4095B</td>
-</tr>
-<tr>
-<td style="text-align: center">IE7、8、9</td>
-<td style="text-align: center">50</td>
-<td style="text-align: center">4095B</td>
-</tr>
-<tr>
-<td style="text-align: center">Chrome</td>
-<td style="text-align: center">50</td>
-<td style="text-align: center">&gt;8000</td>
-</tr>
-<tr>
-<td style="text-align: center">FireFox</td>
-<td style="text-align: center">50</td>
-<td style="text-align: center">4097B</td>
-</tr>
-</tbody>
-</table>
-
-<hr/>
-
-<h2 id="toc_4">Session</h2>
-
-<p>前面已经介绍了 Cookie 可以让服务端程序跟踪每个客户端的访问，但是每次客户端的访问都必须传回这些 Cookie，如果 Cookie 很多，这无形地增加了客户端与服务端的数据传输量，而 Session 的出现正是为了解决这个问题。</p>
-
-<h3 id="toc_5">Session如何工作</h3>
-
-<ol>
-<li>session是基于Cookie的，同一个客户端每次和服务端交互时，不需要每次都传回所有的 Cookie 值，而是只要传回一个 ID，这个 ID 是客户端第一次访问服务器的时候生成的，而且每个客户端是唯一的。这样每个客户端就有了一个唯一的 ID，客户端只要传回这个 ID 就行了，这个 ID 通常是 NANE 为 JSESIONID 的一个 Cookie；</li>
-<li>有了Session ID服务端就可以创建HttpSession对象了，第一次触发通过<code>request.getSession()</code>方法。如果当前的Session ID 还没有对应的HttpSession对象，那么就创建一个新的，并将这个对象加到org.apache.catalina.Manager的sessions容器中保存。Manager类将管理所有Session的生命周期，如果该session存在则直接返回；</li>
-<li>直接操作session对象对key/value键值对进行存储，数据保存在服务器端，可以通过api手工操作其声明周期</li>
-</ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[简述HTTP请求过程]]></title>
-    <link href="http://swuzjb.github.io/14720186733605.html"/>
-    <updated>2016-08-24T14:04:33+08:00</updated>
-    <id>http://swuzjb.github.io/14720186733605.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>HTTP请求是web程序服务的基础，要想写好web程序，必然要对http请求的过程进行掌握。</p>
-</blockquote>
-
-<h2 id="toc_0">HTTP请求步骤</h2>
-
-<ol>
-<li>如果是以域名形式进行web访问，则浏览器会先通过DNS服务将域名转化为对应的IP地址，为下一步访问做准备。</li>
-<li>通过IP地址与服务器建立TCP连接</li>
-<li>客户端向服务器端发送Request请求</li>
-<li>服务器端向客户端发送Response响应</li>
-<li>服务器端关闭TCP连接。一般情况下，一旦Web服务器向浏览器发送了请求数据，它就要关闭TCP连接，然后如果浏览器或者服务器在其头信息加入了这行代码：<code>Connection:keep-alive</code>。TCP连接在发送后将仍然保持打开状态，于是，浏览器可以继续通过相同的连接发送请求。保持连接节省了为每个请求建立新连接所需的时间，还节约了网络带宽。 </li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-08-24-14720197735370.jpg" alt=""/></p>
-
-<h2 id="toc_1">HTTP请求头,响应头字段</h2>
-
-<h3 id="toc_2">请求头</h3>
-
-<ul>
-<li>Accept: text/html, image/* ：客户机支持的数据类型</li>
-<li>Accept-Charset: UTF-8 ：客户机采用的编码</li>
-<li>Accept-Encoding: gzip,compress:客户机支持的数据压缩格式</li>
-<li>Accept-Language: en-us,zh-cn:客户机的语言环境</li>
-<li>Host: localhost:8080 :访问的主机名</li>
-<li>If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT : 资源的缓存时间,用以判断服务器上的资源是否发生变化</li>
-<li>Referer: <a href="http://www.zhanjingbo.site">http://www.zhanjingbo.site</a> : 从哪个页面跳转来访问资源的,用以实现防盗链</li>
-<li>User-Agent: Mozilla/4.0 (compatible;MSIE 5.5;Windows NT 5.0):客户机的软件环境</li>
-<li>Connection: close/Keep-Alive:请求结束后,是关闭连接还是保持连接</li>
-<li>Date: Tue, 11 Jul 2000 18:23:51 GMT当前请求时间</li>
-<li>Range:指示服务器只传输一部分web资源.可以用来实现断点续传功能
-
-<ul>
-<li>Range字段可以通过3种格式设置要传输的字节范围:</li>
-<li>Range: bytes=1000-2000:传输范围从1000到2000字节</li>
-<li>Range: bytes=1000-:传输第1000个字节以后的所有内容</li>
-<li>Range: bytes=10000:传输最后1000个字节</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_3">响应头</h3>
-
-<ul>
-<li>Location：这个头配合302状态码使用，重定向地址</li>
-<li>Server:Apache-Coyote/1.1:服务器类的类型</li>
-<li>Content-Encoding：服务器通过这个头，数据压缩的格式</li>
-<li>Content-Type：服务器通过这个头告诉浏览器送回数据的类型</li>
-<li>Refresh：服务器通过这个头，告诉浏览器隔多长时间刷新一次</li>
-<li>Connection:keep-alive\close:访问完后的状态</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java康复性训练——SpringMVC]]></title>
-    <link href="http://swuzjb.github.io/14693288315265.html"/>
-    <updated>2016-07-24T10:53:51+08:00</updated>
-    <id>http://swuzjb.github.io/14693288315265.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>SpringMVC是一套功能强大，性能强悍且使用方便的优秀MVC框架</p>
-</blockquote>
-
-<h2 id="toc_0">SpringMVC-HelloWorld</h2>
-
-<ol>
-<li>导入相关jar包</li>
-<li><p>配置web.xml文件，设置全局拦截器。拦截所有请求，转发给SpringMVC</p>
-
-<pre><code class="language-xml">&lt;servlet&gt;
-    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
-    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
-    &lt;init-param&gt;
-        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
-        &lt;param-value&gt;classpath:spring-mvc.xml&lt;/param-value&gt;
-    &lt;/init-param&gt;
-&lt;/servlet&gt;
-&lt;servlet-mapping&gt;
-    &lt;servlet-name&gt;springmvc&lt;/servlet-name&gt;
-    &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
-&lt;/servlet-mapping&gt;
-</code></pre></li>
-<li><p>添加SpringMVC配置文件spring-mvc.xml</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-    xmlns:p=&quot;http://www.springframework.org/schema/p&quot;
-    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
-    xsi:schemaLocation=&quot;
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
-
-    &lt;!-- 使用注解的包，包括子集 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot;/&gt;
-
-    &lt;!-- 视图解析器 --&gt;
-    &lt;bean id=&quot;viewResolver&quot;
-        class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;
-        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot; /&gt;
-        &lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;&gt;&lt;/property&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>添加控制器HelloContorller</p>
-
-<pre><code class="language-java">package site.zhanjingbo.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-@Controller
-public class HelloController {
-
-    @RequestMapping(&quot;/hello&quot;)
-    public String hello(Model model){
-        model.addAttribute(&quot;message&quot;, &quot;HelloWorld!&quot;);
-        return &quot;hello&quot;;
-    }
-}
-</code></pre></li>
-<li><p>在/WEB-INF/jsp/下建立显示返回页面hello.jsp</p>
-
-<pre><code class="language-html">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot;
-pageEncoding=&quot;UTF-8&quot;%&gt;
-&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
-&lt;title&gt;Insert title here&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-${message }
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre></li>
-<li><p>完成。启动Tomcat，访问<a href="http://localhost:8080/SpringMVC/hello.do">http://localhost:8080/SpringMVC/hello.do</a>  查看<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-24-14693326495259.jpg" alt=""/></p></li>
-</ol>
-
-<h2 id="toc_1">SpringMVC控制器</h2>
-
-<ul>
-<li>@RequestMapping：用于指定方法的响应URL或模块URL</li>
-<li>@RequestParam：绑定提交参数与控制器方法参数的注解。<code>@RequestParam(value=&quot;&quot;,required=true/false)</code></li>
-<li>ModelAndView:作为控制器的返回值类型，返回模型与视图</li>
-<li>SpringMVC对象属性自动封装:SpringMVC可以根据表单传入的数据自动封装控制器参数对象</li>
-<li><p>SpringMVC POST请求中文乱码:在web.xml中添加过滤器</p>
-
-<pre><code class="language-xml">&lt;!-- 编码过滤器 --&gt;
-&lt;filter&gt;
-    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
-    &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
-    &lt;async-supported&gt;true&lt;/async-supported&gt;
-    &lt;init-param&gt;
-        &lt;param-name&gt;encoding&lt;/param-name&gt;
-        &lt;param-value&gt;UTF-8&lt;/param-value&gt;
-    &lt;/init-param&gt;
-&lt;/filter&gt;
-&lt;filter-mapping&gt;
-    &lt;filter-name&gt;encodingFilter&lt;/filter-name&gt;
-    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
-&lt;/filter-mapping&gt;
-</code></pre></li>
-<li><p>Controller内部转发与重定向</p>
-
-<ul>
-<li>转发：<code>forward:</code></li>
-<li>重定向:<code>redirect:</code></li>
-</ul></li>
-<li><p>SpringMVC对Servlet API的支持</p>
-
-<ul>
-<li>只需要在控制器方法的参数列表中添加HttpServletRequest、HttpServletResponse参数即可自动注入实例对象。</li>
-</ul></li>
-<li><p>SpringMVC对json的支持：这个有很多实例，建议直接上搜索引擎。</p></li>
-</ul>
 
 ]]></content>
   </entry>

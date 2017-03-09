@@ -83,6 +83,8 @@
             <li><a href="Java.html">Java</a></li>
         
             <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
+        
+            <li><a href="%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html">算法/数据结构</a></li>
          
 
       </ul>
@@ -104,6 +106,345 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14586526599234.html">
+                
+                  <h1>GeekBand.iOS-UIKIT继承关系</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-22-uikit_classes.jpg-Watermark.jpeg" alt="UIKIT继承关系"/></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/22</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14586526599234.html" data-count-type="comments" href="14586526599234.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14585764912552.html">
+                
+                  <h1>GeekBand.iOS-StoryBoard</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>苹果官方是推荐我们将所有的UI都使用Storyboard去搭建，Storyboard也是一个很成熟的工具了。使用Storyboard去搭建所有界面，我们可以很迅捷地搭建出复杂的界面，也就是说能为我们节省大量的时间。我们还可以很直观地看出各个界面之间的关系，修改起来也很方便。将来如果遇到需要作修改的地方，我们只需要找到相对应的Storyboard就可以了，比起使用代码来绘制界面来说，快捷了不少。</p>
+</blockquote>
+
+<p>本文主要介绍segue。</p>
+
+<h2 id="toc_0">使用storyboard进行页面跳转</h2>
+
+<ol>
+<li><p>纯storyBoard操作</p>
+
+<p>我们在Storyboard上放置一个按扭，在按扭上方点击并按住“右键”不放，拖动到跳转的下一个界面上。<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181547007042730.png" alt=""/><br/>
+松开右键后，会有一个黑色透明的弹出框，选择跳转的方式:<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181552304691774.png" alt=""/><br/>
+从这里可以看到，界面和界面之间多了一条线连接，如下图：<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181621394237889.png" alt=""/><br/>
+此时我们已经建立一个用于页面跳转的关系，称之为segue<br/>
+我们可以在Xcode右边的工具栏看到，我们刚刚的连线操作（现在可以运行项目了）：<br/>
+<img src="http://images.cnitblog.com/blog/684349/201412/181603228131602.png" alt=""/></p></li>
+<li><p>使用代码调用segue跳转<br/>
+需要在Storyboard Segue中的Identifier指定一个标识符。<br/>
+使用某个动作跳转：<code>[self performSegueWithIdentifier:@&quot;Identifier&quot; sender:self];</code></p></li>
+</ol>
+
+<h2 id="toc_1">使用segue传递数据</h2>
+
+<ol>
+<li><p>使用prepareForSegue进行传值</p>
+
+<pre><code>-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // segue.identifier：获取连线的ID
+    if ([segue.identifier isEqualToString:@&quot;SendValue&quot;]) {
+        // segue.destinationViewController：获取连线时所指的界面（VC）
+        //方法1：设置属性
+        ReceiveViewController *receive = segue.destinationViewController;
+        receive.name = @&quot;Garvey&quot;;
+        receive.age = 110;
+        //2:使用KVC给目标场景传值
+        [destinationController setValue:@119 forKey:@number];
+     }
+}
+</code></pre></li>
+<li><p>返回上级的某个页面<br/>
+使用unwindForSegue进行返回（iOS9+）。<br/>
+<code>-(IBAction)unwindForSegue:(UIStoryboardSegue *)unwindSegue towardsViewController:(UIViewController *)subsequentVC{}</code></p></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/22</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585764912552.html" data-count-type="comments" href="14585764912552.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14585643199431.html">
+                
+                  <h1>GeekBand.iOS-UIViewController</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>UIViewController是一个普通的ObjC对象，它的主要功能是管理View、传递数据、响应用户操作、内存管理（状态保持）、适应适配。</p>
+
+<h2 id="toc_0">iOS设计模式</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-cocoa_mvc.gif" alt="iOS设计模式"/></p>
+
+<h2 id="toc_1">UIViewController调用顺序</h2>
+
+<p>ViewController生命周期会经历初始化、加载视图、销毁视图、生命结束等过程。</p>
+
+<ol>
+<li>init方法
+初始化ViewController本身。</li>
+<li>loadView方法
+当view需要被展示而它却是nil时，viewController会调用该方法，如果代码构建View的话需要重写此方法。</li>
+<li>viewDidLoad方法
+执行完loadView后继续执行viewDidLoad，loadView时还没有view，而viewDidLoad时view已经创建好了。</li>
+<li>viewDidUnload方法
+当系统内存吃紧的时候会调用该方法。</li>
+<li>dealloc
+释放其他资源或内存。</li>
+</ol>
+
+<p>View Controller的生命周期如下图所示：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-UIViewController%20Class%20Reference_2x.png" alt="UIViewController生命周期"/></p>
+
+<h2 id="toc_2">rootViewController的过程</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585714986064.jpg" alt="rootViewController"/></p>
+
+<p>使用代码指定rootViewController</p>
+
+<pre><code>- (void) tryNibName {
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+  UIViewController * rootVC = [[UIViewController alloc] initWithNibName:@&quot;rootVC&quot; bundle:nil];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+- (void) tryNibOfUserVCName {
+  // xib can be MyViewController or MyView
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[MyViewController alloc] init];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+- (void) tryNibOfVCName {
+  // UI prefix in class name means system class, which will bypass xib lookup!
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[UIViewController alloc] init];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+</code></pre>
+
+<h2 id="toc_3">多个ViewController的替换</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585720269718.jpg" alt=""/></p>
+
+<h2 id="toc_4">ViewController传值</h2>
+
+<ol>
+<li>使用属性进行传值</li>
+<li>使用delegate进行回调进行传值</li>
+<li>使用segue进行传值</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585643199431.html" data-count-type="comments" href="14585643199431.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14585638251666.html">
+                
+                  <h1>GeekBand.iOS—APP生命周期</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>iOS的应用程序的生命周期，还有程序是运行在前台还是后台，应用程序各个状态的变换，这些对于开发者来说都是很重要的。 iOS系统的资源是有限的，应用程序在前台和在后台的状态是不一样的。在后台时，程序会受到系统的很多限制，这样可以提高电池的使用和用户体验。</p>
+
+<h2 id="toc_0">应用程序的状态</h2>
+
+<ol>
+<li>Not Running 未运行 程序没有启动</li>
+<li>Inactive 未激活 程序在前台运行，不过没有接收到事件。在没有事件处理情况下程序通常停留在这个状态。</li>
+<li>Active 激活 程序在前台运行而且接收到了事件。这也是前台的一个正常的模式</li>
+<li>Backgroud 后台 程序在后台而且能执行代码，大多数程序进入这个状态后会在在这个状态上停留一会。时间到之后会进入挂起状态(Suspended)。有的程序经过特殊的请求后可以长期处于Backgroud状态</li>
+<li><p>Suspended 挂起 程序在后台不能执行代码。系统会自动把程序变成这个状态而且不会发出通知。当挂起时，程序还是停留在内存中的，当系统内存低时，系统就把挂起的程序清除掉，为前台程序提供更多的内存。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-1348823833_6296.png" alt="应用程序的状态转换"/><br/>
+大多数发生状态转换时都会调用delegate对象对应的方法来响应App的状态改变。下面汇总了delegate对象的所有方法，当App状态发生转换时，你可能会使用到它们。</p></li>
+</ol>
+
+<ul>
+<li>application:willFinishLaunchingWithOptions: - 这个方法是你在启动时的第一次机会来执行代码</li>
+<li>application:didFinishLaunchingWithOptions: - 这个方法允许你在显示app给用户之前执行最后的初始化操作</li>
+<li>applicationDidBecomeActive: - app已经切换到active状态后需要执行的操作</li>
+<li>applicationWillResignActive: - app将要从前台切换到后台时需要执行的操作</li>
+<li>applicationDidEnterBackground: - app已经进入后台后需要执行的操作</li>
+<li>applicationWillEnterForeground: - app将要从后台切换到前台需要执行的操作，但app还不是active状态</li>
+<li><p>applicationWillTerminate: - app将要结束时需要执行的操作<br/>
+现在讲下App启动、来回切换App和锁屏时状态的切换和调用对应哪些delegate对象的方法：</p></li>
+<li><p>App启动和active/inactive<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d15fc4c41.jpg.gif" alt=""/><br/>
+如图所示，当App启动时，首先由not running状态切换到inactive状态，此时调用application:didFinishLaunchingWithOptions:方法；然后由inactive状态切换到active状态，此时调用applicationDidBecomeActive:方法。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d56cdc36a.jpg.gif" alt=""/><br/>
+当App发生中断时，由active状态切换到inactive状态，此时调用applicationWillResignActive:方法。</p></li>
+<li><p>来回切换App<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588d259ba79b.jpg.gif" alt=""/><br/>
+如图所示，当切换到另一个App时，由状态active切换到inactive，此时调用applicationWillResignActive:方法；然后从inactive状态切换到Background状态，此时调用applicationDidEnterBackground:方法。<br/>
+而当切换回本来的App时，由Background状态切换到inactive状态，此时调用applicationWillEnterForeground:方法，然后由inactive状态切换到active状态，调用applicationDidBecomeActive:方法。</p></li>
+<li><p>锁屏<br/>
+当手机锁屏时，由状态active切换到inactive，此时调用applicationWillResignActive:；然后再由inactive状态切换到Background状态，此时调用applicationDidEnterBackground:方法。</p></li>
+</ul>
+
+<h2 id="toc_1">Main函数入口</h2>
+
+<p>所有基于OC编写的App的入口都是main函数，但iOS应用程序有点不同。不同就是你不需要为iOS应用程序而自己编写main函数，当你使用Xcode创建工程的时候就已经提供了。除非一些特殊情况，否则你不应该修改Xcode提供的main函数实现。示例代码如下：</p>
+
+<pre><code>#import &lt;UIKit/UIKit.h&gt;  
+#import &quot;AppDelegate.h&quot;  
+  
+int main(int argc, char * argv[]){  
+    @autoreleasepool {  
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));  
+    }   
+}  
+</code></pre>
+
+<p>上面实例代码中有一个很重要的函数UIApplicationMain，它主要是创建App的几个核心对象来处理以下过程：</p>
+
+<ol>
+<li>从可用Storyboard文件加载用户界面；</li>
+<li>调用AppDelegate自定义代码来做一些初始化设置；</li>
+<li>将App放入Main Run Loop环境中来响应和处理与用户交互产生的事件。
+##Main Run Loop
+一个iOS应用程序的main run loop主要作用是处理所有与用户相关的事件。UIApplication对象在启动时就设置main run loop和使用它来处理事件和更新基于view的界面。正如它的名字显示，main run loop是运行在应用程序的主线程。这样就确保与接收到用户相关的事件被有序地处理。
+下图显示main run loop的架构和用户事件最终是怎样被应用程序处理。当用户与设备交互时，系统就会生成与交互关联的事件，然后被应用程序的UIKit通过一个特殊的端口来分发。应用程序把事件放入队列，然后逐个分发到main run loop来执行。UIApplication对象是第一个对象接收到事件，然后决定怎样处理它。一个touch event通常都被分发到main window对象，然后依次分发到发生触碰的view。其他event的接收事件对象路径可能有点不同。
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-5588c902a375c.jpg" alt=""/></li>
+</ol>
+
+<h2 id="toc_2">程序流程</h2>
+
+<ol>
+<li><p>加载程序进入前台<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121328_1.png" alt="加载程序进入前台"/></p></li>
+<li><p>程序中断<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121433_1.png" alt="程序中断"/></p></li>
+<li><p>进入后台运行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-8370_140710121400_1.png" alt="后台运行"/></p></li>
+</ol>
+
+<h2 id="toc_3">应用程序的终止</h2>
+
+<p>系统常常是为其他app启动时由于内存不足而回收内存最后需要终止应用程序，但有时也会是由于app很长时间才响应而终止。如果app当时运行在后台并且没有暂停，系统会在应用程序终止之前调用applicationWillTerminate:来保存用户的一些重要数据以便下次启动时恢复到app原来的状态。</p>
+
+<h2 id="toc_4">参考</h2>
+
+<ol>
+<li><a href="http://www.cocoachina.com/industry/20140710/9089.html">iOS应用程序的生命周期</a></li>
+<li><a href="http://www.csdn.net/article/2015-06-23/2825023">深度解析iOS应用程序的生命周期</a></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585638251666.html" data-count-type="comments" href="14585638251666.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14585388984918.html">
                 
@@ -176,607 +517,6 @@
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14581131891410.html">
-                
-                  <h1>GeekBand.iOS-猜城市游戏</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>本游戏是一个用于练手的示例游戏，本文将从最开始的需求分析开始对游戏进行分析和实现</p>
-</blockquote>
-
-<h2 id="toc_0">需求分析</h2>
-
-<p>简要需求以及程序原型设计如下图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-0@2x.png" alt="程序原型"/><br/>
-程序需求的简单描述为：用户根据图片展示，猜测图片展现的是哪一个城市，并将答案输入文本框中，程序对输入内容进行判断，如果答对，增加得分加载下一张图片，如答错，记录尝试次数，超过程序要求，游戏结束。</p>
-
-<p>游戏运行流程：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-1@2x.png" alt="游戏运行流程图"/><br/>
-补充需求说明：<br/>
-1. 输入城市名称时，要求中文简体输入如北京、上海等。<br/>
-2. 毎猜对一个城市，得分加10分。<br/>
-3. 程序所需图片 采用<code>[UIImage imageNamed:@&quot;&quot;];</code>方法读取;<br/>
-4. 城市与图片对应实现采用程序硬编码实现。</p>
-
-<h2 id="toc_1">系统设计</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-QQ20160316-2@2x.png" alt="类结构图"/><br/>
-具体说明如下：</p>
-
-<ol>
-<li><p>ViewController</p>
-
-<p>对使用Interface Builder创建的UI界面提供操作绑定，使代码可以对View控件进行控制。</p></li>
-<li><p>City （城市类）</p>
-
-<pre><code>@interface City : NSObject
-@property int cityId;//城市ID，根据ID可以加载城市图片
-@property NSString* cityName;//城市名称，名称规范如：北京
-+(instancetype) initWithCityID:(int)cityId WithCityName:(NSString *)cityName;
-@end
-</code></pre></li>
-<li><p>CityDB（工厂类）<br/>
-这是一个工厂类，使用类方法，封装了一些关于城市的操作函数，如返回某城市的图片，和硬编码加载所有城市返回。</p>
-
-<pre><code>@interface CityDB : NSObject
-+(UIImage *) getCityImageByCity:(City *)city;
-+(NSArray&lt;City *&gt; *) loadAllCity;
-@end
-</code></pre></li>
-<li><p>Level(关卡类) <br/>
-毎次随机出现的一个城市，抽象为一个关卡。</p>
-
-<pre><code>@interface Level : NSObject
-@property City* city;
-@property int time;//当前尝试次数，初始化为0
-+(instancetype) initWithCity:(City *)city;
-@end
-</code></pre></li>
-<li><p>Game(游戏控制类)</p>
-
-<pre><code>@interface Game : NSObject
-@property BOOL gameOver;
-@property int currentScore;
-+(instancetype) game;//返回一个游戏对象
--(BOOL) guessCityByName:(NSString *)cityName;//根据用户输入判断猜测是否正确
--(UIImage *) imageForCurrentLevel;//获得当前关卡的城市的图片
--(int) getTryTimes;//本关卡已经尝试的次数
-
-//内部处理所需
-//初始化类
--(instancetype) init{
-    self = [super init];
-    if(self){
-        _levels = [NSMutableArray arrayWithCapacity:20];
-        _cities = [NSMutableArray arrayWithArray:[CityDB loadAllCity]];
-        [self shuffleCities];//随机生成关卡
-        _currentLevelIndex = 0;
-        _currentScore = 0;
-        _gameOver = false;
-        _allowTime = 3;
-    }
-    return  self;
-}
-//根据CityDB加载的城市列表，随机关卡出现的顺序
--(void) shuffleCities{
-    Level* level;
-    for(int i = 0; i&lt;[[CityDB loadAllCity] count];i++){
-        level = [Level initWithCity:[self getACityRandom]];
-        [_levels addObject:level];
-    }
-}
-//从未出现过的City中随机选取一个
--(City *)getACityRandom{
-    int i = arc4random() % _cities.count;
-    City* city = [_cities objectAtIndex:i];
-    [_cities removeObjectAtIndex:i];//把选取中的从待选取列表中移除
-    return city;
-}
-//获得当前的关卡标号
--(Level *)getCurrentLevel{
-    return [_levels objectAtIndex:_currentLevelIndex];
-}
-//前往下一关
--(void) nextLevel{
-    _currentLevelIndex++;
-    if(_currentLevelIndex &gt;= _levels.count){
-        self.gameOver = YES;
-    }
-}
-//根据输入判断是否过关
--(BOOL) guessCityByName:(NSString *)cityName{
-    Level* currentLevel =[self getCurrentLevel];
-    City* current = currentLevel.city;
-    if([cityName isEqualToString:current.cityName]){
-        self.currentScore += 10;
-        [self nextLevel];
-        return YES;
-    }else{
-      //增加已尝试次数
-        currentLevel.time++;
-        if (currentLevel.time &gt;= _allowTime) {
-            self.gameOver = YES;
-        }
-    }
-    return NO;
-}
-//返回本关卡剩余可尝试次数
--(int)getTryTimes{
-    return _allowTime - [self getCurrentLevel].time;
-}
-@end
-</code></pre></li>
-</ol>
-
-<p>本文对游戏的实现，并不是最佳实现，读者可根据自己的理解分析对类进行设计与实现。</p>
-
-<h2 id="toc_2">Demo演示</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_34_04.gif" alt="演示1"/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-16-2016-03-16%2017_48_52.gif" alt="演示2"/></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/16</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14581131891410.html" data-count-type="comments" href="14581131891410.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14580567370996.html">
-                
-                  <h1>GeekBand.iOS-UILabel,UIButton,UIImageView,UITextField汇总</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>标题中提到的所有UI控件都可以通过Interface Builder轻松地创建，以下内容仅讨论使用代码建立和修改相关属性</p>
-</blockquote>
-
-<h2 id="toc_0">UILabel</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(x, y, width, height)]; 
-</code></pre></li>
-<li><p>常用属性</p>
-
-<pre><code> //设置显示文字     
-label.text = @&quot;label1&quot;;
-//设置字体:粗体，正常的是 SystemFontOfSize     
-label.font = [UIFont boldSystemFontOfSize:20];     
-//设置文字颜色  
-label.textColor = [UIColor orangeColor];   
-//设置文字排版方式     
-label.textAlignment = UITextAlignmentRight;     
-label.textAlignment = UITextAlignmentCenter;     
-//设置字体大小适应label宽度     
-label.adjustsFontSizeToFitWidth = YES;
-//设置label的显示行数  
-label.numberOfLines = 2; 
-//背景色，也可以设置背景图   
-label.backgroundColor=[UIColor clearColor]; //可以去掉背景色   
-//设置高亮     
-label.highlighted = YES;     
-label.highlightedTextColor = [UIColor orangeColor];     
-//设置阴影     
-label.shadowColor = [UIColor redColor];     
-label.shadowOffset = CGSizeMake(1.0,1.0);     
-//设置是否能与用户进行交互     
-label.userInteractionEnabled = YES;     
-//设置label中的文字是否可变，默认值是YES     
-label.enabled = NO;     
-//设置文字过长时的显示格式     
-label.lineBreakMode = UILineBreakModeMiddleTruncation;//截去中间     
-//  typedef enum {     
-//      UILineBreakModeWordWrap = 0,     
-//      UILineBreakModeCharacterWrap,     
-//      UILineBreakModeClip,//截去多余部分     
-//      UILineBreakModeHeadTruncation,//截去头部     
-//      UILineBreakModeTailTruncation,//截去尾部     
-//      UILineBreakModeMiddleTruncation,//截去中间     
-//  } UILineBreakMode;     
-</code></pre></li>
-</ol>
-
-<h2 id="toc_1">UIButton</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code> //UIButton的定义
-UIButton *button=[[UIButton buttonWithType:(UIButtonType);
-//typedef enum {
-//  UIButtonTypeCustom = 0, 自定义风格
-//  UIButtonTypeRoundedRect, 圆角矩形
-//  UIButtonTypeDetailDisclosure, 蓝色小箭头按钮，主要做详细说明用
-//  UIButtonTypeInfoLight, 亮色感叹号
-//  UIButtonTypeInfoDark, 暗色感叹号
-//  UIButtonTypeContactAdd, 十字加号按钮
-//} UIButtonType;
-</code></pre></li>
-<li><p>常用方法</p>
-
-<pre><code>//设置frame
-button.frame = CGRectMake(20, 20, 280, 40);
-[button setFrame:CGRectMake(20,20,50,50)];
-
-//button背景色
-button.backgroundColor = [UIColor clearColor];
-[button setBackgroundColor:[UIColor blueColor]];
-
-//是否可点击，默认为YES
-button.enable = NO;                          
-//设置button填充图片和背景图片
-[button setImage:(UIImage) forState:UIControlStateNormal];
-[button setBackgroundImage:(UIImage)forState:UIControlStateNormal];
-//设置button标题和标题颜色
-[button1 setTitle:@&quot;点击&quot; forState:UIControlStateNormal];
-[button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-
-//添加或删除事件处理
-[button addTarget:self action:@selector(butClick:)forControlEvents:UIControlEventTouchUpInside];
-[button removeTarget:nil action:nil forControlEvents:UIControlEventTouchUpInside];
-</code></pre></li>
-</ol>
-
-<h2 id="toc_2">UIImageView</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UIImageView *imageView = [[UIImageView alloc ] init];
-//UIImage加载有两种方式
-//方案1
-UIImage *image = [UIImage imageNamed:@&quot;image_photo&quot;];
-//方案2
-NSString *filePath=[[NSBundle mainBundle] pathForResource:@&quot;image_photo&quot; ofType:@&quot;jpg&quot;];
-UIImage *image=[UIImage imageWithContentsOfFile:filePath];
-
-imageView.image = image;
-</code></pre>
-
-<p>方案一：用imageNamed的方式加载时，系统会把图像Cache到内存。如果图像比较大，或者图像比较多，用这种方式会消耗很大的内存，而且释放图像的内存是一件相对来说比较麻烦的事情。例如：如果利用imageNamed的方式加载图像到一个动态数组NSMutableArray，然后将将数组赋予一个UIView的对象的animationImages进行逐帧动画，那么这将会很有可能造成内存泄露。并且释放图像所占据的内存也不会那么简单。但是利用imageNamed加载图像也有自己的优势。对于同一个图像系统只会把它Cache到内存一次，这对于图像的重复利用是非常有优势的。例如：你需要在一个TableView里重复加载同样一个图标，那么用imageNamed加载图像，系统会把那个图标Cache到内存，在Table里每次利用那个图像的时候，只会把图片指针指向同一块内存。这种情况使用imageNamed加载图像就会变得非常有效。<br/>
-方案二：就是每次单独加载图片，系统不缓存。使用完后记得释放。</p></li>
-<li><p>常用方法</p>
-
-<pre><code> //设置圆角
-imageView.layer.masksToBounds = YES;
-imageView.layer.cornerRadius = 10;
-
-//设置边框颜色和大小
-imageView.layer.borderColor = [UIColor orangeColor].CGColor;
-imageView.layer.borderWidth = 2;
-
-//播放一系列图片
-UIImage *image1 = [UIImage imageNamed:@&quot;1&quot;];
-UIImage *image2 = [UIImage imageNamed:@&quot;2&quot;];
-UIImage *image3 = [UIImage imageNamed:@&quot;3&quot;];
-NSArray *imagesArray = @[image1,image2,image3];
-imageView.animationImages = imagesArray;
-// 设定所有的图片在多少秒内播放完毕
-imageView.animationDuration = [imagesArray count];
-// 重复播放多少遍，0表示无数遍
-imageView.animationRepeatCount = 0;
-// 开始播放
-[imageView startAnimating];
-
- //为图片添加单击事件：一定要先将userInteractionEnabled置为YES，这样才能响应单击事件
-imageView.userInteractionEnabled = YES;
-UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapImageView:)];
-[imageView addGestureRecognizer:singleTap];
-
-//其他设置
-imageView.hidden = YES或者NO;    // 隐藏或者显示图片
-imageView.alpha =0.5;    // 设置透明度
-// 设置高亮时显示的图片
-imageView.highlightedImage = (UIImage *)hightlightedImage;
-imageView.image = (UIImage *)image; // 设置正常显示的图片
-</code></pre></li>
-</ol>
-
-<h2 id="toc_3">UITextField</h2>
-
-<ol>
-<li><p>建立</p>
-
-<pre><code>UITextField* textField = [[UITextField alloc] initWithFrame:CGRectMake(x, y, width, height)];
-</code></pre></li>
-<li><p>常用方法</p>
-
-<pre><code>textField setBorderStyle:UITextBorderStyleRoundedRect]; //外框类型
-textField.placeholder = @&quot;password&quot;; //默认显示的字 
-textField.secureTextEntry = YES; //密码 
-
-textField.autocorrectionType = UITextAutocorrectionType; //设置是否自动纠错
-typedef enum {
-    UITextAutocorrectionTypeDefault, //默认
-    UITextAutocorrectionTypeNo, 　//不自动纠错
-    UITextAutocorrectionTypeYes,　//自动纠错
-}UITextAutocorrectionType;
-
-textField.clearButtonMode = UITextFieldViewMode; //编辑时会出现个修改X
-typedef enum {
-    UITextFieldViewModeNever,　//重不出现
-    UITextFieldViewModeWhileEditing, //编辑时出现
-    UITextFieldViewModeUnlessEditing,　//除了编辑外都出现
-    UITextFieldViewModeAlways 　//一直出现
-}UITextFieldViewMode; 
-
-//可以在UITextField使用下面方法，按return键返回
--(IBAction) textFieldDone:(id) sender
-{
- [textFieldName resignFirstResponder]; 
-}
-//链接TextField控件的&quot;Did end on exit&quot;
-
-//再次编辑就清空
-textField.clearsOnBeginEditing = YES; 
-
-//设置键盘样式
-textField.keyboardType = UIKeyboardType;
-typedef enum {
-        UIKeyboardTypeDefault,     　//默认键盘，支持所有字符         
-        UIKeyboardTypeASCIICapable,　//支持ASCII的默认键盘
-        UIKeyboardTypeNumbersAndPunctuation,　//标准电话键盘，支持＋＊＃字符
-        UIKeyboardTypeURL,            //URL键盘，支持.com按钮 只支持URL字符
-        UIKeyboardTypeNumberPad,       //数字键盘
-        UIKeyboardTypePhonePad,　 　//电话键盘
-        UIKeyboardTypeNamePhonePad, 　//电话键盘，也支持输入人名
-        UIKeyboardTypeEmailAddress, 　//用于输入电子邮件地址的键盘     
-        UIKeyboardTypeDecimalPad,   　//数字键盘有数字和小数点
-        UIKeyboardTypeTwitter,      　//优化的键盘，方便输入@、#字符
-        UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable, 
-}UIKeyboardType;
-
-//return键样式
-text.returnKeyType =UIReturnKeyType;
-typedef enum {
-    UIReturnKeyDefault, 默认 灰色按钮，标有Return
-    UIReturnKeyGo,    　标有Go的蓝色按钮
-    UIReturnKeyGoogle,标有Google的蓝色按钮，用语搜索
-    UIReturnKeyJoin,标有Join的蓝色按钮
-    UIReturnKeyNext,标有Next的蓝色按钮
-    UIReturnKeyRoute,标有Route的蓝色按钮
-    UIReturnKeySearch,标有Search的蓝色按钮
-    UIReturnKeySend,标有Send的蓝色按钮
-    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
-    UIReturnKeyYahoo,标有Yahoo的蓝色按钮
-    UIReturnKeyEmergencyCall, 紧急呼叫按钮
-} UIReturnKeyType;
-
-</code></pre></li>
-</ol>
-
-<h2 id="toc_4">To ALL</h2>
-
-<p>把上述View加入页面[self.view addSubview:(UIView)]需注意两点：</p>
-
-<ol>
-<li>这个方法会retain一次view，并且设置它的下一个响应者是receiver，即它的新的父视图。</li>
-<li>每一个视图只能有唯一的一个父视图。如果当前操作视图已经有另外的一个父视图，则addsubview的操作会把它先从上一个父视图中移除（包括响应者链），再加到新的父视图上面。</li>
-</ol>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/15</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14580567370996.html" data-count-type="comments" href="14580567370996.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14578438756442.html">
-                
-                  <h1>前笔记汇总</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
-但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
-给大家留个传送门。<br/>
-<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
-<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
-<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
-<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
-<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
-<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
-<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/13</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14578438756442.html" data-count-type="comments" href="14578438756442.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14577530083114.html">
-                
-                  <h1>GeekBand-OC中的类别和协议</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
-</blockquote>
-
-<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
-
-<pre><code> @interface 已有类 （类别名）
-    //.......方法实现
- @end
-</code></pre>
-
-<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
-
-<pre><code> #import &lt;Foundation/Foundation.h&gt;
-@interface NSNumber (code)
- -(NSNumber *) add:(double) num;
- -(NSNumber *) mult:(double) num
-@end
-</code></pre>
-
-<p>该类别的实现部分如下</p>
-
-<pre><code> #import &quot;NSNumber+code.h&quot;
-
- @implementation NSNumber (code)
- -(NSNumber *) add:(double) num
-{
-  return [NSNumber numberWithDouble:([self doubleValue] +num)];
-}
--(NSNumber *) mult:(double) num
-{
-  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
-}
-@end
-</code></pre>
-
-<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
-
-<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
-
-<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
-
-<hr/>
-
-<h2 id="toc_0">扩展（extension）</h2>
-
-<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
-
-<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
-
-<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
-
-<pre><code>//&quot;Vehicle.m&quot;
-#import &quot;Vehicle.h&quot;
-@interface Vehicle ()
-@property(nonatomic, strong) NSString *color;
--(void) drive:(NSString *)name;
-@end
-@implementation Vehicle
--(void) drive:(NSString *)name
-{
-    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
-}
-@end
-</code></pre>
-
-<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
-
-<hr/>
-
-<h2 id="toc_1">协议（protocol）</h2>
-
-<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
-
-<p>正式协议使用@protocol关键字定义</p>
-
-<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
-    {
-          //.....方法声明
-    }
-    @end
-</code></pre>
-
-<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
-遵守协议的语法如下：</p>
-
-<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
-</code></pre>
-
-<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
-协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
-
-<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -788,7 +528,7 @@ typedef enum {
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			
+			 <a href="all_12.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
@@ -833,6 +573,8 @@ typedef enum {
             <a href="Java.html"><strong>Java</strong></a>
         
             <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
+        
+            <a href="%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html"><strong>算法/数据结构</strong></a>
          
         </p>
 
@@ -863,31 +605,31 @@ typedef enum {
 	      
 		      
 			      <li class="post">
+			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14889379059302.html">剑指Offer-替换空格</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14889364537323.html">剑指Offer-二维数组中的查找</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14880758779206.html">Java容器框架分析(九)——WeakHashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879958366746.html">Java容器框架分析(八)——PriorityQueue</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879892493054.html">Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879172287548.html">Java容器框架分析(六)——HashSet与HashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879027517066.html">Java容器框架分析(五)——TreeSet与TreeMap</a>
 			      </li>
 		     
 		  

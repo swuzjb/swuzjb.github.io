@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-View的定位 - Zhan's Blog
+  剑指Offer-重建二叉树 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-View的定位</h1>
+          <h1>剑指Offer-重建二叉树</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/2</span>
+          <span class="date">2017/3/9</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法/数据结构</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14890277021887.html" data-count-type="comments" href="14890277021887.html#ds-thread"></a>
             
           </span>
 
@@ -129,63 +129,56 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
-UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+      <blockquote>
+<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
+</blockquote>
 
-<h2 id="toc_0">View的层次</h2>
+<h2 id="toc_0">结题思路</h2>
 
-<p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
-上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
 
-<h2 id="toc_1">UIKit坐标系</h2>
+<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
 
-<p>-CGPoint{x,y}用于描述坐标<br/>
--CGSize{width,height}用于描述宽和高<br/>
--CGRect{origin,size}描述一个矩形区域<br/>
-坐标系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+<h2 id="toc_1">代码</h2>
 
-<h2 id="toc_2">View的定位-Frame</h2>
-
-<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
-
-<pre><code>-(CGRect)frame{
-    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
+<pre><code class="language-java">/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
+        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
+    }
+    
+    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
+        if(pStart &gt; pEnd || iStart &gt; iEnd ){
+            return null;
+        }
+        
+        TreeNode node = new TreeNode(pre[pStart]);
+        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
+        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
+        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
+        return node;
+        
+    }
+    
+    public int find(int[] array,int target,int start,int end){
+        for(int i = start;i&lt;=end;i++){
+            if(array[i] == target){
+                return i;
+            }
+        }
+        return -1;
+    }
 }
 </code></pre>
-
-<h2 id="toc_3">View的定位-Bounds</h2>
-
-<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
-
-<pre><code>-(CGRect)bounds{
-    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
-
-<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
-
-<h2 id="toc_4">View的定位-Center</h2>
-
-<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
-
-<h2 id="toc_5">Demo展示</h2>
-
-<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
-[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
-view1.backgroundColor = [UIColor redColor];  
-[self.view addSubview:view1];//添加到self.view  
-NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
-  
-UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
-view2.backgroundColor = [UIColor yellowColor];  
-[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
-NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
 
       </div>
 
@@ -193,16 +186,13 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14595830611425.html" 
-          title="Previous Post: GeekBand.iOS-Autoresizing">&laquo; GeekBand.iOS-Autoresizing</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14592472421509.html" 
-          title="Next Post: GeekBand.iOS-UICollectionView">GeekBand.iOS-UICollectionView &raquo;</a>
+          <a  href="14890230803105.html" 
+          title="Next Post: 剑指Offer-从尾到头打印链表">剑指Offer-从尾到头打印链表 &raquo;</a>
       
       </p>
         </div>
@@ -214,7 +204,7 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
           
 
           
-              <div class="ds-thread" data-thread-key="14595674718251.html" data-url="http://swuzjb.github.io/14595674718251.html" data-title="GeekBand.iOS-View的定位"></div>
+              <div class="ds-thread" data-thread-key="14890277021887.html" data-url="http://swuzjb.github.io/14890277021887.html" data-title="剑指Offer-重建二叉树"></div>
           
         </div>
       </div>

@@ -83,6 +83,8 @@
             <li><a href="Java.html">Java</a></li>
         
             <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
+        
+            <li><a href="%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html">算法/数据结构</a></li>
          
 
       </ul>
@@ -104,6 +106,586 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14878187570598.html">
+                
+                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">LinkedList简介</h2>
+
+<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
+LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
+双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
+
+<pre><code class="language-java">//Node内部类
+private static class Node&lt;E&gt; {
+    E item;
+    Node&lt;E&gt; next;
+    Node&lt;E&gt; prev;
+    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
+
+<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
+
+<h2 id="toc_1">常用方法剖析</h2>
+
+<h3 id="toc_2">add()</h3>
+
+<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
+
+<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    final Node&lt;E&gt; l = last;
+    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
+    last = newNode;
+    if (l == null)
+        first = newNode;//原来链表为空，这是插入的第一个元素
+    else
+        l.next = newNode;
+    size++;
+    return true;
+}
+</code></pre>
+
+<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
+
+<pre><code class="language-java">public void add(int index, E element) {
+     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
+    checkPositionIndex(index);
+    if (index == size)//插入位置是末尾，包括列表为空的情况
+        add(element);
+    else{
+        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
+        //2.修改引用，完成插入操作。
+        final Node&lt;E&gt; pred = succ.prev;
+        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
+        succ.prev = newNode;
+        if (pred == null)//插入位置为0
+            first = newNode;
+        else
+            pred.next = newNode;
+        size++;
+    }
+}
+</code></pre>
+
+<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
+两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
+
+<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
+    final E element = x.item;
+    final Node&lt;E&gt; next = x.next;
+    final Node&lt;E&gt; prev = x.prev;
+    if (prev == null) {//删除的是第一个元素
+        first = next;
+    } else {
+        prev.next = next;
+        x.prev = null;
+    }
+    if (next == null) {//删除的是最后一个元素
+        last = prev;
+    } else {
+        next.prev = prev;
+        x.next = null;
+    }
+    x.item = null;//let GC work
+    size--;
+    return element;
+}
+</code></pre>
+
+<h3 id="toc_4">get()</h3>
+
+<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
+
+<pre><code class="language-java">public E get(int index) {
+    //检测index是否越界
+    checkElementIndex(index);
+    return node(index).item;
+}
+</code></pre>
+
+<h3 id="toc_5">set()</h3>
+
+<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
+
+<pre><code class="language-java">public E set(int index, E element) {
+    checkElementIndex(index);
+    Node&lt;E&gt; x = node(index);
+    E oldVal = x.item;
+    x.item = element;//替换新值
+    return oldVal;
+}
+</code></pre>
+
+<h2 id="toc_6">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/23</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14876660718478.html">
+                
+                  <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">ArrayList简介</h2>
+
+<p>ArrayList实现了List接口，是顺序容器（即元素存放的顺序和加入列表的顺序相同），允许放入<code>null</code>元素，底层通过数组实现。该实现除了没有实现多线程同步之外，其余跟Vector大致相同，即ArrayList是线程不安全的。<br/>
+每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
+size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
+为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
+
+<h2 id="toc_1">常用方法剖析</h2>
+
+<h3 id="toc_2">set(int index, E element)</h3>
+
+<p>set()方法可以直接设定某个下标对应的元素。既然ArrayList的底层是数组实现的，set()方法的实现也就变得极为简单，直接赋值即可，复杂度为<em>O(1)</em>。</p>
+
+<pre><code class="language-java">public E set(int index, E element) {
+    rangeCheck(index);//下标越界检查
+    E oldValue = elementData(index);
+    elementData[index] = element;//赋值到指定位置，复制的仅仅是引用
+    return oldValue;
+}
+</code></pre>
+
+<h3 id="toc_3">get(int index)</h3>
+
+<p>get()方法可以获取指定下标对应的对象，唯一需要注意的是由于底层数组是Object[]，得到元素后需要进行类型转换，复杂度为<em>O(1)</em>。</p>
+
+<pre><code class="language-java">public E get(int index) {
+    rangeCheck(index);
+    return (E) elementData[index];//注意类型转换
+}
+</code></pre>
+
+<h3 id="toc_4">add(E element)和add（int index,E element）</h3>
+
+<p>跟C++的vector不同，ArrayList没有push_back()方法，对应的方法是add(E e)，ArrayList也没有insert()方法，对应的方法是add(int index, E e)。这两个方法都是向容器中添加新元素，这可能会导致 capacity 不足，因此在添加元素之前，都需要进行剩余空间检查，如果需要则自动扩容。扩容操作最终是通过grow()方法完成的。</p>
+
+<pre><code class="language-java">private void grow(int minCapacity) {
+    int oldCapacity = elementData.length;
+    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);//原来的1.5倍
+    if (newCapacity - minCapacity &lt; 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+        newCapacity = hugeCapacity(minCapacity);
+    elementData = Arrays.copyOf(elementData, newCapacity);//扩展空间并复制
+}
+</code></pre>
+
+<p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
+空间的问题解决之后，插入就变得非常简单了。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
+<code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
+
+<h3 id="toc_5">addAll()</h3>
+
+<p>addAll()方法可以一次添加多个元素，根据插入的起始位置不同也用两个版本：一个是在末尾添加<code>addAll(Collection&lt;? extends E&gt; c)</code>;一个是从指定位置开始插入的<code>addAll(int index, Collection&lt;? extends E&gt; c)</code>方法。对应的实现方式和上述的add方法类似，在插入之前，需要对容量进行判断，如果需要则自动扩容，如果从指定位置插入，还需要先对数组元素进行移动。</p>
+
+<h3 id="toc_6">remove()</h3>
+
+<p>remove方法可以删除列表中的元素，其也有两个版本：一个是<code>remove(int index)</code>删除指定位置的元素；一个是<code>remove(Object o)</code>删除第一个满足<code>o.equals(elementData[index])</code>的元素。删除操作是<code>add()</code>的逆过程，需要将删除点之后的元素向前移动一个位置。需要注意的是为了让GC起作用，必选显示的为最后一个位置赋<code>null</code>值。</p>
+
+<pre><code class="language-java">public E remove(int index) {
+    rangeCheck(index);
+    modCount++;
+    E oldValue = elementData(index);
+    int numMoved = size - index - 1;
+    if (numMoved &gt; 0)
+        System.arraycopy(elementData, index+1, elementData, index, numMoved);
+    elementData[--size] = null; //清除该位置的引用，让GC起作用
+    return oldValue;
+}
+</code></pre>
+
+<p>关于Java GC 这里需要特别说明一下，<strong>有了垃圾收集器并不意味着一定不会有内存泄漏</strong>。对象能否被 GC 的依据是是否还有引用指向它，上面代码中如果不手动赋null值，除非对应的位置被其他元素覆盖，否则原来的对象就一直不会被回收。</p>
+
+<h2 id="toc_7">使用技巧</h2>
+
+<p>关于List的容量，可以在一开始就给定一个比较合理的值，避免内存复制所带来的不必要的时间开销。</p>
+
+<h2 id="toc_8">转载声明</h2>
+
+<p>本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876660718478.html" data-count-type="comments" href="14876660718478.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14876629153312.html">
+                
+                  <h1>Java容器框架分析（一）——相关概念综述</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">概述</h2>
+
+<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
+
+<ul>
+<li>降低编程难度<br/></li>
+<li>提高程序性能</li>
+<li>提高API之间的互操作性</li>
+<li>降低学习难度</li>
+<li>降低设计和实现相关API的难度</li>
+<li>增强程序的重用性</li>
+</ul>
+
+<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
+
+<h2 id="toc_1">泛型</h2>
+
+<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
+事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
+
+<pre><code class="language-java">//JDK 1.4 or before
+ArrayList list = new ArrayList();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = (String)list.get(i);//显式类型转换
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5 or latter
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(int i = 0; i &lt; list.size(); i++){
+    String weekday = list.get(i);//隐式类型转换，编译器自动完成
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_2">内存管理</h2>
+
+<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
+
+<h2 id="toc_3">接口与实现</h2>
+
+<h3 id="toc_4">接口</h3>
+
+<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
+Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
+
+<h3 id="toc_5">实现</h3>
+
+<p>上述接口的通用实现类见下表：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
+
+<h2 id="toc_6">迭代器（Iterator）</h2>
+
+<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
+实例代码：</p>
+
+<pre><code class="language-java">//通过迭代器来访问容器元素
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+//得到迭代器
+Iterator&lt;String&gt; it = list.iterator();
+while(it.hasNext()){
+    String weekday = it.next();//访问元素
+    System.out.println(weekday.toUpperCase());
+}
+//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
+//使用foreach迭代
+ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(new String(&quot;Monday&quot;));
+list.add(new String(&quot;Tuesday&quot;));
+list.add(new String(&quot;Wensday&quot;));
+for(String weekday : list){
+    System.out.println(weekday.toUpperCase());
+}
+</code></pre>
+
+<h2 id="toc_7">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876629153312.html" data-count-type="comments" href="14876629153312.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14875782735365.html">
+                
+                  <h1>Java内存管理</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">Java的内存区域</h2>
+
+<p>Java的内存区域按照是否线程共享分为两个区域</p>
+
+<ol>
+<li>线程共享区域包括：方法区（Method Area）和堆（Heap）</li>
+<li>线程独享的区域包括：虚拟机栈（VM Stack），本地方法栈（Native Method Stack）和程序计数器（Program Counter Register）</li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875809468666.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h3 id="toc_1">程序计数器</h3>
+
+<p>程序计数器是一块较小的内存区域，指向当前执行的字节码。如果线程正在执行一个Java方法，这个计数器记录正在执行的虚拟机字节码指令的地址，如果执行的是Native方法，则计数器为空。<br/>
+此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError的区域。</p>
+
+<h3 id="toc_2">Java虚拟机栈</h3>
+
+<p>线程私有区域，其生命周期和线程一致。该区域描述的是Java方法执行的内存模型：每个方法在执行的时候都会创建一个栈帧（方法运行时的基本数据结构）用于存储局部变量表、操作数栈、动态链接、方法出口等信息。<br/>
+在Java虚拟机规范中，对这个区域规定了两种异常情况：</p>
+
+<ol>
+<li>如果线程请求的栈深度大于虚拟机所允许的深度，将抛出StackOverflowError异常；</li>
+<li>如果虚拟机栈可以动态扩展（当前大部分虚拟机实现都是动态的、但是固定长度的栈也是被允许的）在扩展时无法申请到足够的内存，就会抛出OutOfMemoryError异常。</li>
+</ol>
+
+<h3 id="toc_3">本地方法栈</h3>
+
+<p>与虚拟机栈功能类似，只不过虚拟机栈为虚拟机执行Java方法服务，而本地方法栈则为使用到的Native方法服务。与虚拟机栈一样，本地方法栈区域也会抛出StackOverflowError异常和OutOfMemoryError异常。</p>
+
+<h3 id="toc_4">Java堆</h3>
+
+<p>是虚拟机管理内存中最大的一块，被所有线程共享，该区域用于存放对象实例，几乎所有的对象都在改区域分配。Java堆是内存回收的主要区域，也被称为GC堆。从内存回收的角度来看，由于现在的垃圾收集器大都采用分代收集算法，所以还可以将Java堆细分为：新生代和老年代，或继续细分为Eden空间、From Survivor空间、To Survivor空间等。<br/>
+根据Java虚拟机规范，Java堆可以处于物理上不连续的空间，只要逻辑上是连续的就行，在实现时，既可以实现成固定大小的，也可以是可扩展的，不过当前主流的都是可扩展的（通过<code>-Xmx</code>和<code>-Xms</code>参数控制）。<br/>
+如果在堆中没有内存完成实例分配，而堆又无法继续扩展时，抛出OutOfMemoryError异常。</p>
+
+<h3 id="toc_5">方法区</h3>
+
+<p>与Java一样，是各个线程所共享的，用于存储已被虚拟机加载类信息、常亮、静态变量、即时编译器编译后的代码等数据。<br/>
+根据Java虚拟机规范的规定，当方法区无法满足内存分配需求时，抛出OutOfMemoryError异常。</p>
+
+<h3 id="toc_6">运行时常量池</h3>
+
+<p>运行时常量池是方法区的一部分，Class文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译期生成的各种字面量和符号引用。运行期间可以将新的常量放入常量池中，用得比较多的就是String类的intern()方法，当一个String实例调用intern时，Java查找常量池中是否有相同的Unicode的字符串常量，若有，则返回其引用；若没有，则在常量池中增加一个Unicode等于该实例字符串并返回它的引用。</p>
+
+<h2 id="toc_7">Java堆的内存模型</h2>
+
+<p>内存模型如图所示：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875816888809.jpg" alt=""/></p>
+
+<p>广泛地说，JVM堆内存被分为两部分——年轻代（Young Generation）和老年代（Old Generation）。</p>
+
+<h3 id="toc_8">年轻代</h3>
+
+<p>年轻代是所有新对象产生的地方。当年轻代内存空间被用完时，就会触发垃圾回收。这个垃圾回收叫做Minor GC。年轻代被分为3个部分——Eden区和2个Survivor区。</p>
+
+<h4 id="toc_9">年轻代的空间要点</h4>
+
+<ul>
+<li>大多数新建对象都位于Eden区；</li>
+<li>当Eden区域被填满时，就会触发Minor GC，并把所有存活下来的对象复制到其中一个survivor区域；</li>
+<li>Minor GC同样会检查存活下来的对象，并把它们转移到另一个Survivor区域，这样在一段时间内，总有一个空的Survivor区；</li>
+<li>经过多次GC周期后，仍然存活下来的对象会被转移到年老代空间，通常这是在年轻代有资格提升到老年代前通过年龄阈值来完成的。</li>
+</ul>
+
+<h3 id="toc_10">年老代</h3>
+
+<p>年老代内存里包含了长期存活的对象和经过多次Minor后依然存活下来的对象。年老代在空间不足时，将触发Major GC，将会花费更多时间进行垃圾收集。</p>
+
+<h2 id="toc_11">垃圾回收</h2>
+
+<h3 id="toc_12">如何确定垃圾对象</h3>
+
+<p>Java堆当中几乎储存了所有的对象实例，要想实现自动的垃圾回收，知道哪些对象是‘垃圾’就十分必要了。目前，比较流行的自动垃圾回收，都是基于两个思路实现的。</p>
+
+<h4 id="toc_13">引用计数法</h4>
+
+<p>引用计数法实现简单，效率较高，在大部分情况下是一个不错的算法。其原理是：给对象添加一个引用计数器，每当有一个地方引用该对象时，计数器加1，当引用失效时，计数器减1，当计数器值为0时表示该对象不再被使用。需要注意的是：引用计数法很难解决对象之间相互循环引用的问题，主流Java虚拟机没有选用引用计数法来管理内存。</p>
+
+<h4 id="toc_14">可达性分析法</h4>
+
+<p>Java虚拟机使用可达性分析法来进行对象的可用性判断。这个算法的基本思路就是通过一系列的称为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链（Reference Chain），当一个对象到GC Roots没有任何引用链相连（用图论的话来说，就是从GC Roots到这个对象不可达）时，则证明此对象是不可用的。如图所示，对象object 5、object 6、object 7虽然互相有关联，但是它们到GC Roots是不可达的，所以它们将会被判定为是可回收的对象。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875947879603.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h5 id="toc_15">Java中的GC ROOT</h5>
+
+<ul>
+<li>虚拟机栈中的引用对象</li>
+<li>方法区中的静态属性引用的对象</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈中本地方法引用的对象</li>
+</ul>
+
+<h5 id="toc_16">对象的救赎</h5>
+
+<p>在可达性分析中不可用的对象并不是立刻被虚拟机销毁，而是被标记为待回收，要真正的宣告一个对象死亡，至少需要经历两次标记：如果对象在可达性分析后发现没有与GC ROOT相连的引用链，那么他会被第一次被标记并进行一次筛选，筛选是判断此对象是否有必要执行finalize()方法，当对象没有覆盖Object类的finalize()方法或该类的finalize（）方法已经被虚拟机调用过，虚拟机将视为没有必要执行，对象会被销毁。反之，将会将该对象加入一个优先级非常低的队列中等待执行finalize()方法，但不保证等待其执行完，这是对象进行自我救赎的最后也是唯一的机会。</p>
+
+<h3 id="toc_17">典型的垃圾回收算法</h3>
+
+<h4 id="toc_18">标记-清楚（Mark-Sweep）算法</h4>
+
+<p>这是最基础的垃圾回收算法，标记-清楚算法顾名思义，分为两个阶段，标记和删除。标记阶段的任务是标记出那些对象需要被回收（即我们上面说的不可达或不可用对象），清楚阶段就是回收（释放）被标记对象所占用的内存空间。具体样例如下图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875956126004.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<p>通过观察图片我们可以非常轻松的发现，标记-清楚算法虽然非常简单，但是有一个比较严重的问题，那就是非常容易产生大量的内存碎片，碎片的数量一旦过多就会导致在后续为大对象分配内存空间时午饭找到足够的内存空间而提前出发新一轮的垃圾收集严重时会导致内存溢出。</p>
+
+<h4 id="toc_19">复制（Copying）算法</h4>
+
+<p>为了解决标记-清楚算法的缺陷，复制算法应运而生。复制算法的思路是，将可用内存按容量划分为大小相同的两块，每次创建对象时只使用其中的一块儿。当这一块儿内存用完时，就触发垃圾回收，将还存活的对象复制到另外一块儿内存空间之上，再把已经使用的内存空间一次释放掉，这样一来就不会出现内存碎片的问题了。操做实例如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875960340164.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<p>复制算法虽然实现简单，运行效率高而且也不会出现内存碎片，但是对内存空间的使用却付出了高昂的代价，可用内存缩减为了原先的一半。同时复制算法的效率和存活对象数目的多少直接相关，若存活对象数量较多，效率就会大大的降低。</p>
+
+<h4 id="toc_20">标记整理算法</h4>
+
+<p>为了解决上面两种算法的缺陷，提出了标记整理（Mark-Compact）算法。该算法在标记阶段和标记清理算法完全一致，但是在完成标记之后，不是直接清理可回收对象，而是将存活的对象都向内存一段移动，然后清理端边界以外的内存，具体过程如下图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875963334710.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h4 id="toc_21">分代收集算法</h4>
+
+<p>分代收集算法是目前大部分JVM的垃圾收集器采用的算法。它的核心思想是根据对象存活的生命周期将内存划分为若干个不同的区域。一般情况下将堆区划分为老年代（Tenured Generation）和新生代（Young Generation），老年代的特点是每次垃圾收集时只有少量对象需要被回收，而新生代的特点是每次垃圾回收时都有大量的对象需要被回收，那么就可以根据不同代的特点采取最适合的收集算法。<br/>
+目前大部分垃圾收集器对于新生代都采取Copying算法，因为新生代中每次垃圾回收都要回收大部分对象，也就是说需要复制的操作次数较少，但是实际中并不是按照1：1的比例来划分新生代的空间的，一般来说是将新生代划分为一块较大的Eden空间和两块较小的Survivor空间（一般为8:1:1），每次使用Eden空间和其中的一块Survivor空间，当进行回收时，将Eden和Survivor中还存活的对象复制到另一块Survivor空间中，然后清理掉Eden和刚才使用过的Survivor空间。<br/>
+而由于老年代的特点是每次回收都只回收少量对象，一般使用的是Mark-Compact算法。</p>
+
+<h2 id="toc_22">Java堆的配置参数</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875967441636.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_23">Java中的引用</h2>
+
+<p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象的引用链是否可达，判定对象是否存活都与“引用”有关。<br/>
+在JDK 1.2以前，Java中的引用的定义很传统：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。<br/>
+在JDK 1.2之后，Java对引用的概念进行了扩充，提出了四种不同的引用。</p>
+
+<h3 id="toc_24">强引用</h3>
+
+<p>就是指在程序代码之中普遍存在的，类似“Object obj = new Object()”这类的引用，只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象。</p>
+
+<h3 id="toc_25">软引用</h3>
+
+<p>是用来描述一些还有用但并非必需的对象。对于软引用关联着的对象，在系统将要发生内存溢出异常之前，将会把这些对象列进回收范围之中进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。在JDK 1.2之后，提供了SoftReference类来实现软引用。</p>
+
+<h3 id="toc_26">弱引用</h3>
+
+<p>也是用来描述非必需对象的，但是它的强度比软引用更弱一些，被弱引用关联的对象只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。在JDK 1.2之后，提供了WeakReference类来实现弱引用。</p>
+
+<h3 id="toc_27">虚引用</h3>
+
+<p>也称为幽灵引用或者幻影引用，它是最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的就是能在这个对象被收集器回收时收到一个系统通知。在JDK 1.2之后，提供了PhantomReference类来实现虚引用。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/20</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14875782735365.html" data-count-type="comments" href="14875782735365.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14814626217350.html">
                 
@@ -250,1099 +832,6 @@ StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的�
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14786108252793.html">
-                
-                  <h1>Hadoop搭建实例</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>本次课程要求自主搭建Hadoop集群环境，并进行MapReduce作业操作<br/>
-本文以统计知乎用户地域分布情况为例进行统计展示</p>
-</blockquote>
-
-<h2 id="toc_0">数据获取与格式说明</h2>
-
-<h3 id="toc_1">数据获取</h3>
-
-<p>实验数据采用爬虫方式从知乎进行爬取，并保存进入数据库，总数据量3383054条。为了后续处理方便，我们将数据从数据库中倒成csv文件进行存储。<br/>
-数据爬取代码：<a href="https://github.com/wycm/mycrawler">知乎爬虫</a></p>
-
-<h3 id="toc_2">数据格式</h3>
-
-<p>导出的数据格式为：<code>id,name,headline,gender,school,major,address,industry,company,job</code><br/>
-<img src="media/14786108252793/14786149854526.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_3">Hadoop集群搭建</h2>
-
-<p>Hadoop是一个由Apache基金会所开发的分布式系统基础架构。用户可以在不了解分布式底层细节的情况下，开发分布式程序。充分利用集群的威力进行高速运算和存储。<br/>
-本次课程实例基于ubuntu12.04、jdk1.8.111、hadoop2.7.3进行说明，其中ubuntu服务器以虚拟机的形式搭建。</p>
-
-<ol>
-<li><p>ubuntu虚拟机搭建</p>
-
-<p>虚拟机创建的步骤在本文中不加以介绍，如有需要请自行百度。ps.为了简便操作，我们可以先创建并配置一台虚拟机然后进行克隆。为了简便操作，可以使用<code>sudo apt-get install ubuntu-desktop</code>安装ubuntu的图形操作界面。</p></li>
-<li><p>建立软件目录</p>
-
-<p>为了后续更好的管理我们按照的软件。我们使用mkdir命令，建立软件的安装目录。命令：<code>sudo mkdir /usr/soft</code></p></li>
-<li><p>jdk的安装与环境变量设置</p>
-
-<ol>
-<li>首先我们从Oracle的官网上下载jdk的压缩文件。下载地址：<a href="http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz">jdk</a>;</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv jdk1.8.0_111/ /usr/soft</code></li>
-<li><p>设置java所需要的环境变量:</p>
-
-<ol>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export JAVA_HOME=&quot;/usr/soft/jdk1.8.0_111&quot;</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-</ol></li>
-<li><p>调用<code>javac -version</code>命令，检查配置是否生效,安装是否成功。</p></li>
-</ol></li>
-<li><p>Hadoop的安装与环境变量设置</p>
-
-<ol>
-<li>从Apache Hadoop网站上下载对应的Hadoop安装包。下载地址：<a href="http://mirrors.cnnic.cn/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz">Hadoop2.7.3</a>；</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv Hadoop-2.7.3 /usr/soft</code></li>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin:/usr/soft/hadoop-2.7.3/bin:/usr/soft/hadoop-2.7.3/sbin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-<li>调用<code>Hadoop version</code>命令，检查配置是否生效,安装是否成功。</li>
-</ol></li>
-<li><p>SSH免密码登录配置</p>
-
-<ol>
-<li>使用<code>sudo apt-get install ssh</code>安装完整的ssh客户端；</li>
-<li>使用<code>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa</code>生成公私钥；</li>
-<li>使用<code>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</code>将公钥复制；</li>
-<li>使用<code>ssh localhost</code>命令检验是否可以免密码登录系统。</li>
-</ol></li>
-<li><p>修改服务器的名称</p>
-
-<ol>
-<li>使用<code>sudo vi /etc/hostname</code>,修改服务器的名称</li>
-<li>重启服务器使配置生效</li>
-</ol></li>
-<li><p>配置Hadoop配置文件</p>
-
-<p>Hadoop的配置文件位于其安装目录下的etc/hadoop/目录下</p>
-
-<ol>
-<li><p>修改yarn-site.xml，内容如下（master代表主服务器名）：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;fs.defaultFS&lt;/name&gt;
-        &lt;value&gt;hdfs://master/&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
-        &lt;value&gt;~/hadoop/data&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改hdfs-site.xml，内容如下:</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;dfs.replication&lt;/name&gt;
-        &lt;value&gt;3&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改mapred-site.xml（此文件需要从mapred-site.xml.template复制），内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
-        &lt;value&gt;yarn&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改yarn-site.xml,内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
-        &lt;value&gt;master&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
-        &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
-        &lt;value&gt;master:8032&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;
-        &lt;value&gt;master:8030&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改slaves文件，将附属机主机名添加入内，每行一个，样例为:</p>
-
-<pre><code class="language-xml">s1
-s3
-</code></pre></li>
-</ol></li>
-<li><p>克隆宿主机，配置hosts文件</p>
-
-<ol>
-<li>使用VM的克隆功能，克隆虚拟机，并依次修改主机名</li>
-<li><p>根据实际IP修改各个机器的hosts文件，ip查看可以使用<code>ifconfig</code>命令，样例如下：</p>
-
-<pre><code>127.0.0.1  localhost    
-10.104.234.203  master
-182.254.216.245 s1
-123.207.252.11 s2
-123.207.24.98 s3
-</code></pre></li>
-</ol></li>
-<li><p>格式化HDFS文件系统，执行<code>hdfs namenode -format</code>命令，对HDFS进行格式化。</p></li>
-<li><p>启动Hadoop集群</p>
-
-<ol>
-<li>启动文件系统,<code>start-dfs.sh</code>;</li>
-<li>启动yarn，<code>start-yarn.sh</code>;</li>
-<li>可以使用<code>jps</code>命令，检查各个服务的启动情况</li>
-</ol></li>
-</ol>
-
-<h2 id="toc_4">统计程序的编写与运行</h2>
-
-<p>本次实验所用的MapReduce程序采用Maven的方式进行构建，具体操作可以参考文章：<a href="http://www.cnblogs.com/Leo_wl/p/4862820.html">Maven构建Hadoop工程</a></p>
-
-<ol>
-<li><p>编写Mapper类，本次我们实现的功能从原理上与Hadoop自带的WordCount实验非常相似。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
-
-public class CountMapper extends Mapper&lt;Object, Text, Text, IntWritable&gt; {
-
-    private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
-
-    @Override
-    protected void map(Object key, Text value, Mapper&lt;Object, Text, Text, IntWritable&gt;.Context context)
-            throws IOException, InterruptedException {
-        // 获取每一行数据，并以逗号为基准进行分割
-        String[] data = value.toString().split(&quot;,&quot;);
-        // 设置word的key为地址信息
-        word.set(data[5]);
-        // 设置value为1
-        context.write(word, one);
-    }
-
-}
-</code></pre></li>
-<li><p>编写Reducer类。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
-
-public class CountReduce extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt; {
-    private IntWritable result = new IntWritable();
-    private Text keyEx = new Text();
-
-    @Override
-    protected void reduce(Text key, Iterable&lt;IntWritable&gt; values,
-            Reducer&lt;Text, IntWritable, Text, IntWritable&gt;.Context context) throws IOException, InterruptedException {
-        int sum = 0;
-        // 遍历value相加
-        for (IntWritable val : values) {
-            sum += val.get();
-        }
-        // 返回新的key-value
-        result.set(sum);
-        keyEx.set(key);
-        context.write(keyEx, result);
-    }
-}
-</code></pre></li>
-<li><p>编写Comparator类，用于第二次作业的排序。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.WritableComparable;
-
-public class CountComparator extends IntWritable.Comparator {
-
-    @Override
-    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-        // TODO Auto-generated method stub
-        return -super.compare(b1, s1, l1, b2, s2, l2);
-    }
-    public int compare(WritableComparable a, WritableComparable b) {
-        // TODO Auto-generated method stub
-        return -super.compare(a, b);
-    }
-}
-</code></pre></li>
-<li><p>编写主方法。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
-import java.util.Random;
-
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.map.InverseMapper;
-
-public class Main {
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-        if (otherArgs.length != 2) {
-            System.err.println(&quot;Usage: zhihuCount &lt;in&gt; &lt;out&gt;&quot;);
-            System.exit(2);
-        }
-        Path tempDir = new Path(&quot;wordcount-temp-&quot; + Integer.toString(new Random().nextInt(Integer.MAX_VALUE))); // 定义一个临时目录
-
-        Job job = new Job(conf, &quot;zhihuCount&quot;);
-        job.setJarByClass(Main.class);
-        try {
-            job.setMapperClass(CountMapper.class);
-            job.setCombinerClass(CountReduce.class);
-            job.setReducerClass(CountReduce.class);
-
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(IntWritable.class);
-
-            FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-            FileOutputFormat.setOutputPath(job, tempDir);
-            // 先将词频统计任务的输出结果写到临时目录中,下一个排序任务以临时目录为输入目录。
-            job.setOutputFormatClass(SequenceFileOutputFormat.class);
-            if (job.waitForCompletion(true)) {
-                Job sortJob = new Job(conf, &quot;sort&quot;);
-                sortJob.setJarByClass(Main.class);
-                FileInputFormat.addInputPath(sortJob, tempDir);
-                sortJob.setInputFormatClass(SequenceFileInputFormat.class);
-
-                /* InverseMapper由hadoop库提供，作用是实现map()之后的数据对的key和value交换 */
-                sortJob.setMapperClass(InverseMapper.class);
-                /* 将 Reducer 的个数限定为1, 最终输出的结果文件就是一个。 */
-                sortJob.setNumReduceTasks(1);
-                FileOutputFormat.setOutputPath(sortJob, new Path(otherArgs[1]));
-
-                sortJob.setOutputKeyClass(IntWritable.class);
-                sortJob.setOutputValueClass(Text.class);
-                /*
-                 * Hadoop 默认对 IntWritable 按升序排序，而我们需要的是按降序排列。 因此我们实现了一个
-                 * IntWritableDecreasingComparator 类, 并指定使用这个自定义的 Comparator
-                 * 类对输出结果中的 key (词频)进行排序
-                 */
-                sortJob.setSortComparatorClass(CountComparator.class);
-
-                System.exit(sortJob.waitForCompletion(true) ? 0 : 1);
-            }
-        } finally {
-            FileSystem.get(conf).deleteOnExit(tempDir);
-        }
-    }
-}
-</code></pre></li>
-<li><p>将写好的程序编译为jar包(注意指定Main方法)，上传至服务器。</p></li>
-<li><p>执行<code>hadoop jar XXX.jar /inputFile /outputFile</code>，执行作业。</p></li>
-</ol>
-
-<h2 id="toc_5">结果展示与说明</h2>
-
-<p>上述作业结束后，我们就可以通过查询输出文件得到我们的统计结果。本次实验统计结果如下：<br/>
-<img src="media/14786108252793/14787497512630.jpg" alt=""/><br/>
-输出文件如下：<br/>
-<img src="media/14786108252793/14787497741393.jpg" alt=""/></p>
-
-<h2 id="toc_6">相关代码</h2>
-
-<p>本次实验相关代码和所用的数据资料，均已上传至码云仓库（OSChina git）地址为：<a href="https://git.oschina.net/cobber/HadoopPractice">HadoopPractice</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/11/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html'>课程相关</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14786108252793.html" data-count-type="comments" href="14786108252793.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14773646522828.html">
-                
-                  <h1>网易Java Web微专业Spring-Web框架单元作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>完成包含以下功能的Web工程，提供一个接口，该接口可以根据需要（扩展名，Accep头）返回一个HTML文档或者JSON数据，要求：<br/>
-返回的JSON数据是一个用户列表，每个用户包含两个信息：用户Id（userId），用户名（userName），最终的数据类似：<br/>
-{&quot;userList&quot; : [<br/>
-    {<br/>
-        &quot;userId&quot;: 1001,<br/>
-        &quot;userName&quot;: &quot;test1&quot;<br/>
-    },<br/>
-    {<br/>
-        &quot;userId&quot;: 1002,<br/>
-        &quot;userName&quot;: &quot;test2&quot;<br/>
-    }<br/>
-    ...<br/>
-]}<br/>
-2. 返回的HTML文档基于FreeMarker生成，内容是一个用户列表的表格，对HTML表格不熟悉的同学可以参考 <a href="http://www.w3school.com.cn/tiy/t.asp?f=html_tables">http://www.w3school.com.cn/tiy/t.asp?f=html_tables</a> 了解；<br/>
-3. 以自己能力为基础，返回的数据可以是接口内直接返回的，也可以是从数据库表里查询出来的（加分）；<br/>
-4. 尽可能根据项目模板里介绍的内容组织代码及资源。</p>
-</blockquote>
-
-<h2 id="toc_0">项目架构</h2>
-
-<p><img src="media/14773646522828/14773699877029.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_1">相关概念</h2>
-
-<h3 id="toc_2">SpringMVC</h3>
-
-<p>SpringMVC是Spring自身提供的一套基于MVC设计理念的开发框架，用于替代安全性较低的Sturts框架</p>
-
-<h3 id="toc_3">JSON</h3>
-
-<p>JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。它基于ECMAScript的一个子集。 JSON采用完全独立于语言的文本格式，但是也使用了类似于C语言家族的习惯（包括C、C++、C#、Java、JavaScript、Perl、Python等）。这些特性使JSON成为理想的数据交换语言。 易于人阅读和编写，同时也易于机器解析和生成(一般用于提升网络传输速率)。</p>
-
-<h3 id="toc_4">视图解析器</h3>
-
-<p>控制器在选择好适合处理请求的方法时，传入收到的请求(根据方法参数类型，可能以不同的类型传入)，并且 调用该方法中的逻辑来进行处理(也可以是调用Service来真正处理)。方法逻辑可能也会在参数中添加或者删除数据。处理方法处理完之后，会委派给一个 视图，由该视图来处理方法的返回值。处理程序的返回值并不代表视图的具体实现，可以只是String类型，代表视图名，甚至是void(这时候 Spring MVC可以根据方法名或者控制器名找默认视图)。也不需要担心返回值只是视图名称的话，视图拿不到要显示的数据。因为方法参数对于视图来说也是可以拿到 的。比如说，如果处理方法以Map为参数，那么这个Map对于视图也是可以拿到的。<br/>
-返回的视图名称会返回给DispatcherServlet，它会根据一个视图解析器将视图名称解析为一个具体的视图实现。这里说到的视图解析器是一个实现了ViewResolver借口的Bean，它的任务就是返回一个视图的具体实现(HTML、jsonp、json等等)。</p>
-
-<h4 id="toc_5">内容协商视图解析器</h4>
-
-<p>可以根据请求的内容，自动匹配对应的视图解析器，对视图进行解析。</p>
-
-<h2 id="toc_6">作业实现</h2>
-
-<p>我们按照模块图有下自上对本次作业实现进行说明。</p>
-
-<ol>
-<li><p>User模型</p>
-
-<pre><code class="language-java">package site.zhanjingbo.course.meta;
-
-public class User {
-    private int userId;
-    private String userName;
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-}
-</code></pre></li>
-<li><p>UserDao。User数据库访问接口</p>
-
-<pre><code class="language-java">package site.zhanjingbo.course.dao;
-import java.util.List;
-import site.zhanjingbo.course.meta.User;
-public interface UserDao {
-    public List&lt;User&gt; getUserList();
-}
-</code></pre></li>
-<li><p>UserDaoMapper。使用Mybatis对UserDao进行实现。</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot; &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.course.dao.UserDao&quot;&gt;
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
-        &lt;result property=&quot;userName&quot; column=&quot;userName&quot; /&gt;
-    &lt;/resultMap&gt;
-    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>UserService。User的对应业务逻辑层</p>
-
-<pre><code class="language-java">package site.zhanjingbo.course.service.impl;
-import java.util.List;
-import javax.annotation.Resource;
-import org.springframework.stereotype.Service;
-import site.zhanjingbo.course.dao.UserDao;
-import site.zhanjingbo.course.meta.User;
-import site.zhanjingbo.course.service.UserService;  
-@Service
-public class UserServiceImpl implements UserService {
-    @Resource
-    private UserDao userDao;
-    public List&lt;User&gt; getUserList() {
-        return userDao.getUserList();
-    }
-}
-</code></pre></li>
-<li><p>UserController。User的控制器层，调用业务逻辑，返回对应视图名称和数据。</p>
-
-<pre><code class="language-java">package site.zhanjingbo.course.web.controller;
-
-import javax.annotation.Resource;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-import site.zhanjingbo.course.service.UserService;
-
-@Controller
-@RequestMapping(&quot;/user&quot;)
-public class UserController {
-    @Resource
-    private UserService userService;
-    @RequestMapping(&quot;/userList&quot;)
-    public ModelAndView getUserList() {
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName(&quot;userList&quot;);
-        mav.addObject(&quot;userList&quot;, userService.getUserList());
-        return mav;
-    }
-}
-</code></pre></li>
-<li><p>userList.ftl。使用FreeMarker渲染的视图文件</p>
-
-<pre><code class="language-html">&lt;html&gt;
-    &lt;head&gt;
-        &lt;title&gt;用户列表&lt;/title&gt;
-    &lt;/head&gt;
-    &lt;body&gt;
-        &lt;table border=&quot;1px&quot;&gt;
-          &lt;thead&gt;
-            &lt;tr&gt;
-              &lt;td&gt;userId&lt;/td&gt;
-              &lt;td&gt;userName&lt;/td&gt;
-            &lt;/tr&gt;
-          &lt;/thead&gt;
-          &lt;tbody&gt;
-            &lt;#list userList as user&gt; 
-                &lt;tr&gt;
-                    &lt;td&gt;${user.userId}&lt;/td&gt; 
-                    &lt;td&gt;${user.userName}&lt;/td&gt;
-                &lt;/tr&gt;
-            &lt;/#list&gt;
-          &lt;/tbody&gt;  
-        &lt;/table&gt;
-    &lt;/body&gt;
-&lt;/html&gt;
-</code></pre></li>
-<li><p>DispatcherServlet的配置文件，主要配置对应View的渲染方案，即内容协商视图响应。</p>
-
-<pre><code class="language-xml">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
-xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-xsi:schemaLocation=&quot;
-http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/context
-http://www.springframework.org/schema/context/spring-context.xsd
-http://www.springframework.org/schema/mvc
-http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
-
-&lt;context:component-scan base-package=&quot;site.zhanjingbo.course.web.controller&quot; /&gt;
-
-&lt;bean id=&quot;contentNegotiationManager&quot;
-    class=&quot;org.springframework.web.accept.ContentNegotiationManagerFactoryBean&quot;&gt;
-    &lt;!-- 扩展名至mimeType的映射,即 /user.json =&gt; application/json --&gt;
-    &lt;property name=&quot;favorPathExtension&quot; value=&quot;true&quot; /&gt;
-    &lt;!-- 用于开启 /userinfo/123?format=json 的支持 --&gt;
-    &lt;property name=&quot;favorParameter&quot; value=&quot;true&quot; /&gt;
-    &lt;property name=&quot;parameterName&quot; value=&quot;format&quot; /&gt;
-    &lt;!-- 是否忽略Accept Header --&gt;
-    &lt;property name=&quot;ignoreAcceptHeader&quot; value=&quot;false&quot; /&gt;
-    &lt;property name=&quot;mediaTypes&quot;&gt;
-        &lt;map&gt;
-            &lt;entry key=&quot;json&quot; value=&quot;application/json&quot; /&gt;
-            &lt;entry key=&quot;xml&quot; value=&quot;application/xml&quot; /&gt;
-        &lt;/map&gt;
-    &lt;/property&gt;
-    &lt;!-- 默认的content type --&gt;
-    &lt;property name=&quot;defaultContentType&quot; value=&quot;text/html&quot; /&gt;
-&lt;/bean&gt;
-&lt;!-- freeMarker --&gt;
-&lt;bean id=&quot;freemarkerConfig&quot;
-    class=&quot;org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer&quot;&gt;
-    &lt;property name=&quot;templateLoaderPath&quot; value=&quot;/freemarker/&quot; /&gt;
-&lt;/bean&gt;
-&lt;bean
-    class=&quot;org.springframework.web.servlet.view.ContentNegotiatingViewResolver&quot;&gt;
-    &lt;property name=&quot;contentNegotiationManager&quot; ref=&quot;contentNegotiationManager&quot; /&gt;
-    &lt;property name=&quot;viewResolvers&quot;&gt;
-        &lt;list&gt;
-            &lt;bean id=&quot;viewResolver&quot;
-                class=&quot;org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver&quot;&gt;
-                &lt;property name=&quot;cache&quot; value=&quot;true&quot; /&gt;
-                &lt;property name=&quot;prefix&quot; value=&quot;&quot; /&gt;
-                &lt;property name=&quot;suffix&quot; value=&quot;.ftl&quot; /&gt;
-                &lt;property name=&quot;contentType&quot; value=&quot;text/html; charset=utf-8&quot; /&gt;
-            &lt;/bean&gt;
-        &lt;/list&gt;
-    &lt;/property&gt;
-    &lt;property name=&quot;defaultViews&quot;&gt;
-        &lt;list&gt;
-            &lt;!-- JSON --&gt;
-            &lt;bean
-                class=&quot;org.springframework.web.servlet.view.json.MappingJackson2JsonView&quot; /&gt;
-            &lt;!-- XML --&gt;
-            &lt;bean class=&quot;org.springframework.web.servlet.view.xml.MarshallingView&quot;&gt;
-                &lt;property name=&quot;marshaller&quot;&gt;
-                    &lt;bean class=&quot;org.springframework.oxm.xstream.XStreamMarshaller&quot; /&gt;
-                &lt;/property&gt;
-            &lt;/bean&gt;
-        &lt;/list&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-</ol>
-
-<h2 id="toc_7">结果展示</h2>
-
-<p>为了更好的展示不同URL后缀以及不同Accept头对应的不同返回结果，我们使用curl命令对项目进行请求，观察返回结果。</p>
-
-<ol>
-<li><p>无后缀，默认URL</p>
-
-<pre><code>curl http://localhost:8080/SpringHomework5_1/api/user/userList
-</code></pre>
-
-<p><img src="media/14773646522828/14773731907095.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>html后缀</p>
-
-<pre><code>http://localhost:8080/SpringHomework5_1/api/user/userList.html
-</code></pre>
-
-<p><img src="media/14773646522828/14773756220422.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>JSON后缀</p>
-
-<pre><code>http://localhost:8080/SpringHomework5_1/api/user/userList.json
-</code></pre>
-
-<p><img src="media/14773646522828/14773756553739.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>XML后缀</p>
-
-<pre><code>curl http://localhost:8080/SpringHomework5_1/api/user/userList.xml
-</code></pre>
-
-<p><img src="media/14773646522828/14773755762050.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>JSON头</p>
-
-<pre><code>curl -H &#39;Accept:application/json&#39; http://localhost:8080/SpringHomework5_1/api/user/userList
-</code></pre>
-
-<p><img src="media/14773646522828/14773757816596.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>XML头</p>
-
-<pre><code>curl -H &#39;Accept:application/xml&#39; http://localhost:8080/SpringHomework5_1/api/user/userList
-</code></pre>
-
-<p><img src="media/14773646522828/14773757471295.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-</ol>
-
-<h2 id="toc_8">总结</h2>
-
-<p>虽然完成了目标任务，但是对于Spring整合其它框架以及SpringMVC的相关功能的具体熟悉还需要进一步学习。</p>
-
-<h2 id="toc_9">代码</h2>
-
-<p><a href="http://git.oschina.net/cobber/SpringHomework5_1">Demo</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/10/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14773646522828.html" data-count-type="comments" href="14773646522828.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14766902757975.html">
-                
-                  <h1>网易Java Web微专业Spring-数据访问单元作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>根据本单介绍的Spring JDBC，事务管理，MyBatis等内容，分别使用Spring JDBC及MyBatis提供一个转帐服务（保证事务），提供一个transferMoney接口：<br/>
-transferMoney(Long srcUserId, Long targetUserId, double count)；// srcUserId及targetUserId为转帐用户标识</p>
-</blockquote>
-
-<h2 id="toc_0">相关表结构</h2>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">列名</th>
-<th style="text-align: center">类型</th>
-<th style="text-align: center">备注</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">userId</td>
-<td style="text-align: center">Long</td>
-<td style="text-align: center">唯一用户标识</td>
-</tr>
-<tr>
-<td style="text-align: center">balance</td>
-<td style="text-align: center">double</td>
-<td style="text-align: center">账户余额</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="toc_1">程序架构</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-17-14766906872633.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_2">说明</h3>
-
-<ul>
-<li>UserDao 为统一的User数据库访问接口</li>
-<li>UserService 为外部服务提供直接调用的接口</li>
-</ul>
-
-<h2 id="toc_3">实现说明</h2>
-
-<ol>
-<li><p>application-config配置，相关配置均有注释说明。其中事务的处理可以采用注解或AOP的XML配置方式，下列代码均有体现。</p>
-
-<pre><code class="language-java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-xmlns:context=&quot;http://www.springframework.org/schema/context&quot; xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
-xmlns:mybatis=&quot;http://mybatis.org/schema/mybatis-spring&quot;
-xsi:schemaLocation=&quot;
-http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/aop
-http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
-http://www.springframework.org/schema/tx
-http://www.springframework.org/schema/tx/spring-tx.xsd
-http://mybatis.org/schema/mybatis-spring
-http://mybatis.org/schema/mybatis-spring.xsd
-http://www.springframework.org/schema/context
-http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
-
-    &lt;!-- 数据库连接配置文件导入 --&gt;
-    &lt;context:property-placeholder location=&quot;db.properties&quot; /&gt;
-    &lt;!-- 扫描注解 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-    &lt;!-- 使用注解声明事务 --&gt;
-    &lt;tx:annotation-driven transaction-manager=&quot;txManager&quot; /&gt;
-    &lt;!-- MyBatis的自动扫描 --&gt;
-    &lt;mybatis:scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-
-    &lt;!-- 数据源配置 --&gt;
-    &lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot;
-        destroy-method=&quot;close&quot;&gt;
-        &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
-        &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
-        &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
-        &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
-    &lt;/bean&gt;
-    &lt;!-- 事务管理器 --&gt;
-    &lt;bean id=&quot;txManager&quot;
-        class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-    &lt;/bean&gt;
-
-    &lt;!-- 使用AOP-XML声明事务 --&gt;
-    &lt;!-- &lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;txManager&quot;&gt; &lt;tx:attributes&gt; 
-        &lt;tx:method name=&quot;transfer*&quot; /&gt; &lt;/tx:attributes&gt; &lt;/tx:advice&gt; &lt;aop:config&gt; 
-        &lt;aop:pointcut id=&quot;daoOperation&quot; expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; 
-        /&gt; &lt;aop:advisor advice-ref=&quot;txAdvice&quot; pointcut-ref=&quot;daoOperation&quot; /&gt; &lt;/aop:config&gt; --&gt;
-
-    &lt;!-- 配置myBatis的sqlSessionFactory --&gt;
-    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-        &lt;!-- 自动扫描mappers.xml文件 --&gt;
-        &lt;property name=&quot;mapperLocations&quot;
-            value=&quot;classpath:site/zhanjingbo/dao/myBatiesImpl/*.xml&quot;&gt;&lt;/property&gt;
-        &lt;!-- myBatis配置文件 --&gt;
-        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;&gt;&lt;/property&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>UserDao的接口声明</p>
-
-<pre><code class="language-java">public interface UserDao {
-    public void reset();
-    public List&lt;User&gt; getUserList();
-    public void updateMoney(Long userId, double count);
-}
-</code></pre></li>
-<li><p>UserDao的JDBC实现，其中JdbcTemplete由Spring进行装载。</p>
-
-<pre><code class="language-java">@Component(&quot;UserJDBCDao&quot;)
-public class UserDaoJDBCImpl implements UserDao {
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-    public void reset() {
-        this.jdbcTemplate.execute(&quot;update UserBalance set balance=1000&quot;);
-    }
-    public List&lt;User&gt; getUserList() {
-        return this.jdbcTemplate.query(&quot;select * from UserBalance&quot;, new RowMapper&lt;User&gt;() {
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                User user = new User();
-                user.setUserId(rs.getLong(&quot;userId&quot;));
-                user.setBalance(rs.getDouble(&quot;balance&quot;));
-                return user;
-            }
-        });
-    }
-    public void updateMoney(Long userId, double count) {
-        this.jdbcTemplate.update(&quot;update UserBalance set balance=balance+? where userId=?&quot;, count, userId);
-    }
-}
-</code></pre></li>
-<li><p>UserDao的MyBatis实现，采用Mapper.xml的方式进行声明实现</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.dao.UserDao&quot;&gt;
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
-        &lt;result property=&quot;balance&quot; column=&quot;balance&quot; /&gt;
-    &lt;/resultMap&gt;
-    &lt;update id=&quot;reset&quot;&gt;
-        update UserBalance set balance=500
-    &lt;/update&gt;
-
-    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from userBalance
-    &lt;/select&gt;
-    &lt;update id=&quot;updateMoney&quot;&gt;
-        update UserBalance set balance=balance+#{param2} where userId=#{param1}
-    &lt;/update&gt;
-&lt;/mapper&gt; 
-</code></pre></li>
-<li><p>UserService的实现，其中主要为transferMoney方法的实现。由于该方法的业务逻辑，该方法应该确保事务性。采用注解的方式声明事务，则在该方法前添加<code>@Transactional</code>注解。采用配置文件方式对事务进行声明参考第1小节中的配置文件。</p>
-
-<pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRED)
-public void transferMoney(Long srcUserId, Long targetUserId, double count) {
-    userDao.updateMoney(srcUserId, 0 - count);
-    userDao.updateMoney(targetUserId, count);
-}
-</code></pre>
-
-<p>在UserService的实现过程中，我们需要调用UserDao的具体实例，在本次作业过程中我们采用了两种方法来实现UserDao。在测试不同的实现方式时只需要修改注入的UserDao的具体实例就可完成。为了明显区分两种实例的实现，我们在reset的方法中做了区别。其中JDBC实现方式Reset之后balance的值为1000，MyBatis实现方式reset之后的balance值为500。</p></li>
-<li><p>Application调用代码</p>
-
-<pre><code class="language-java">    public static void main(String[] args) {
-        //加载Spring
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
-        //获取UserService实例
-        UserService userService = applicationContext.getBean(UserService.class);
-        userService.reset();
-        try {
-            userService.transferMoney(new Long(10000), new Long(10001), 100);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        List&lt;User&gt; userList = userService.getUserList();
-        for (User user : userList) {
-            System.out.println(user);
-        }
-
-        ((ConfigurableApplicationContext) applicationContext).close();
-    }
-</code></pre></li>
-</ol>
-
-<h2 id="toc_4">运行结果</h2>
-
-<h3 id="toc_5">JDBC运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766935577292.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766935207561.jpg" alt=""/></p></li>
-</ol>
-
-<h3 id="toc_6">MyBatis运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766936235948.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766936425847.jpg" alt=""/></p></li>
-</ol>
-
-<h2 id="toc_7">程序地址</h2>
-
-<p><a href="http://git.oschina.net/cobber/SpringHomework4_1">SpringHomework4_1</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/10/17</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14766902757975.html" data-count-type="comments" href="14766902757975.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14759932535473.html">
-                
-                  <h1>网易Java Web微专业Spring-AOP容器作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>完成一个基本的应用，提供若干个Service（&gt;=2），每个Service提供基本的增删查改的接口（实现随意，比如输出一行信息），通过AOP保证所有所有的Service接口在正常调用返回后以及抛出异常时（Service接口模拟），打出如下信息：函数名称，函数参数，并说明发生的事件：正常返回或者抛出异常。</p>
-</blockquote>
-
-<h2 id="toc_0">AOP模式示意图</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-09-14759941824050.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_1">作业描述</h2>
-
-<p>本次作业我设计了两个Service，分别是UserService和ProductService，每个Service分别提供增删改查操作（Print语句代替业务逻辑）。</p>
-
-<ol>
-<li><p>配置Spring配置文件，加入AOP相关的xsd文件。并配置AOP。</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
-xmlns:p=&quot;http://www.springframework.org/schema/p&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/context
-http://www.springframework.org/schema/context/spring-context.xsd
-http://www.springframework.org/schema/aop
-http://www.springframework.org/schema/aop/spring-aop-2.0.xsd&quot;&gt;
-
-    &lt;!-- 引入AOP --&gt;
-    &lt;aop:aspectj-autoproxy /&gt;
-    &lt;!-- 自动扫描annotation配置 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-
-    &lt;!-- 自定义的日志切面声明 --&gt;
-    &lt;bean id=&quot;logAspect&quot; class=&quot;site.zhanjingbo.aspect.LogAspect&quot;&gt;&lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>编写Service。以UserService为例。</p>
-
-<pre><code class="language-java">package site.zhanjingbo.service;
-import org.springframework.stereotype.Component;
-
-@Component
-public class UserService {
-    public void add(String username) throws Exception {
-        System.out.println(&quot;添加用户:&quot; + username);
-        throw new Exception(&quot;测试&quot;);
-    }
-    public void edit(String username) {
-        System.out.println(&quot;添加用户:&quot; + username);
-    }
-    public void del(String username) {
-        System.out.println(&quot;删除用户:&quot; + username);
-    }
-    public void find(String username) {
-        System.out.println(&quot;查询用户:&quot; + username);
-    }
-}
-</code></pre></li>
-<li><p>编写Aspect，完成切面方法。</p>
-
-<pre><code class="language-java">package site.zhanjingbo.aspect;
-
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
-
-@Aspect
-public class LogAspect {
-
-    /**
-     * 正常返回时调用
-     * @param jp调用点信息
-     */
-    @AfterReturning(&quot;execution(* site.zhanjingbo.service.*.*(..))&quot;)
-    public void logAfterReturning(JoinPoint jp){
-        String className = jp.getSignature().getDeclaringTypeName();
-        String methodName = jp.getSignature().getName();
-        System.out.print(&quot;正常返回Log:调用&quot;+className+&quot;的&quot;+methodName+&quot;方法,参数为：&quot;);
-        for (Object obj : jp.getArgs()) {
-            System.out.print(obj.toString());
-        }
-        System.out.println(&quot;&quot;);
-    }
-    /**
-     * 抛出异常返回时调用
-     * @param jp 调用点信息
-     * @param ex 异常信息
-     */
-    @AfterThrowing(pointcut=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot;,throwing=&quot;ex&quot;)
-    public void logAfterThrowing(JoinPoint jp,Exception ex){
-        String className = jp.getSignature().getDeclaringTypeName();
-        String methodName = jp.getSignature().getName();
-        System.out.print(&quot;异常Log:调用&quot;+className+&quot;的&quot;+methodName+&quot;方法,参数为：&quot;);
-        for (Object obj : jp.getArgs()) {
-            System.out.print(obj.toString());
-        }
-        System.out.println(&quot;。抛出异常:&quot;+ex.getMessage()+&quot;!&quot;);
-    }
-}
-</code></pre></li>
-<li><p>编写模拟调用的Application类，来模拟业务。</p>
-
-<pre><code class="language-java">public class Application {
-    public static void main(String[] args){
-        //加载Spring相关配置文件
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
-
-        //获取UserService实例
-        UserService userService = applicationContext.getBean(UserService.class);
-        //调用方法
-        try {
-            userService.add(&quot;ZhangSan&quot;);
-        } catch (Exception e) {
-
-        }
-        //获取ProductService实例
-        ProductService productService = applicationContext.getBean(ProductService.class);
-        //调用方法
-        productService.del(&quot;Pen&quot;);
-
-        ((ConfigurableApplicationContext)applicationContext).close();
-    }
-}
-</code></pre></li>
-</ol>
-
-<h2 id="toc_2">程序运行结果</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-09-14759958614665.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<p>Service的方法正常调用或调用异常结束后，完成对应的切面方法响应，输出对应的Log。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/10/9</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14759932535473.html" data-count-type="comments" href="14759932535473.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1399,6 +888,8 @@ public class LogAspect {
             <a href="Java.html"><strong>Java</strong></a>
         
             <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
+        
+            <a href="%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html"><strong>算法/数据结构</strong></a>
          
         </p>
 
@@ -1429,31 +920,31 @@ public class LogAspect {
 	      
 		      
 			      <li class="post">
+			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14889379059302.html">剑指Offer-替换空格</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14889364537323.html">剑指Offer-二维数组中的查找</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14880758779206.html">Java容器框架分析(九)——WeakHashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879958366746.html">Java容器框架分析(八)——PriorityQueue</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879892493054.html">Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879172287548.html">Java容器框架分析(六)——HashSet与HashMap</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14879027517066.html">Java容器框架分析(五)——TreeSet与TreeMap</a>
 			      </li>
 		     
 		  

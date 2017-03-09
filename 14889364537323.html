@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-View的定位 - Zhan's Blog
+  剑指Offer-二维数组中的查找 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-View的定位</h1>
+          <h1>剑指Offer-二维数组中的查找</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/2</span>
+          <span class="date">2017/3/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法/数据结构</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14595674718251.html" data-count-type="comments" href="14595674718251.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14889364537323.html" data-count-type="comments" href="14889364537323.html#ds-thread"></a>
             
           </span>
 
@@ -129,63 +129,49 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在学习View的autoLayout之前，必须先搞清楚一些基本的概念，那就是在iOS中View的位置是如何被系统确定的。<br/>
-UIView表示屏幕上的一块矩形区域：负责提供相应区域的事件响应。</p>
+      <blockquote>
+<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
+</blockquote>
 
-<h2 id="toc_0">View的层次</h2>
+<h2 id="toc_0">解题思路</h2>
 
-<p>View的层次结构是一个树状结构：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595798678915.jpg" alt="View的层次结构"/><br/>
-上级View可以对子View进行裁剪，通过UIView.clipsToBounds来控制，默认不裁剪，示意图如下：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603743369820.jpg" alt=""/></p>
+<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
 
-<h2 id="toc_1">UIKit坐标系</h2>
+<ul>
+<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
+<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
+<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
+<li>若遍历到i<mark>n，j</mark>0,依旧没有找到匹配数据，则返回false；</li>
+</ul>
 
-<p>-CGPoint{x,y}用于描述坐标<br/>
--CGSize{width,height}用于描述宽和高<br/>
--CGRect{origin,size}描述一个矩形区域<br/>
-坐标系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595803487624.jpg" alt="UIKit坐标系"/></p>
+<h2 id="toc_1">实现代码</h2>
 
-<h2 id="toc_2">View的定位-Frame</h2>
+<pre><code class="language-java">public class Solution {
+    public boolean Find(int target, int [][] array) {
+        if(array.length == 0){
+            return false;
+        }
+        int i = 0;
+        int j = array[0].length - 1;
+        
+        while(i &lt; array.length &amp;&amp; j &gt;=0){
+            if(array[i][j] == target){
+                return true;
+            }
+            if(target &gt; array[i][j]){
+                i++;
+                continue;
+            }
+            if(target &lt; array[i][j]){
+                j--;
+                continue;
+            }
+        }
+        return false;
 
-<p>view的frame属性用于描述View的矩形位置信息。其是一个CGRect结构体。用于描述该View在其SuperView的坐标系内描述其所占区域。</p>
-
-<pre><code>-(CGRect)frame{
-    return CGRectMake(self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
+    }
 }
 </code></pre>
-
-<h2 id="toc_3">View的定位-Bounds</h2>
-
-<p>该view在本地坐标系统中的位置和大小。（参照点是，本地坐标系统，就相当于ViewB自己的坐标系统，以0,0点为起点）</p>
-
-<pre><code>-(CGRect)bounds{
-    return CGRectMake(0,0,self.frame.size.width,self.frame.size.height);
-}
-</code></pre>
-
-<p><img src="http://img.my.csdn.net/uploads/201303/24/1364058232_8785.jpg" alt=""/></p>
-
-<h2 id="toc_4">View的定位-Center</h2>
-
-<p>center：该view的中心点在父view坐标系统中的位置和大小。（参照点是，父亲的坐标系统）</p>
-
-<h2 id="toc_5">Demo展示</h2>
-
-<pre><code>UIView *view1 = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 280, 250)];  
-[view1 setBounds:CGRectMake(-20, -20, 280, 250)];  
-view1.backgroundColor = [UIColor redColor];  
-[self.view addSubview:view1];//添加到self.view  
-NSLog(@&quot;view1 frame:%@========view1 bounds:%@&quot;,NSStringFromCGRect(view1.frame),NSStringFromCGRect(view1.bounds));  
-  
-UIView *view2 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];  
-view2.backgroundColor = [UIColor yellowColor];  
-[view1 addSubview:view2];//添加到view1上,[此时view1坐标系左上角起点为(-20,-20)]  
-NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view2.frame),NSStringFromCGRect(view2.bounds));  
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-02-14595828809322.jpg" alt=""/></p>
 
       </div>
 
@@ -193,16 +179,16 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14595830611425.html" 
-          title="Previous Post: GeekBand.iOS-Autoresizing">&laquo; GeekBand.iOS-Autoresizing</a>
+          <a href="14889379059302.html" 
+          title="Previous Post: 剑指Offer-替换空格">&laquo; 剑指Offer-替换空格</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14592472421509.html" 
-          title="Next Post: GeekBand.iOS-UICollectionView">GeekBand.iOS-UICollectionView &raquo;</a>
+          <a  href="14880758779206.html" 
+          title="Next Post: Java容器框架分析(九)——WeakHashMap">Java容器框架分析(九)——WeakHashMap &raquo;</a>
       
       </p>
         </div>
@@ -214,7 +200,7 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
           
 
           
-              <div class="ds-thread" data-thread-key="14595674718251.html" data-url="http://swuzjb.github.io/14595674718251.html" data-title="GeekBand.iOS-View的定位"></div>
+              <div class="ds-thread" data-thread-key="14889364537323.html" data-url="http://swuzjb.github.io/14889364537323.html" data-title="剑指Offer-二维数组中的查找"></div>
           
         </div>
       </div>
