@@ -4,7 +4,7 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-03-03T20:46:45+08:00</updated>
+  <updated>2017-03-09T11:25:53+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -243,7 +243,7 @@ public class Solution {
 <li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
 <li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
 <li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
-<li>若遍历到i<mark>n，j</mark>0,依旧没有找到匹配数据，则返回false；</li>
+<li>若遍历到<code>i==n，j==0</code>,依旧没有找到匹配数据，则返回false；</li>
 </ul>
 
 <h2 id="toc_1">实现代码</h2>
