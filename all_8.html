@@ -107,6 +107,340 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14626379454584.html">
+                
+                  <h1>GeekBand.Swift-第一周作业</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
+心中有沟壑<br/>
+原谅我。。英语拼错了。。。</p>
+</blockquote>
+
+<h2 id="toc_0">设计方式一</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+class  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">设计方式二</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+class Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">设计方式三</h2>
+
+<pre><code class="language-swift">class Point{
+    var x:Int;
+    var y:Int;
+}
+ 
+struct  Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_3">设计方式四</h2>
+
+<pre><code class="language-swift">struct Point{
+    var x:Int;
+    var y:Int;
+} 
+struct Rectangle{
+    var leftUp:Point;
+    var width:Int;
+    var height:Int;
+}
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_4">Swift中struct和class的区别</h2>
+
+<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
+
+<ol>
+<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
+<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
+</ol>
+
+<h3 id="toc_5">使用情景</h3>
+
+<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
+
+<ol>
+<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
+<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
+<li>不需要继承。这个是面向对象的基本特性。</li>
+</ol>
+
+<h2 id="toc_6">结论</h2>
+
+<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14626379454584.html" data-count-type="comments" href="14626379454584.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14623728039466.html">
+                
+                  <h1>GeekBand.iOS-数据持久化</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
+在iOS中，我们可以采用如下技术进行数据的持久化：</p>
+
+<blockquote>
+<ul>
+<li>文件存储</li>
+<li>SQLite嵌入式数据库</li>
+<li>Core Data</li>
+</ul>
+</blockquote>
+
+<h2 id="toc_0">文件存储</h2>
+
+<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+
+<h3 id="toc_1">沙盒</h3>
+
+<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+
+<ul>
+<li>根目录：<code>NSHomeDictionary()</code></li>
+<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
+<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
+<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
+<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+</ul>
+
+<h3 id="toc_2">APP Bundle</h3>
+
+<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
+cocoa提供了类NSBundle。<br/>
+<code>[NSBundle mainBundle]</code></p>
+
+<h3 id="toc_3">NSFileManager</h3>
+
+<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
+常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
+
+<h2 id="toc_4">数据库SQLite</h2>
+
+<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
+
+<h3 id="toc_5">什么是SQLite</h3>
+
+<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
+
+<h3 id="toc_6">使用SQLite</h3>
+
+<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
+
+<ol>
+<li>链接libSQLite3.dylib</li>
+<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
+</ol>
+
+<p>纯C语言API</p>
+
+<pre><code>//打开 SQLite
+sqlite3* db = NULL
+int result = sqlite3_open([path UTF8String],&amp;db);
+
+//执行SQL语句
+int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
+
+//预定义SQL语句,可以有效防止SQL注入
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
+    sqlite3_bind_int(stmt,2,27);
+}
+sqlite3_finalize(stmt);
+
+
+//结果集遍历
+sqlite3_stmt *stmt;
+if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
+    while(sqlite3_step(stmt)==SQLITE_ROW){
+        int _id = sqlite3_column_int(stmt,0);
+        char* _name = sqlite3_column_text(stmt,1);
+        NSString* name = [NSString stringWithUTF8String:_name];
+        ...
+    }
+}
+sqlite3_finalize(stmt);
+
+//关闭SQLite
+sqlite3_close(db);
+</code></pre>
+
+<h3 id="toc_7">FMDB</h3>
+
+<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
+使用方法如下：</p>
+
+<pre><code>//打开
+FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
+[db open];
+
+//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
+[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
+//取插入的id
+contacter.contacterId = (int)[db lastInsertRowId];
+
+//查询
+FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
+while ([result next]) {
+    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
+    contacter.name = [result stringForColumn:@&quot;name&quot;];
+    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
+    contacter.email = [result stringForColumn:@&quot;email&quot;];
+    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
+ }
+
+//关闭
+[db close];
+</code></pre>
+
+<h2 id="toc_8">CoreData简介</h2>
+
+<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+
+<h3 id="toc_9">什么是CoreData</h3>
+
+<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+
+<h4 id="toc_10">开始使用CoreData</h4>
+
+<ol>
+<li>在新建项目时勾选<code>Use CoreData</code></li>
+<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+</ol>
+
+<h4 id="toc_11">简单使用</h4>
+
+<pre><code>//创建一个Entity对象
+NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+
+//填充属性
+[entity setValue:value forKey:@&quot;key&quot;];
+
+//保存
+NSError* error = nil;
+[context save:&amp;error];
+
+//查询
+NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+
+//排序过滤
+request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
+request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+
+
+//执行
+NSError* error = nil;
+NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+
+//遍历，正常遍历数组即可。
+for(NSManagedObject *obj in objs){
+    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
+}
+
+//删除
+[context deleteObject:managedObject];
+
+</code></pre>
+
+<h4 id="toc_12">参考资料</h4>
+
+<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
+<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
+<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14614801701186.html">
                 
                   <h1>GeekBand.iOS-多线程编程</h1>
@@ -914,293 +1248,6 @@ AFHTTPSessionManager* manger = [[AFHTTPSessionManager alloc]initWithSessionConfi
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14604722520928.html">
-                
-                  <h1>GeekBand.iOS-UIScrollView的使用</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>在日常开发过程中，我们需要展示的东西很有可能比手机的屏幕长，或者比屏幕宽，在这个时候如何展示？以及在有些情况下，我们应该允许用户对照片等view进行缩放操作。这些又如何实现呢？答案就是使用本文的主角UIScrollView。</p>
-
-<h2 id="toc_0">什么是ScrollView</h2>
-
-<p>能Scroll的View。即UIScrollView可以用于显示多于一个屏幕的内容，超出屏幕范围的内容可以通过滑动进行查看。效果如图所示:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604727346930.jpg" alt=""/></p>
-
-<h2 id="toc_1">UIScrollView的创建方式</h2>
-
-<ol>
-<li>在Interface Builder里面拖</li>
-<li>使用代码创建:<code>scrollView = [[UIScrollView alloc] initWithFrame:rect];</code></li>
-</ol>
-
-<h2 id="toc_2">UIScrollView的尺寸</h2>
-
-<ol>
-<li>ScrollView自身的size，也就是自身的Frame，这个和其它View一样。</li>
-<li>ScrollView有一个特殊的size属性，称之为contentSize，也是它的内容的大小，这个是必须指定的一个属性，否则ScrollView无法进行滑动等操作。指定contentSize的方式也有两种：
-
-<ol>
-<li>使用代码指定<code>scrollView.contentSize = CGSizeMake(&lt;#CGFloat width#&gt;, &lt;#CGFloat height#&gt;);</code></li>
-<li>使用AutoLayout,约束必须可以计算出contentSize的大小才可以正常的往其内部添加子View。可以参考<a href="http://www.cocoachina.com/ios/20150104/10810.html">Storyboard中的UIScrollView使用自动布局，使其能够滚动</a>。</li>
-</ol></li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604733972117.jpg" alt=""/></p>
-
-<h2 id="toc_3">UIScrollView的滚动</h2>
-
-<p>设置完成ScrollView之后，我们的ScrollView就可以进行滚动。与滚动有几个相关的属性或方法，介绍如下：</p>
-
-<ol>
-<li><code>BOOL scrollEnable</code>是否可以滚动</li>
-<li><code>BOOL bounces</code>是否显示回弹效果</li>
-<li><code>BOOL showsHorizontalScrollIndicator</code> 是否显示垂直滚动条</li>
-<li><code>BOOL showsVerticalScrollIndicator</code>  是否显示水平滚动条</li>
-<li><code>.contentOffset</code>是一个CGPoint，表示偏移的点
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604737957967.jpg" alt=""/></li>
-</ol>
-
-<h2 id="toc_4">监听滚动</h2>
-
-<p>监听滚动需要对应的监听对象实现UIScrollViewDelegate协议。<br/>
-具体的监听方法如下：</p>
-
-<pre><code>// 只要 scrollView 滑动就会触发 ( 会触发多次 )
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView;                                               
-
-//只要 scrollView 缩放就会触发
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView 
-
-// 当将要拖拽 scrollView 时触发 , 手指接触 scrollView 并且将要滑动时触发
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
-// 当结束拖拽时触发 ( 手指将要离开屏幕 )
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset NS_AVAILABLE_IOS(5_0);
-
-// 当结束拖拽时触发 ( 手指已经离开屏幕 )
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate;
-
-//当 scrollView 滑动将要减速时触发 ( 将要停止 )
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView;   
-//当 scrollView 结束减速时触发 ( 停止滑动 )
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView;    
-//当设置 scrollView的setContentOffset, 有一个动画效果时触发
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView; 
-//设置要缩放的 scrollView 上面的哪一个子视图 , 只能是子视图 , 不能是 scrollView 本身
-- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;     
-//当将要开始缩放时触发
-- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view NS_AVAILABLE_IOS(3_2); 
-//当结束缩放时触发
-- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale; 
-//只有当 scrollsToTop 属性设置为 YES 时 , 该方法才会触发 , 进一步询问点击状态条是否有效
-- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView;  
-//当点击状态条并且 scrollView 滑动到顶端时触发
-- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView;      
-
-</code></pre>
-
-<h2 id="toc_5">ScrollView缩放</h2>
-
-<p>除了要指定那个View具有缩放的效果，还需要指定两个属性，<code>scrollView.minimumZoomScale</code>、<code>scrollView.maximumZoomScale</code>。直接Zoom是位图缩放而非重绘</p>
-
-<h2 id="toc_6">ScrollView分页滚动</h2>
-
-<p>通过设置.pageEnable属性可以控制是否开启分页滚动，当开启后，scrollView不再显示滚动条，并整页切换显示内容。<br/>
-页面来源：</p>
-
-<ul>
-<li>一个巨大的View，简单但是浪费资源</li>
-<li>每页一个View，通过Delegate实现View的复用</li>
-</ul>
-
-<h3 id="toc_7">ScrollView和PageControl结合</h3>
-
-<p>这两个View结合起来可以实现图片轮播的效果，通过实现PageControl的delegate可以控制currentPage属性进行显示</p>
-
-<h4 id="toc_8">无限轮播</h4>
-
-<p>为了保证轮播图像首尾相接，无限循环，有两个思路：<br/>
-1. 在第一张图片前加最后一张图片，在最后一张图片后加第一张图片，在delegate中判断，如果到达这两个特殊位置，在程序中进行跳转。举例：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-12-14604754924143.jpg" alt=""/><br/>
-如果到达位置0，就跳到位置3。如果到达位置4，就跳到位置1。这样就实现了无限轮播。<br/>
-2. 设置三个View，左中右。当滑动结束后，用目标位置的View替换中部的View，然后再跳回中部，更新左右两个View，缺点实现复杂，优点消耗资源少。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14604722520928.html" data-count-type="comments" href="14604722520928.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14603833170565.html">
-                
-                  <h1>GeekBand.iOS-触摸手势</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">什么是手势</h2>
-
-<p>手势是按照特定规律出现的一些列触摸事件，常见手势有以下几种：</p>
-
-<ul>
-<li>Tap 轻拍</li>
-<li>Swipe  单轴滑动</li>
-<li>Double tap  连续两次轻拍</li>
-<li>Long press  长按</li>
-<li>Pinch   捏合手指</li>
-<li>Two finger tap 双指轻拍 </li>
-<li>Rotate 旋转</li>
-</ul>
-
-<h2 id="toc_1">实现的原理</h2>
-
-<ol>
-<li>收集一些列的UITouch</li>
-<li>分析是否符合所需要的规律
-
-<ul>
-<li>符合：触发手势响应</li>
-<li>否则：转为普通触摸事件响应</li>
-</ul></li>
-</ol>
-
-<p>Some Example</p>
-
-<pre><code>//Double Tap
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    for(UITouch *aTouch in touches){
-        if(aTouch.tapCount &gt;= 2){
-            [self respondToDoubleTapFesture:aTouch];
-        }
-    }
-}
-
-//Drag
--(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    UITouch *aTouch = [touches anyObject];
-    CGPoint loc = [aTouch locationInView:self];
-    CGPpoint preloc= [aTouch previouslocationInView:self];
-    
-    CGRect myFrame = self.frame;
-    float deltaX = loc.x - preloc.x;
-    float deltaY = loc.y - preloc.y;
-    myFrame.orgin.x += deltaX;
-    myFrame.orgin.Y += deltaY;
-    [self setFrame:myFrame];
-    
-}
-</code></pre>
-
-<h2 id="toc_2">UIControl</h2>
-
-<p>如果所有的手势都需要我们自己来实现，自然的第一加大了开发的任务量，第二其实没有那个必要，毕竟复用率极高。于是，苹果为我们封装了好啦！！</p>
-
-<ul>
-<li>UIControl：UIView：UIResponder</li>
-<li>Traget-Action</li>
-<li>UIControlEvents
-
-<ul>
-<li>TouchDown</li>
-<li>TouchDownRepeat</li>
-<li>TouchDragInside</li>
-<li>TouchDragOutside</li>
-<li>TouchDragEnter</li>
-<li>TouchUpInside</li>
-<li>TouchUpOutside</li>
-<li>TouchCancel</li>
-<li>ValueChanged</li>
-<li>PrimaryActionTriggered</li>
-<li>EditingDidBegin</li>
-<li>EditingChanged</li>
-<li>EditingDidEnd</li>
-<li>EditingDidEndOnExit</li>
-<li>AllTouchEvents</li>
-<li>AllEditingEvents</li>
-</ul></li>
-</ul>
-
-<h2 id="toc_3">UIGestureRecongnizer</h2>
-
-<p>苹果在ios3.2以后提供的专门处理手势操作的封装。<br/>
-<code>-initWithTraget:(UIView *)action:(SEL)handleGesture</code><br/>
-<code>-[UIView addGestureRecognizer:]</code><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603848035859.jpg" alt=""/></p>
-
-<h3 id="toc_4">离散手势与连续手势</h3>
-
-<p>触控动作同时分为连续动作(continuous)和不连续动作(discrete)，连续动作例如滑动和拖拽，它会持续一小段时间，而不连续动作例如单击，它瞬间就会完成，在这两类事件的处理上又稍有不同。对于不连续动作，Gesture Recognizer只会给ViewContoller发送一个单一的动作消息(action message),而对于连续动作，Gesture Recognizer会发送多条动作消息给ViewController，直到所有的事件都结束。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603850426400.jpg" alt=""/></p>
-
-<h3 id="toc_5">手势识别状态</h3>
-
-<p>在事件处理过程中，这两种方式所处的状态又各有不同，首先，所有的触控事件最开始都是处于可用状态(Possible)，对应UIKit里面的UIGestureRecognizerStatePossible类，如果是不连续动作事件，则状态只会从Possible转变为已识别状态(Recognized,UIGestureRecognizerStateRecognized)或者是失败状态(Failed,UIGestureRecognizerStateFailed)。例如一次成功的单击动作，就对应了Possible-Recognized这个过程。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-5.png" alt=""/><br/>
-如果是连续动作事件，如果事件没有失败并且连续动作的第一个动作被成功识别(Recognized)，则从Possible状态转移到Began(UIGestureRecognizerStateBegan)状态，这里表示连续动作的开始，接着会转变为Changed(UIGestureRecognizerStateChanged)状态，在这个状态下会不断循环的处理连续动作，直到动作执行完成变转变为Recognized已识别状态，最终该动作会处于完成状态(UIGestureRecognizerStateEnded)，另外，连续动作事件的处理状态会从Changed状态转变为Canceled(UIGestureRecognizerStateCancelled)状态，原因是识别器认为当前的动作已经不匹配当初对事件的设定了。每个动作状态的变化，Gesture Recognizer都会发送消息(action message)给Target，也就是ViewController，它可以根据这些动作消息进行相应的处理。例如一次成功的滑动手势动作就包括按下、移动、抬起的过程，分别对应了Possible-Began-Changed-Recognized这个过程。</p>
-
-<h3 id="toc_6">同时支持多种手势</h3>
-
-<ul>
-<li><p>用依赖关系改变触发顺序</p>
-
-<p><code>-[a requireGestureRecognizerToFail:b];</code><br/>
-b失败之前,a先等待</p></li>
-<li><p>使用UIGestureRecognizerDelegate控制</p>
-
-<ul>
-<li>-gestureRecognizer:shouldReceiveTouch: 这个Touch要不要处理</li>
-<li>-gestureRecognizerShouldBegin:是否可以响应</li>
-<li>-gestureRecognizer:ShouldRecognizeSimltaneouslyWithGestureRecognizer: 可以一起触发么？</li>
-</ul></li>
-</ul>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603833170565.html" data-count-type="comments" href="14603833170565.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1289,6 +1336,18 @@ b失败之前,a先等待</p></li>
 	      
 		      
 			      <li class="post">
+			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
@@ -1302,18 +1361,6 @@ b失败之前,a先等待</p></li>
 		      
 			      <li class="post">
 			        <a href="14889379059302.html">剑指Offer-替换空格</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889364537323.html">剑指Offer-二维数组中的查找</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14880758779206.html">Java容器框架分析(九)——WeakHashMap</a>
 			      </li>
 		     
 		  

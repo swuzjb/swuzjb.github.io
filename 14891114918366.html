@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.Swift-Homework13 - Zhan's Blog
+  剑指Offer-用两个栈实现队列 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.Swift-Homework13</h1>
+          <h1>剑指Offer-用两个栈实现队列</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/5/24</span>
+          <span class="date">2017/3/10</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法/数据结构</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14891114918366.html" data-count-type="comments" href="14891114918366.html#ds-thread"></a>
             
           </span>
 
@@ -129,168 +129,44 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">题目</h2>
+      <blockquote>
+<p>用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。</p>
+</blockquote>
 
-<p>请说出下面代码存在的问题，以及改进方式。</p>
+<h2 id="toc_0">解决思路</h2>
 
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    } 
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-</code></pre>
+<p>栈是后进先出，而队列是先进先出，在pop的过程上是相反的。所以我们要解决的核心问题就是这样。<br/>
+Stack1用来push数据，这样，最先进入的元素就成为了Stack1的栈底元素。当我们需要出队时，需要找到第一个进入stack1的元素，于是，我们分别将stack1的元素出栈，压入stack2，这时，stack2中的栈顶元素，就是最开始我们插入栈中的元素，也就是我们要pop的元素。<br/>
+所以，就有了如下的规则:</p>
 
-<h2 id="toc_1">回答</h2>
+<ul>
+<li>push操作：压入stack1中；</li>
+<li>pop操作：如果stack2中有元素，则返回stack2的栈顶元素；若stack2为空，则依次将stack1中的元素出栈，压入stack2中，返回stack2的栈顶元素。</li>
+</ul>
 
-<h3 id="toc_2">问题分析</h3>
+<h2 id="toc_1">代码如下：</h2>
 
-<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
-如果在实际操作过程中，执行如下代码：</p>
+<pre><code class="language-java">import java.util.Stack;
 
-<pre><code class="language-swift">var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-</code></pre>
-
-<p>执行之后内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
-可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
-
-<pre><code class="language-swift">card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
-
-<p>card和customer的引用计数非0，无法吸收。</p>
-
-<h3 id="toc_3">解决方法</h3>
-
-<h4 id="toc_4">方案A——手动打破循环引用</h4>
-
-<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
-
-<pre><code class="language-swift">card = nil;
-customer.card = nil;
-customer = nil;
-</code></pre>
-
-<p>执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
-
-<h4 id="toc_5">方案B-weak(弱)引用</h4>
-
-<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    //注意这里！！
-    weak var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
+public class Solution {
+    Stack&lt;Integer&gt; stack1 = new Stack&lt;Integer&gt;();
+    Stack&lt;Integer&gt; stack2 = new Stack&lt;Integer&gt;();
+    
+    public void push(int node) {
+        stack1.push(node);
     }
     
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
+    public int pop() {
+        if(stack2.size() &gt; 0 ){
+            return stack2.pop();
+        }
+        
+        while(stack1.size() &gt; 0 ){
+            stack2.push(stack1.pop());
+        }
+        return stack2.pop();
     }
 }
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存结构:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
-
-<h4 id="toc_6">方案C-unowned(无主)引用</h4>
-
-<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    //注意这里！！！！
-    unowned let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
-
-<h5 id="toc_7">方案B和C的区别</h5>
-
-<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
-
-<h2 id="toc_8">写在最后</h2>
-
-<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
-
-<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
 </code></pre>
 
       </div>
@@ -299,16 +175,16 @@ customer = nil;
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14676190809439.html" 
-          title="Previous Post: Java康复性训练——Java基础1">&laquo; Java康复性训练——Java基础1</a>
+          <a href="14891123573052.html" 
+          title="Previous Post: 剑指offer-旋转数组的最小数字">&laquo; 剑指offer-旋转数组的最小数字</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14635750426080.html" 
-          title="Next Post: GeekBand.Swift-集合类型">GeekBand.Swift-集合类型 &raquo;</a>
+          <a  href="14890277021887.html" 
+          title="Next Post: 剑指Offer-重建二叉树">剑指Offer-重建二叉树 &raquo;</a>
       
       </p>
         </div>
@@ -320,7 +196,7 @@ customer = nil;
           
 
           
-              <div class="ds-thread" data-thread-key="14640741638557.html" data-url="http://swuzjb.github.io/14640741638557.html" data-title="GeekBand.Swift-Homework13"></div>
+              <div class="ds-thread" data-thread-key="14891114918366.html" data-url="http://swuzjb.github.io/14891114918366.html" data-title="剑指Offer-用两个栈实现队列"></div>
           
         </div>
       </div>

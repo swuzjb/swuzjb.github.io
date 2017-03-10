@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.Swift-Homework13 - Zhan's Blog
+  剑指offer-旋转数组的最小数字 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.Swift-Homework13</h1>
+          <h1>剑指offer-旋转数组的最小数字</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/5/24</span>
+          <span class="date">2017/3/10</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法/数据结构</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14891123573052.html" data-count-type="comments" href="14891123573052.html#ds-thread"></a>
             
           </span>
 
@@ -129,168 +129,32 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">题目</h2>
+      <blockquote>
+<p>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。<br/>
+输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。<br/>
+例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。<br/>
+NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
+</blockquote>
 
-<p>请说出下面代码存在的问题，以及改进方式。</p>
+<h2 id="toc_0">解题思路</h2>
 
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    } 
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-</code></pre>
+<p>数组遍历，如果a[i]&lt;a[i-1]，这该位置为旋转位置，即最小元素。</p>
 
-<h2 id="toc_1">回答</h2>
+<h2 id="toc_1">代码示例</h2>
 
-<h3 id="toc_2">问题分析</h3>
-
-<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
-如果在实际操作过程中，执行如下代码：</p>
-
-<pre><code class="language-swift">var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-</code></pre>
-
-<p>执行之后内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
-可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
-
-<pre><code class="language-swift">card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
-
-<p>card和customer的引用计数非0，无法吸收。</p>
-
-<h3 id="toc_3">解决方法</h3>
-
-<h4 id="toc_4">方案A——手动打破循环引用</h4>
-
-<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
-
-<pre><code class="language-swift">card = nil;
-customer.card = nil;
-customer = nil;
-</code></pre>
-
-<p>执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
-
-<h4 id="toc_5">方案B-weak(弱)引用</h4>
-
-<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    //注意这里！！
-    weak var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if(array.length == 0){
+            return 0;
+        }
+        for(int i=1;i&lt;array.length;i++){
+            if(array[i]&lt;array[i-1]){
+                return array[i];
+            }
+        }
+        return array[0];
     }
 }
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存结构:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
-
-<h4 id="toc_6">方案C-unowned(无主)引用</h4>
-
-<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    //注意这里！！！！
-    unowned let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
-
-<h5 id="toc_7">方案B和C的区别</h5>
-
-<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
-
-<h2 id="toc_8">写在最后</h2>
-
-<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
-
-<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
 </code></pre>
 
       </div>
@@ -299,16 +163,13 @@ customer = nil;
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14676190809439.html" 
-          title="Previous Post: Java康复性训练——Java基础1">&laquo; Java康复性训练——Java基础1</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14635750426080.html" 
-          title="Next Post: GeekBand.Swift-集合类型">GeekBand.Swift-集合类型 &raquo;</a>
+          <a  href="14891114918366.html" 
+          title="Next Post: 剑指Offer-用两个栈实现队列">剑指Offer-用两个栈实现队列 &raquo;</a>
       
       </p>
         </div>
@@ -320,7 +181,7 @@ customer = nil;
           
 
           
-              <div class="ds-thread" data-thread-key="14640741638557.html" data-url="http://swuzjb.github.io/14640741638557.html" data-title="GeekBand.Swift-Homework13"></div>
+              <div class="ds-thread" data-thread-key="14891123573052.html" data-url="http://swuzjb.github.io/14891123573052.html" data-title="剑指offer-旋转数组的最小数字"></div>
           
         </div>
       </div>

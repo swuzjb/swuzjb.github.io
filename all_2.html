@@ -107,6 +107,644 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14879027517066.html">
+                
+                  <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
+
+<h2 id="toc_0">TreeMap简介</h2>
+
+<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
+
+<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
+
+<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
+
+<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
+</code></pre>
+
+<h2 id="toc_1">红黑树</h2>
+
+<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
+
+<ol>
+<li>每个节点要么是红色要么是黑色。</li>
+<li>根节点必须是黑色。</li>
+<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
+<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
+在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
+</ol>
+
+<h3 id="toc_2">预备知识</h3>
+
+<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
+
+<h4 id="toc_3">左旋</h4>
+
+<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
+
+<p>TreeMap中的左旋操作代码：</p>
+
+<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
+    if (p != null) {
+        Entry&lt;K,V&gt; r = p.right;
+        p.right = r.left;
+        if (r.left != null)
+            r.left.parent = p;
+        r.parent = p.parent;
+        if (p.parent == null)
+            root = r;
+        else if (p.parent.left == p)
+            p.parent.left = r;
+        else
+            p.parent.right = r;
+        r.left = p;
+        p.parent = r;
+    }
+}
+</code></pre>
+
+<h3 id="toc_4">右旋</h3>
+
+<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
+
+<p>TreeMap中的右旋代码：</p>
+
+<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
+    if (p != null) {
+        Entry&lt;K,V&gt; l = p.left;
+        p.left = l.right;
+        if (l.right != null) l.right.parent = p;
+        l.parent = p.parent;
+        if (p.parent == null)
+            root = l;
+        else if (p.parent.right == p)
+            p.parent.right = l;
+        else p.parent.left = l;
+        l.right = p;
+        p.parent = l;
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">寻找节点后继</h3>
+
+<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
+
+<ol>
+<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
+<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
+</ol>
+
+<p>TreeMap中寻找节点后继的代码如下：</p>
+
+<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
+    if (t == null)
+        return null;
+    else if (t.right != null) {
+            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
+        Entry&lt;K,V&gt; p = t.right;
+        while (p.left != null)
+            p = p.left;
+        return p;
+    } else {
+            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
+        Entry&lt;K,V&gt; p = t.parent;
+        Entry&lt;K,V&gt; ch = t;
+        while (p != null &amp;&amp; ch == p.right) {
+            ch = p;
+            p = p.parent;
+        }
+        return p;
+    }
+}
+</code></pre>
+
+<h2 id="toc_6">常用方法剖析</h2>
+
+<h3 id="toc_7">get()</h3>
+
+<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
+
+<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
+    ......
+    if (key == null)//不允许key值为null
+        throw new NullPointerException();
+    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
+    Entry&lt;K,V&gt; p = root;
+    while (p != null) {
+        int cmp = k.compareTo(p.key);
+        if (cmp &lt; 0)//向左找
+            p = p.left;
+        else if (cmp &gt; 0)//向右找
+            p = p.right;
+        else
+            return p;
+    }
+    return null;
+}
+</code></pre>
+
+<h3 id="toc_8">put()</h3>
+
+<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
+
+<pre><code class="language-java">public V put(K key, V value) {
+    ......
+    int cmp;
+    Entry&lt;K,V&gt; parent;
+    if (key == null)
+        throw new NullPointerException();
+    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
+    do {
+        parent = t;
+        cmp = k.compareTo(t.key);
+        if (cmp &lt; 0) t = t.left;//向左找
+        else if (cmp &gt; 0) t = t.right;//向右找
+        else return t.setValue(value);
+    } while (t != null);
+    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
+    if (cmp &lt; 0) parent.left = e;
+    else parent.right = e;
+    fixAfterInsertion(e);//调整
+    size++;
+    return null;
+}
+</code></pre>
+
+<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
+
+<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
+private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
+    x.color = RED;
+    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
+        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
+            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
+            if (colorOf(y) == RED) {
+                setColor(parentOf(x), BLACK);              // 情况1
+                setColor(y, BLACK);                        // 情况1
+                setColor(parentOf(parentOf(x)), RED);      // 情况1
+                x = parentOf(parentOf(x));                 // 情况1
+            } else {
+                if (x == rightOf(parentOf(x))) {
+                    x = parentOf(x);                       // 情况2
+                    rotateLeft(x);                         // 情况2
+                }
+                setColor(parentOf(x), BLACK);              // 情况3
+                setColor(parentOf(parentOf(x)), RED);      // 情况3
+                rotateRight(parentOf(parentOf(x)));        // 情况3
+            }
+        } else {
+            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
+            if (colorOf(y) == RED) {
+                setColor(parentOf(x), BLACK);              // 情况4
+                setColor(y, BLACK);                        // 情况4
+                setColor(parentOf(parentOf(x)), RED);      // 情况4
+                x = parentOf(parentOf(x));                 // 情况4
+            } else {
+                if (x == leftOf(parentOf(x))) {
+                    x = parentOf(x);                       // 情况5
+                    rotateRight(x);                        // 情况5
+                }
+                setColor(parentOf(x), BLACK);              // 情况6
+                setColor(parentOf(parentOf(x)), RED);      // 情况6
+                rotateLeft(parentOf(parentOf(x)));         // 情况6
+            }
+        }
+    }
+    root.color = BLACK;
+}
+</code></pre>
+
+<h3 id="toc_9">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
+<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
+
+<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
+
+<ol>
+<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
+<li>删除点p的左右子树都非空。</li>
+</ol>
+
+<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
+基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
+
+<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
+    modCount++;
+    size--;
+    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
+        Entry&lt;K,V&gt; s = successor(p);// 后继
+        p.key = s.key;
+        p.value = s.value;
+        p = s;
+    }
+    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
+    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
+        replacement.parent = p.parent;
+        if (p.parent == null)
+            root = replacement;
+        else if (p == p.parent.left)
+            p.parent.left  = replacement;
+        else
+            p.parent.right = replacement;
+        p.left = p.right = p.parent = null;
+        if (p.color == BLACK)
+            fixAfterDeletion(replacement);// 调整
+    } else if (p.parent == null) {
+        root = null;
+    } else { // 1. 删除点p的左右子树都为空
+        if (p.color == BLACK)
+            fixAfterDeletion(p);// 调整
+        if (p.parent != null) {
+            if (p == p.parent.left)
+                p.parent.left = null;
+            else if (p == p.parent.right)
+                p.parent.right = null;
+            p.parent = null;
+        }
+    }
+}
+</code></pre>
+
+<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
+跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
+
+<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
+
+<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
+
+<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
+    while (x != root &amp;&amp; colorOf(x) == BLACK) {
+        if (x == leftOf(parentOf(x))) {
+            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
+            if (colorOf(sib) == RED) {
+                setColor(sib, BLACK);                   // 情况1
+                setColor(parentOf(x), RED);             // 情况1
+                rotateLeft(parentOf(x));                // 情况1
+                sib = rightOf(parentOf(x));             // 情况1
+            }
+            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
+                colorOf(rightOf(sib)) == BLACK) {
+                setColor(sib, RED);                     // 情况2
+                x = parentOf(x);                        // 情况2
+            } else {
+                if (colorOf(rightOf(sib)) == BLACK) {
+                    setColor(leftOf(sib), BLACK);       // 情况3
+                    setColor(sib, RED);                 // 情况3
+                    rotateRight(sib);                   // 情况3
+                    sib = rightOf(parentOf(x));         // 情况3
+                }
+                setColor(sib, colorOf(parentOf(x)));    // 情况4
+                setColor(parentOf(x), BLACK);           // 情况4
+                setColor(rightOf(sib), BLACK);          // 情况4
+                rotateLeft(parentOf(x));                // 情况4
+                x = root;                               // 情况4
+            }
+        } else { // 跟前四种情况对称
+            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
+            if (colorOf(sib) == RED) {
+                setColor(sib, BLACK);                   // 情况5
+                setColor(parentOf(x), RED);             // 情况5
+                rotateRight(parentOf(x));               // 情况5
+                sib = leftOf(parentOf(x));              // 情况5
+            }
+            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
+                colorOf(leftOf(sib)) == BLACK) {
+                setColor(sib, RED);                     // 情况6
+                x = parentOf(x);                        // 情况6
+            } else {
+                if (colorOf(leftOf(sib)) == BLACK) {
+                    setColor(rightOf(sib), BLACK);      // 情况7
+                    setColor(sib, RED);                 // 情况7
+                    rotateLeft(sib);                    // 情况7
+                    sib = leftOf(parentOf(x));          // 情况7
+                }
+                setColor(sib, colorOf(parentOf(x)));    // 情况8
+                setColor(parentOf(x), BLACK);           // 情况8
+                setColor(leftOf(sib), BLACK);           // 情况8
+                rotateRight(parentOf(x));               // 情况8
+                x = root;                               // 情况8
+            }
+        }
+    }
+    setColor(x, BLACK);
+}
+</code></pre>
+
+<h2 id="toc_10">TreeSet</h2>
+
+<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
+
+<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
+    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
+    ......
+    private transient NavigableMap&lt;E,Object&gt; m;
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+    public TreeSet() {
+        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
+    }
+    ......
+    public boolean add(E e) {
+        return m.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_11">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879027517066.html" data-count-type="comments" href="14879027517066.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14878305448928.html">
+                
+                  <h1>Java容器框架分析(四)——ArrayDeque源码分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">ArrayDeque简介</h2>
+
+<p>Java中有一个叫做Stack的实现类，却没有Queue的实现类（只有Queue接口）。当需要使用栈时，Java官方已经不推荐使用Stack而是推荐使用更高效的ArrayDeque；既然Queue只是一个接口，当需要使用队列是也就首选ArrayDeque了，其次就是LinkedList啦。</p>
+
+<h2 id="toc_1">Deque接口</h2>
+
+<p>要将栈和队列，首先需要介绍Deque接口，Deque全称Double Ended Queue，即双端队列。它既可以当做栈使用，也可以当做队列使用。<br/>
+下标展示Deque和Queue的接口对照表：</p>
+
+<table>
+<thead>
+<tr>
+<th>Queue方法</th>
+<th>Deque方法</th>
+<th>方法说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>add(e)</td>
+<td>addLast(e)</td>
+<td>向队尾插入元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>offer(e)</td>
+<td>offerLast(e)</td>
+<td>向队尾插入元素，失败则返回false</td>
+</tr>
+<tr>
+<td>remove()</td>
+<td>removeFirst()</td>
+<td>获取并删除队首元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>poll()</td>
+<td>pollFrist()</td>
+<td>获取并删除队首元素，失败则返回null</td>
+</tr>
+<tr>
+<td>element()</td>
+<td>getFirst()</td>
+<td>获取但不删除队首元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>peek()</td>
+<td>peekFirst()</td>
+<td>获取但不删除队首元素，失败则返回null</td>
+</tr>
+</tbody>
+</table>
+
+<p>下表列出了Deque和Stack的接口对应关系：</p>
+
+<table>
+<thead>
+<tr>
+<th>Stack方法</th>
+<th>Deque方法</th>
+<th>方法说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>push(e)</td>
+<td>addFirst(e)</td>
+<td>向栈顶插入元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>offerFirst(e)</td>
+<td>向栈顶插入元素，失败则返回false</td>
+</tr>
+<tr>
+<td>pop()</td>
+<td>removeFirst(e)</td>
+<td>获取并删除栈顶元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>pollFirst()</td>
+<td>获取并删除栈顶元素，失败则返回null</td>
+</tr>
+<tr>
+<td>peek()</td>
+<td>getFirst()</td>
+<td>获取但不删除栈顶元素，失败则抛出异常</td>
+</tr>
+<tr>
+<td>-</td>
+<td>peekFirst()</td>
+<td>获取但不删除栈顶元素，失败则返回null</td>
+</tr>
+</tbody>
+</table>
+
+<p>上面两个表共定义了Deque的12个接口，添加、删除、查询都有2套接口，它们功能相同，区别就在于对于失败情况的处理方式是不同的。<strong>一套接口遇到失败就会抛出异常，另一套遇到失败会返回特殊值（false或者null）</strong>。除非某种实现对于容量有限制，大多数情况之下，添加操作是不会失败的。虽然上面列举了12个接口，但是无非就是对容器的两端进行添加、删除、查询操作。</p>
+
+<h2 id="toc_2">ArrayDeque简介</h2>
+
+<p>ArrayDeque和LinkedList是Deque的两个通用实现，由于官方更加推荐使用ArrayDeque用作栈和队列，加之上一篇已经对LinkedList进行了讲解，本文着重讲解ArrayDeque的具体实现。<br/>
+从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
+ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878324914756.png" alt=""/></p>
+
+<p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
+
+<h2 id="toc_3">常用方法剖析</h2>
+
+<h3 id="toc_4">addFirst()</h3>
+
+<p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878327863308.png" alt=""/></p>
+
+<p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
+
+<pre><code class="language-java">public void addFirst(E e) {
+    if (e == null)//不允许放入null
+        throw new NullPointerException();
+    elements[head = (head - 1) &amp; (elements.length - 1)] = e;//2.下标是否越界
+    if (head == tail)//1.空间是否够用
+        doubleCapacity();//扩容
+}
+</code></pre>
+
+<p>上述代码我们看到，<strong>空间问题是在插入之后解决的</strong>。因为tail总是指向下一个可插入的空位，也就意味着<code>elements</code>数组至少有一个空位，所以插入元素的时候不需要考虑空间问题。<br/>
+下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
+
+<p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878340364545.png" alt=""/></p>
+
+<pre><code class="language-java">private void doubleCapacity() {
+    assert head == tail;
+    int p = head;
+    int n = elements.length;
+    int r = n - p; // head右边元素的个数
+    int newCapacity = n &lt;&lt; 1;//原空间的2倍
+    if (newCapacity &lt; 0)
+        throw new IllegalStateException(&quot;Sorry, deque too big&quot;);
+    Object[] a = new Object[newCapacity];
+    System.arraycopy(elements, p, a, 0, r);//复制右半部分，对应上图中绿色部分
+    System.arraycopy(elements, 0, a, r, p);//复制左半部分，对应上图中灰色部分
+    elements = (E[])a;
+    head = 0;
+    tail = n;
+}
+</code></pre>
+
+<h3 id="toc_5">addLast()</h3>
+
+<p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878375459017.png" alt=""/></p>
+
+<pre><code class="language-java">public void addLast(E e) {
+    if (e == null)//不允许放入null
+        throw new NullPointerException();
+    elements[tail] = e;//赋值
+    if ( (tail = (tail + 1) &amp; (elements.length - 1)) == head)//下标越界处理
+        doubleCapacity();//扩容
+}
+</code></pre>
+
+<h3 id="toc_6">pollFirst()</h3>
+
+<p><code>pollFirst()</code>的作用是返回并删除Deque的首部元素，也就是head位置的元素。如果容器不空，只需要直接返回<code>elements[head]</code>即可，当然还需要处理下标的问题，由于ArrayDeque不允许放入<code>null</code>值，则当<code>elements[head]=null</code>时，意味着容器为空。</p>
+
+<pre><code class="language-java">public E pollFirst() {
+    E result = elements[head];
+    if (result == null)//null值意味着deque为空
+        return null;
+    elements[head] = null;//let GC work
+    head = (head + 1) &amp; (elements.length - 1);//下标越界处理
+    return result;
+}
+</code></pre>
+
+<h3 id="toc_7">pollLast()</h3>
+
+<p><code>pollLast()</code>的作用是返回并删除Deque的尾端元素，也就是<code>tail</code>位置前面的那个元素。</p>
+
+<pre><code class="language-java">public E pollLast() {
+    int t = (tail - 1) &amp; (elements.length - 1);//tail的上一个位置是最后一个元素
+    E result = elements[t];
+    if (result == null)//null值意味着deque为空
+        return null;
+    elements[t] = null;//let GC work
+    tail = t;
+    return result;
+}
+</code></pre>
+
+<h3 id="toc_8">peekFirst()</h3>
+
+<p><code>peekFrist()</code>的作用是返回但不删除Deque的首端元素，也就是<code>head</code>位置的元素，只需要直接返回element[head]即可。</p>
+
+<pre><code class="language-java">public E peekFirst() {
+    return elements[head]; // 如果Deque为空，则返回null
+}
+</code></pre>
+
+<h3 id="toc_9">peekLast()</h3>
+
+<p><code>peekLast()</code>的作用是返回单不删除Deque的尾端函数，也就是<code>tail</code>的前一个位置的元素，只需要处理一下坐标位置即可。</p>
+
+<pre><code class="language-java">public E peekLast() {
+    return elements[(tail - 1) &amp; (elements.length - 1)];
+}
+</code></pre>
+
+<h2 id="toc_10">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/23</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878305448928.html" data-count-type="comments" href="14878305448928.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14878187570598.html">
                 
                   <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
@@ -503,335 +1141,6 @@ for(String weekday : list){
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14875782735365.html">
-                
-                  <h1>Java内存管理</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">Java的内存区域</h2>
-
-<p>Java的内存区域按照是否线程共享分为两个区域</p>
-
-<ol>
-<li>线程共享区域包括：方法区（Method Area）和堆（Heap）</li>
-<li>线程独享的区域包括：虚拟机栈（VM Stack），本地方法栈（Native Method Stack）和程序计数器（Program Counter Register）</li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875809468666.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_1">程序计数器</h3>
-
-<p>程序计数器是一块较小的内存区域，指向当前执行的字节码。如果线程正在执行一个Java方法，这个计数器记录正在执行的虚拟机字节码指令的地址，如果执行的是Native方法，则计数器为空。<br/>
-此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError的区域。</p>
-
-<h3 id="toc_2">Java虚拟机栈</h3>
-
-<p>线程私有区域，其生命周期和线程一致。该区域描述的是Java方法执行的内存模型：每个方法在执行的时候都会创建一个栈帧（方法运行时的基本数据结构）用于存储局部变量表、操作数栈、动态链接、方法出口等信息。<br/>
-在Java虚拟机规范中，对这个区域规定了两种异常情况：</p>
-
-<ol>
-<li>如果线程请求的栈深度大于虚拟机所允许的深度，将抛出StackOverflowError异常；</li>
-<li>如果虚拟机栈可以动态扩展（当前大部分虚拟机实现都是动态的、但是固定长度的栈也是被允许的）在扩展时无法申请到足够的内存，就会抛出OutOfMemoryError异常。</li>
-</ol>
-
-<h3 id="toc_3">本地方法栈</h3>
-
-<p>与虚拟机栈功能类似，只不过虚拟机栈为虚拟机执行Java方法服务，而本地方法栈则为使用到的Native方法服务。与虚拟机栈一样，本地方法栈区域也会抛出StackOverflowError异常和OutOfMemoryError异常。</p>
-
-<h3 id="toc_4">Java堆</h3>
-
-<p>是虚拟机管理内存中最大的一块，被所有线程共享，该区域用于存放对象实例，几乎所有的对象都在改区域分配。Java堆是内存回收的主要区域，也被称为GC堆。从内存回收的角度来看，由于现在的垃圾收集器大都采用分代收集算法，所以还可以将Java堆细分为：新生代和老年代，或继续细分为Eden空间、From Survivor空间、To Survivor空间等。<br/>
-根据Java虚拟机规范，Java堆可以处于物理上不连续的空间，只要逻辑上是连续的就行，在实现时，既可以实现成固定大小的，也可以是可扩展的，不过当前主流的都是可扩展的（通过<code>-Xmx</code>和<code>-Xms</code>参数控制）。<br/>
-如果在堆中没有内存完成实例分配，而堆又无法继续扩展时，抛出OutOfMemoryError异常。</p>
-
-<h3 id="toc_5">方法区</h3>
-
-<p>与Java一样，是各个线程所共享的，用于存储已被虚拟机加载类信息、常亮、静态变量、即时编译器编译后的代码等数据。<br/>
-根据Java虚拟机规范的规定，当方法区无法满足内存分配需求时，抛出OutOfMemoryError异常。</p>
-
-<h3 id="toc_6">运行时常量池</h3>
-
-<p>运行时常量池是方法区的一部分，Class文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译期生成的各种字面量和符号引用。运行期间可以将新的常量放入常量池中，用得比较多的就是String类的intern()方法，当一个String实例调用intern时，Java查找常量池中是否有相同的Unicode的字符串常量，若有，则返回其引用；若没有，则在常量池中增加一个Unicode等于该实例字符串并返回它的引用。</p>
-
-<h2 id="toc_7">Java堆的内存模型</h2>
-
-<p>内存模型如图所示：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875816888809.jpg" alt=""/></p>
-
-<p>广泛地说，JVM堆内存被分为两部分——年轻代（Young Generation）和老年代（Old Generation）。</p>
-
-<h3 id="toc_8">年轻代</h3>
-
-<p>年轻代是所有新对象产生的地方。当年轻代内存空间被用完时，就会触发垃圾回收。这个垃圾回收叫做Minor GC。年轻代被分为3个部分——Eden区和2个Survivor区。</p>
-
-<h4 id="toc_9">年轻代的空间要点</h4>
-
-<ul>
-<li>大多数新建对象都位于Eden区；</li>
-<li>当Eden区域被填满时，就会触发Minor GC，并把所有存活下来的对象复制到其中一个survivor区域；</li>
-<li>Minor GC同样会检查存活下来的对象，并把它们转移到另一个Survivor区域，这样在一段时间内，总有一个空的Survivor区；</li>
-<li>经过多次GC周期后，仍然存活下来的对象会被转移到年老代空间，通常这是在年轻代有资格提升到老年代前通过年龄阈值来完成的。</li>
-</ul>
-
-<h3 id="toc_10">年老代</h3>
-
-<p>年老代内存里包含了长期存活的对象和经过多次Minor后依然存活下来的对象。年老代在空间不足时，将触发Major GC，将会花费更多时间进行垃圾收集。</p>
-
-<h2 id="toc_11">垃圾回收</h2>
-
-<h3 id="toc_12">如何确定垃圾对象</h3>
-
-<p>Java堆当中几乎储存了所有的对象实例，要想实现自动的垃圾回收，知道哪些对象是‘垃圾’就十分必要了。目前，比较流行的自动垃圾回收，都是基于两个思路实现的。</p>
-
-<h4 id="toc_13">引用计数法</h4>
-
-<p>引用计数法实现简单，效率较高，在大部分情况下是一个不错的算法。其原理是：给对象添加一个引用计数器，每当有一个地方引用该对象时，计数器加1，当引用失效时，计数器减1，当计数器值为0时表示该对象不再被使用。需要注意的是：引用计数法很难解决对象之间相互循环引用的问题，主流Java虚拟机没有选用引用计数法来管理内存。</p>
-
-<h4 id="toc_14">可达性分析法</h4>
-
-<p>Java虚拟机使用可达性分析法来进行对象的可用性判断。这个算法的基本思路就是通过一系列的称为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链（Reference Chain），当一个对象到GC Roots没有任何引用链相连（用图论的话来说，就是从GC Roots到这个对象不可达）时，则证明此对象是不可用的。如图所示，对象object 5、object 6、object 7虽然互相有关联，但是它们到GC Roots是不可达的，所以它们将会被判定为是可回收的对象。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875947879603.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h5 id="toc_15">Java中的GC ROOT</h5>
-
-<ul>
-<li>虚拟机栈中的引用对象</li>
-<li>方法区中的静态属性引用的对象</li>
-<li>方法区中常量引用的对象</li>
-<li>本地方法栈中本地方法引用的对象</li>
-</ul>
-
-<h5 id="toc_16">对象的救赎</h5>
-
-<p>在可达性分析中不可用的对象并不是立刻被虚拟机销毁，而是被标记为待回收，要真正的宣告一个对象死亡，至少需要经历两次标记：如果对象在可达性分析后发现没有与GC ROOT相连的引用链，那么他会被第一次被标记并进行一次筛选，筛选是判断此对象是否有必要执行finalize()方法，当对象没有覆盖Object类的finalize()方法或该类的finalize（）方法已经被虚拟机调用过，虚拟机将视为没有必要执行，对象会被销毁。反之，将会将该对象加入一个优先级非常低的队列中等待执行finalize()方法，但不保证等待其执行完，这是对象进行自我救赎的最后也是唯一的机会。</p>
-
-<h3 id="toc_17">典型的垃圾回收算法</h3>
-
-<h4 id="toc_18">标记-清楚（Mark-Sweep）算法</h4>
-
-<p>这是最基础的垃圾回收算法，标记-清楚算法顾名思义，分为两个阶段，标记和删除。标记阶段的任务是标记出那些对象需要被回收（即我们上面说的不可达或不可用对象），清楚阶段就是回收（释放）被标记对象所占用的内存空间。具体样例如下图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875956126004.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<p>通过观察图片我们可以非常轻松的发现，标记-清楚算法虽然非常简单，但是有一个比较严重的问题，那就是非常容易产生大量的内存碎片，碎片的数量一旦过多就会导致在后续为大对象分配内存空间时午饭找到足够的内存空间而提前出发新一轮的垃圾收集严重时会导致内存溢出。</p>
-
-<h4 id="toc_19">复制（Copying）算法</h4>
-
-<p>为了解决标记-清楚算法的缺陷，复制算法应运而生。复制算法的思路是，将可用内存按容量划分为大小相同的两块，每次创建对象时只使用其中的一块儿。当这一块儿内存用完时，就触发垃圾回收，将还存活的对象复制到另外一块儿内存空间之上，再把已经使用的内存空间一次释放掉，这样一来就不会出现内存碎片的问题了。操做实例如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875960340164.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<p>复制算法虽然实现简单，运行效率高而且也不会出现内存碎片，但是对内存空间的使用却付出了高昂的代价，可用内存缩减为了原先的一半。同时复制算法的效率和存活对象数目的多少直接相关，若存活对象数量较多，效率就会大大的降低。</p>
-
-<h4 id="toc_20">标记整理算法</h4>
-
-<p>为了解决上面两种算法的缺陷，提出了标记整理（Mark-Compact）算法。该算法在标记阶段和标记清理算法完全一致，但是在完成标记之后，不是直接清理可回收对象，而是将存活的对象都向内存一段移动，然后清理端边界以外的内存，具体过程如下图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875963334710.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h4 id="toc_21">分代收集算法</h4>
-
-<p>分代收集算法是目前大部分JVM的垃圾收集器采用的算法。它的核心思想是根据对象存活的生命周期将内存划分为若干个不同的区域。一般情况下将堆区划分为老年代（Tenured Generation）和新生代（Young Generation），老年代的特点是每次垃圾收集时只有少量对象需要被回收，而新生代的特点是每次垃圾回收时都有大量的对象需要被回收，那么就可以根据不同代的特点采取最适合的收集算法。<br/>
-目前大部分垃圾收集器对于新生代都采取Copying算法，因为新生代中每次垃圾回收都要回收大部分对象，也就是说需要复制的操作次数较少，但是实际中并不是按照1：1的比例来划分新生代的空间的，一般来说是将新生代划分为一块较大的Eden空间和两块较小的Survivor空间（一般为8:1:1），每次使用Eden空间和其中的一块Survivor空间，当进行回收时，将Eden和Survivor中还存活的对象复制到另一块Survivor空间中，然后清理掉Eden和刚才使用过的Survivor空间。<br/>
-而由于老年代的特点是每次回收都只回收少量对象，一般使用的是Mark-Compact算法。</p>
-
-<h2 id="toc_22">Java堆的配置参数</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-20-14875967441636.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_23">Java中的引用</h2>
-
-<p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象的引用链是否可达，判定对象是否存活都与“引用”有关。<br/>
-在JDK 1.2以前，Java中的引用的定义很传统：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。<br/>
-在JDK 1.2之后，Java对引用的概念进行了扩充，提出了四种不同的引用。</p>
-
-<h3 id="toc_24">强引用</h3>
-
-<p>就是指在程序代码之中普遍存在的，类似“Object obj = new Object()”这类的引用，只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象。</p>
-
-<h3 id="toc_25">软引用</h3>
-
-<p>是用来描述一些还有用但并非必需的对象。对于软引用关联着的对象，在系统将要发生内存溢出异常之前，将会把这些对象列进回收范围之中进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。在JDK 1.2之后，提供了SoftReference类来实现软引用。</p>
-
-<h3 id="toc_26">弱引用</h3>
-
-<p>也是用来描述非必需对象的，但是它的强度比软引用更弱一些，被弱引用关联的对象只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。在JDK 1.2之后，提供了WeakReference类来实现弱引用。</p>
-
-<h3 id="toc_27">虚引用</h3>
-
-<p>也称为幽灵引用或者幻影引用，它是最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的就是能在这个对象被收集器回收时收到一个系统通知。在JDK 1.2之后，提供了PhantomReference类来实现虚引用。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/20</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14875782735365.html" data-count-type="comments" href="14875782735365.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14814626217350.html">
-                
-                  <h1>HTTPS技术简要介绍</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">背景</h2>
-
-<p>随着互联网技术应用的广泛应用，越来越多的信息在网络上被交换和利用，网络信息安全也就成为了一个被关注的热点。我们当前的互联网服务多数是基于HTTP协议之上进行开发设计，但是由于HTTP的设计缺陷，信息数据在传输过程中有极大的泄露风险，HTTPS技术也应运而生。<br/>
-近日，各大互联网公司纷纷宣布旗下服务必须强制使用HTTPS技术进行网络通讯。如2017年1月1日苹果iOS应用推行ATS安全标准，将强制使用HTTPS安全连接；谷歌Chrome将把所有的HTTP网站标记为「不安全」；在国内热火朝天的小程序也要求必须使用HTTPS请求等。<br/>
-本文将对HTTPS的定义、工作原理、使用、与HTTP的不同等方面对HTTPS技术进行简要的介绍。</p>
-
-<h2 id="toc_1">HTTS工作原理</h2>
-
-<h3 id="toc_2">HTTP在安全方面的缺陷</h3>
-
-<p>HTTP本身是明文传输的，没有经过任何安全处理。例如用户在百度搜索了一个关键字，比如“苹果手机”，中间者完全能够查到到这个信息，并且有可能打电话过来骚扰用户。也有一些用户投诉使用百度时，发现首页或者结果页浮了一个很长很大的广告，这也肯定是中间者往页面插的广告内容。如果劫持技术比较低劣的话，用户甚至无法访问百度。<br/>
-这里提到的一些中间者主要指一些网络节点，使用户数据在浏览器和百度服务器之间传输必须要经过的节点，比如WIFI热点、路由器、防火墙、反向代理、缓存服务器等。<br/>
-在HTTP协议下，中间者可以随意嗅探用户搜索内容，窃取隐私甚至篡改网页。不过HTTPS是这些劫持行为的克星，能够完全有效地防御。总体来说，HTTPS协议提供了三个强大的功能来对抗上述的劫持行为：</p>
-
-<ol>
-<li>内容加密。浏览器到百度服务器的内容都是以加密形式传输的，中间者无法直接查看原始内容</li>
-<li>身份认证。保证用户访问的是百度服务，即使被DNS劫持到了第三方站点，也会提醒用户没有访问百度服务</li>
-<li>数据完整。防止内容被第三方冒充或篡改</li>
-</ol>
-
-<h3 id="toc_3">HTTPS的定义</h3>
-
-<p>HTTPS（Hypertext Transfer Protocol Secure，超文本传输安全协议）是一种网络安全传输协议。在计算机网络上，HTTPS经由超文本传输协议进行通信，但利用SSL/TLS来对数据包进行加密。HTTPS开发的主要目的，是提供对网络服务器的身份认证，保护交换数据的隐私与完整性。简单而言HTTPS就是在HTTP协议发送数据的过程中使用SSL协议对数据进行加密，从而保证数据的安全。<br/>
-SSL目前的版本是3.0，被IETF（Internet Engineering Task Force）定义在RFC 6101中，之后IETF对SSL 3.0进行了升级，于是出现了TLS（Transport Layer Security）1.0，定义在RFC 2246。实际上我们现在的HTTPS都是用的TLS协议，但是由于SSL出现的时间比较早，并且依旧被现在浏览器所支持，因此SSL依然是HTTPS的代名词，但无论是TLS还是SSL都是上个世纪的事情，SSL最后一个版本是3.0，今后TLS将会继承SSL优良血统继续为我们进行加密服务。目前TLS的版本是1.2，定义在RFC 5246中，暂时还没有被广泛的使用。<br/>
-<img src="media/14814626217350/14814628384569.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_4">TLS/SSL工作原理</h3>
-
-<p>HTTPS 协议的主要功能基本都依赖于 TLS/SSL 协议，本节分析安全协议的实现原理。<br/>
-TLS/SSL 的功能实现主要依赖于三类基本算法：散列函数 Hash、对称加密和非对称加密，其利用非对称加密实现身份认证和密钥协商，对称加密算法采用协商的密钥对数据加密，基于散列函数验证信息的完整性。<br/>
-<img src="media/14814626217350/14814628187370.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<p>散列函数Hash，常见的有MD5、SHA1、SHA256，该类函数特点是函数单向不可逆、对输入非常敏感、输出长度固定，针对数据的任何修改都会改变散列函数的结果，用于防止信息篡改并验证数据的完整性;对称加密，常见的有 AES-CBC、DES、3DES、AES-GCM等，相同的密钥可以用于信息的加密和解密，掌握密钥才能获取信息，能够防止信息窃听，通信方式是1对1;非对称加密，即常见的 RSA 算法，还包括 ECC、DH 等算法，算法特点是，密钥成对出现，一般称为公钥(公开)和私钥(保密)，公钥加密的信息只能私钥解开，私钥加密的信息只能公钥解开。因此掌握公钥的不同客户端之间不能互相解密信息，只能和掌握私钥的服务器进行加密通信，服务器可以实现1对多的通信，客户端也可以用来验证掌握私钥的服务器身份。<br/>
-在信息传输过程中，散列函数不能单独实现信息防篡改，因为明文传输，中间人可以修改信息之后重新计算信息摘要，因此需要对传输的信息以及信息摘要进行加密;对称加密的优势是信息传输1对1，需要共享相同的密码，密码的安全是保证信息安全的基础，服务器和N个客户端通信，需要维持N个密码记录，且缺少修改密码的机制;非对称加密的特点是信息传输1对多，服务器只需要维持一个私钥就能够和多个客户端进行加密通信，但服务器发出的信息能够被所有的客户端解密，且该算法的计算复杂，加密速度慢。<br/>
-结合三类算法的特点，TLS的基本工作方式是，客户端使用非对称加密与服务器进行通信，实现身份验证并协商对称加密使用的密钥，然后对称加密算法采用协商密钥对信息以及信息摘要进行加密通信，不同的节点之间采用的对称密钥不同，从而可以保证信息只能通信双方获取。</p>
-
-<h3 id="toc_5">HTTPS的工作原理</h3>
-
-<p>HTTPS其实是有两部分组成：HTTP + SSL/TLS，也就是在HTTP上又加了一层处理加密信息的模块。服务端和客户端的信息传输都会通过TLS进行加密，所以传输的数据都是加密后的数据。请求流程如图所示：<br/>
-<img src="media/14814626217350/14814628698302.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<ol>
-<li><p>客户端发起HTTPS请求<br/>
-与HTTP发送请求类似，用户在浏览器或者通过其他方式请求一个HTTPS连接如（<a href="https://www.baidu.com">https://www.baidu.com</a>），然后连接到服务器的443端口。在此过程中客户端会发送一个密文族给服务器，密文族是浏览器所支持的加密算法的清单。</p></li>
-<li><p>服务器配置<br/>
-采用HTTPS协议的服务器必须要有一套数字证书，该证书可以自己制作，也可以向组织申请。区别就是自己制作的证书需要客户端验证通过才可以继续访问，而使用受信任的公司申请的证书则不会弹出提示页面。<br/>
-证书其实就是一对公钥和私钥，可以这么理解，公钥就是一把锁头，私钥就是这把锁的钥匙，锁头可以给别人对某个东西进行加锁，但是加锁完毕之后，只有持有这把锁的钥匙才可以解锁看到加锁的内容。<br/>
-前面说过客户端会传送密文族给服务端，服务端则会从这些密文族中，挑选出一个，比如百度采用的就是RSA公钥加密算法来区分证书签名和交换密钥，通过AES算法来加密数据，至于GCM则是用来校验信息的。</p></li>
-<li><p>传送证书<br/>
-证书将在接收到客户端请求后由服务器端发送到客户端。该证书包含了公钥、证书的颁发机构、过期时间等重要信息。</p></li>
-<li><p>客户端解析证书<br/>
-这部分工作是由客户端的TLS来完成的，首先会验证公钥是否有效，如颁发机构、过期时间等等，如果发现异常则会弹出一个警告框，提示证书存在问题。如果证书没有问题，那么就生成一个随机值，然后用证书对该随机值进行加密。<br/>
-注意一下上面提到的“发现异常”。证书中会包含数字签名，该数字签名是加密过的，是用颁发机构的私钥对本证书的公钥、名称及其他信息做hash散列加密而生成的。客户端浏览器会首先找到该证书的根证书颁发机构，如果有，则用该根证书的公钥解密服务器下发的证书，如果不能正常解密，则就是“发现异常”，说明该证书是伪造的。</p></li>
-<li><p>传送加密信息<br/>
-这部分传送的是用证书加密后的随机值，目的就是让服务端得到这个随机值，然后客户端和服务端的通信就可以通过这个随机值生成对称加密的秘钥来进行加密和解密了。</p></li>
-<li><p>服务端解密信息<br/>
-服务端用私钥解密后，得到了客户端传过来的随机值，至此一个非对称加密的过程结束，至此TLS利用非对称加密实现了身份认证和密钥协商。然后把内容通过该值进行对称加密。</p></li>
-<li><p>传输加密后的信息<br/>
-当对称加密秘钥生成完成之后，服务器和客户端之间的信息通信将被该秘钥进行加密。加密后进行正常的HTTP的信息发送，该信息可在客户端被揭秘还原。</p></li>
-<li><p>客户端解密信息<br/>
-客户端用之前生成的随机值解密服务端传送过来的信息，于是获取了解密后的内容，至此一个对称加密的过程结束，看到对称加密是用于对服务器待传送给客户端的数据进行加密用的。整个过程即使第三方监听了数据，也束手无策。</p></li>
-</ol>
-
-<h2 id="toc_6">HTTPS的使用</h2>
-
-<h3 id="toc_7">SSL证书类型</h3>
-
-<p>通常来说，SSL证书分为三大类，他们的安全性是递增的，当然价格和安全系数成正比。</p>
-
-<ol>
-<li>DV（Domain Validation Certificate）。DV证书适合个人网站使用，申请证书时，CA只验证域名信息。几分钟之内就能签发。</li>
-<li>OV（Organization Validation Certificate）。OV证书需要认证公司的信息。1-2天签发。</li>
-<li>EV（Extended Validation Certificate）。EV证书的认证最为严格，一般会要求提供纸质材料。签发时间也较久。
-<img src="media/14814626217350/14814632071178.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></li>
-</ol>
-
-<h3 id="toc_8">SSL证书供应商简单对比</h3>
-
-<p>Let&#39;s Encrypt是国外一个公共的免费SSL项目，由Linux基金会托管，由Mozilla、思科、Akamai、IdenTrust和EFF等组织发起，目的就是向网站自动签发和管理免费证书，以便加速互联网由HTTP过渡到HTTPS。<br/>
-StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的鼻祖，最早提供完全免费的SSL证书并且被各大浏览器所支持的恐怕就只有 StartSSL证书了。首次申请StartSSL免费SSL证书是免费一年，但是你可以在第二年继续续期。<br/>
-七牛免费SSL，七牛最近和亚洲诚信合作推了赛门铁克Symantec签发的DV证书。</p>
-
-<h4 id="toc_9">对比结果：</h4>
-
-<ol>
-<li>申请便利性：StartSSL和七牛的申请起来都相对便利，Let&#39;s Encrypt对环境要求比较多。</li>
-<li>有效期：StartSSL和七牛都是一年，Let&#39;s Encrypt 90天。</li>
-<li>证书兼容性：StartSSL 的一年免费 DV SSL 已经被 Chrome、Mozilla 封杀。要慎重选择。Let&#39;s Encrypt总体来说兼容性还不错，不过肯定是赛门铁克的兼容性最好。</li>
-<li>售后：免费证书其实基本都没啥售后可言，Let&#39;s Encrypt 基本上只能求助于社区，StartSSL和七牛都有官方客服可以咨询，七牛对中文服务的支持更好。</li>
-</ol>
-
-<h3 id="toc_10">七牛免费证书的申请和使用</h3>
-
-<ol>
-<li><p>在个人面板-&gt;证书管理申请证书<br/>
-<img src="media/14814626217350/14814632233597.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>申请完证书后跳转到证书列表而不是订单列表，具体设置要在订单列表中完成。<br/>
-<img src="media/14814626217350/14814632320729.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>DNS验证</p>
-
-<ol>
-<li> 记录类型选择 CNAME</li>
-<li><p>主机记录填写 cnamekey，点击复制 Key 是复制全部字段（注：万网和DNSpod平台cnamekey不需要主域名部分），见下图<br/>
-<img src="media/14814626217350/14814632427561.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>记录值填写cnamevalue，复制全部字段，见图<br/>
-<img src="media/14814626217350/14814632609686.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>其他选项默认即可，见图<br/>
-<img src="media/14814626217350/14814632750932.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-<li><p>CName Key 的 DNS 解析指向 CName Value 操作完成后，系统会循环自动检测验证，最长不超过24小时，您可以用 dig 命令来自我检测下DNS解析是否配置成功，见图<br/>
-<img src="media/14814626217350/14814632882974.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
-</ol></li>
-</ol>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/12/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html'>课程相关</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14814626217350.html" data-count-type="comments" href="14814626217350.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -920,6 +1229,18 @@ StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的�
 	      
 		      
 			      <li class="post">
+			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
@@ -933,18 +1254,6 @@ StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的�
 		      
 			      <li class="post">
 			        <a href="14889379059302.html">剑指Offer-替换空格</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889364537323.html">剑指Offer-二维数组中的查找</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14880758779206.html">Java容器框架分析(九)——WeakHashMap</a>
 			      </li>
 		     
 		  
