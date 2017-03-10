@@ -107,6 +107,135 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14635750426080.html">
+                
+                  <h1>GeekBand.Swift-集合类型</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">数组(Array)</h2>
+
+<p>数组是一个有序的元素序列，支持随机存储，支持动态更新长度。<br/>
+索引从0开始，依次递增。索引访问越界时会抛出异常。<br/>
+在Swift中，Array被定义为Struct类型，值类型，拷贝时具有值语义。但是，它内部却包含一个指向堆上的元素指针。其指向真正存放的数组元素。</p>
+
+<h3 id="toc_1">内存模型</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635752854229.jpg" alt=""/></p>
+
+<h3 id="toc_2">使用数组</h3>
+
+<p>数组支持变量或常量。常量数组的长度和元素内容都不能更改。</p>
+
+<pre><code class="language-swift">//数组声明与实例化
+var array1=[1,2,3,4,5];
+var array2:[Int];
+var array3:Array&lt;Int&gt;;
+array2=[Int](count:10, repeatedValue:10);
+array3=[Int]();
+
+//变量数组和常量数组
+var array5=[1,2,3]
+let array6=[1,2,3]
+</code></pre>
+
+<h4 id="toc_3">数组遍历</h4>
+
+<ul>
+<li>使用<code>for</code>循环访问array需要检查索引是否越界。具有性能代价。</li>
+<li>尽可能使用<code>for-in</code>来遍历数组元素；或者使用<code>Array.enumerate()</code>遍历索引；二者在编译器层面会优化掉索引检查。</li>
+</ul>
+
+<pre><code class="language-swift">for item in array5{
+    print(item);
+}
+
+for(index, value) in array5.enumerate(){
+    print(&quot;\(index): \(value)&quot;);
+}
+
+for index in 0..&lt;array5.count {
+    print(array5[index]);
+}
+</code></pre>
+
+<h4 id="toc_4">缓存容量与增长</h4>
+
+<ul>
+<li>数组初始化后，会分配一个缓存容量capacity,其长度一般大于实际的元素数量</li>
+<li>当数组长度增长时，如果实际需求大于capacity，其capacity会以近似二倍的方式指数增长，产生对应代价：
+
+<ul>
+<li>分配新的堆内存 2*capacity</li>
+<li>将原来堆内存上的元素拷贝到新内存</li>
+<li>释放原来的内存</li>
+</ul></li>
+<li>最佳实践：估计好capacity，预先分配好一定的容量。避免频繁造成capacity的增长。</li>
+</ul>
+
+<h4 id="toc_5">copy-on-write共享技术</h4>
+
+<p>同一个数组拷贝到不同的变量中时，其指向堆的元素指针不变。即不同的变量共享一份内存空间，从而节省内存开销。<br/>
+但是，当某一个变量的元素内容发生改变时，先将原来的堆内存拷贝一份，元素指针指向新的拷贝，然后再更改新的拷贝，从而确保正确性。<br/>
+copy-on-write的目的是实现“元素内容相同的数组共享内存，同时支持元素的随时修改”<br/>
+更改前：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762688451.jpg" alt=""/><br/>
+更改后：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-18-14635762803954.jpg" alt=""/></p>
+
+<h2 id="toc_6">集合类型(Set)</h2>
+
+<p>Set是一个无序集合，其存储的值不能重复。<br/>
+Set中的值必须有哈希值，即支持Hashable协议。<br/>
+Set被定义为Struct，值类型，与Array类似。</p>
+
+<pre><code class="language-swift">var set = Set&lt;String&gt;();
+var set2:Set&lt;String&gt;;
+set2 = [&quot;shanghai&quot;,&quot;beijing&quot;];
+</code></pre>
+
+<h2 id="toc_7">字典类型(Dictionary)</h2>
+
+<p>Dictionary是一个存储Key—Value的无序的集合，key唯一，value可重复。<br/>
+Dictionary中的Key必须支持Hashable协议。<br/>
+Dictionary被定义为Struct，值类型，特征与Array一致。</p>
+
+<pre><code class="language-swift">var dictionary1 = [String:Int]()；
+var dictionary2 : Dictionary&lt;String,Int&gt;；
+dictionary2=[&quot;Jason&quot;:36, &quot;Tom&quot;:31, &quot;Marty&quot;:44]；
+
+for(name, age) in dictionary2{
+    print(&quot;The Age of \(name) is: \(age)&quot;)
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/18</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14635750426080.html" data-count-type="comments" href="14635750426080.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14634889513152.html">
                 
                   <h1>GeekBand.Swift-协议</h1>
@@ -740,358 +869,6 @@ print(c3==c5)
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14628652524688.html">
-                
-                  <h1>GeekBand.Swift-属性与方法</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>属性表达实例状态或类型状态<br/>
-方法是成员函数，表达行为可用于:struct,enum,class</p>
-</blockquote>
-
-<h2 id="toc_0">属性</h2>
-
-<h3 id="toc_1">属性类别</h3>
-
-<p>根据读写性划分</p>
-
-<ul>
-<li>存储属性</li>
-<li>计算属性</li>
-</ul>
-
-<p>根据可变性划分</p>
-
-<ul>
-<li>变量属性</li>
-<li>常量属性</li>
-</ul>
-
-<p>根据归属权划分</p>
-
-<ul>
-<li>实例属性</li>
-<li>类属性(在struct和enum中用static声明，class中用class声明)</li>
-</ul>
-
-<h3 id="toc_2">存储属性的本质</h3>
-
-<p>一个存储变量，同时编译器会给该变量自动添加get和set访问器方法。</p>
-
-<h3 id="toc_3">计算属性的本质</h3>
-
-<p>一个get方法。（可以添加set）。</p>
-
-<pre><code class="language-swift">class Rectangle{
-
-    //常量属性
-    let name:&quot;矩形&quot;;
-    
-    //存储属性(变量属性)
-    var width:Int;
-    var height:Int;
-    //计算属性
-    var area:Int{
-        get{
-            return width*height;
-        }
-        set{
-            self.width = newValue / height;
-        }
-    }
-    
-    
-}
-</code></pre>
-
-<h3 id="toc_4">属性监视器</h3>
-
-<p>属性监视器是swift的一个特殊功能，可以在属性值修改之前和之后完成对应动作。</p>
-
-<pre><code class="language-swift">var name:String = &quot;coder&quot;{
-    willSet{
-        doSomthing();
-    }
-    didSet{
-        doSomthing();
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">注意</h3>
-
-<p><em>实例属性在使用之前必须初始化！</em></p>
-
-<h2 id="toc_6">方法</h2>
-
-<h3 id="toc_7">方法的类别</h3>
-
-<p>方法根据归属不同可以分为:</p>
-
-<ul>
-<li>实例方法</li>
-<li>类型方法</li>
-</ul>
-
-<h3 id="toc_8">方法的声明</h3>
-
-<p>声明代码：<code>func name(参数1,参数2)-&gt;返回值{}</code></p>
-
-<p>说明：</p>
-
-<ul>
-<li>参数形式：外部参数名 本地参数名:类型</li>
-<li>声明时可以省略外部参数名,这时外部参数名默认使用本地参数名</li>
-<li>调用时，第一个参数名可忽略，但后面的参数名必须显示标明。如果在声明时加<code>_</code>，调用时也可忽略</li>
-<li>方法可以没有参数和返回值</li>
-<li>参数传递默认为传值</li>
-</ul>
-
-<h4 id="toc_9">更多参数和返回值功能</h4>
-
-<ul>
-<li>提供参数默认值</li>
-<li>常量参数与变量参数</li>
-<li>可变长参数</li>
-<li>inout参数，可以改变外部实参</li>
-<li>返回元组(Tuple)</li>
-</ul>
-
-<pre><code class="language-swift">
-class MyClass{
-    var instanceData=100;
-    static var typeData=10000;
- 
-    //实例方法
-    func instanceMethod(){
-        ++instanceData
-        ++MyClass.typeData
-        instanceMethod2()
-        MyClass.typeMethod()
-    }
-    
-    //静态方法
-    static func typeMethod(){
-        ++typeData
-        //++instanceData
-        typeMethod2()
-        //instanceMethod()
-    }
-    
-    func instanceMethod2(){
-        print(instanceData)
-    }
-    static func typeMethod2(){
-        print(typeData)
-    }
-
-    //显式内部参数名，省略外部参数名
-    func sayGreeting(name:String, _ words:String)-&gt;String{
-        return words+&quot;! &quot;+name
-    }
-    func sayGreeting(){
-        print(&quot;Hello!&quot;)
-    }
-    func sayGreeting(name:String)-&gt;String {
-        return &quot;Hello! &quot;+name
-    }
-    //显式内部参数名，显式外部参数名
-    func sayGreeting(person name:String,greeting words:String)-&gt;String{
-        return words+&quot;! &quot;+name
-    }
-    
-    //可变数目参数
-    func averageNumber(numbers:Double...)-&gt;Double{
-    
-        var sum=0.0
-        for item in numbers {
-            sum+=item
-        }
-        return sum / Double(numbers.count)
-    }
-    
-    //常量参数 VS. 变量参数
-    func changeParameter(data1:Int, var data2:Int){
-        var dataTemp=data1
-        data2++
-        dataTemp++
-    }
-
-    //inout参数
-    func swap(inout a:Int,inout b:Int){
-        let tempA=a
-        a=b
-        b=tempA
-    }
-    
-    //返回Tuple类型
-    func minMax(array: [Int]) -&gt; (min: Int, max: Int){
-        var currentMin = array[0]
-        var currentMax = array[0]
-        for value in array[1..&lt;array.count] {
-            if value &lt; currentMin {
-                currentMin = value
-            } else if value &gt; currentMax {
-                currentMax = value
-            }
-        }
-        return (currentMin, currentMax)
-    }
-}
-
-var myObject=MyClass()
-//调用实例方法
-myObject.instanceMethod()
-//调用类型方法
-MyClass.typeMethod()
-myObject.sayGreeting()
-myObject.sayGreeting(&quot;Jason&quot;)
-myObject.sayGreeting(&quot;Jason&quot;,&quot;Welcome&quot;)
-myObject.sayGreeting(person:&quot;Jason&quot;, greeting:&quot;You are welcome&quot;)
-myObject.averageNumber(10,90,30,80,50,100)
-var data1=100
-var data2=200
-myObject.swap(&amp;data1,b: &amp;data2)
-let range=myObject.minMax([3,-9,23,15,-45,7])
-print(&quot;max=\(range.max), min=\(range.min)&quot;)
-</code></pre>
-
-<h3 id="toc_10">特殊的方法</h3>
-
-<h4 id="toc_11">初始化器</h4>
-
-<blockquote>
-<p>初始化器用于初始化类型实例，是一个特殊的函数，无返回值。</p>
-</blockquote>
-
-<h5 id="toc_12">初始化过程</h5>
-
-<ol>
-<li>分配内存</li>
-<li>调用初始化器初始化内存</li>
-</ol>
-
-<h5 id="toc_13">应用范围</h5>
-
-<ul>
-<li>class</li>
-<li>struct</li>
-<li>enum</li>
-</ul>
-
-<h5 id="toc_14">作用</h5>
-
-<ul>
-<li>初始化器主要用于初始化实例储存属性，可以使用默认初始化器或自定义的初始化器。</li>
-<li>所有储存属性必须被初始化
-
-<ul>
-<li>实例储存属性要么指定默认值，要么在初始化器内初始化</li>
-<li>类型存储属性必须指定默认值</li>
-</ul></li>
-<li>可选属性类型可以不初始化。(声明时用<code>？</code>修饰)</li>
-<li>属性被初始化时，不会调用属性观察者</li>
-</ul>
-
-<h5 id="toc_15">默认初始化器</h5>
-
-<ul>
-<li>一个类可以有多个初始化器，但至少有一个初始化器</li>
-<li>如果一个类没有人为提供初始化器，编译器会自动生成一个默认的初始化器</li>
-<li>默认初始化器，无参形式init();</li>
-</ul>
-
-<h5 id="toc_16">便捷初始化器</h5>
-
-<ul>
-<li>指定初始化器为类的主初始化器，负责初始化所有属性，默认调用父类的主初始化器</li>
-<li>便捷初始化器为类的辅助初始化器。必须调用同的指定初始化器。用<code>convenience</code>修饰</li>
-</ul>
-
-<pre><code class="language-swift">class Point3D{
-    var x:Int
-    var y:Int
-    var z:Int
-    
-    init(x:Int, y:Int, z:Int){
-        self.x=x
-        self.y=y
-        self.z=z
-        
-        //other processing
-        print(&quot;other task&quot;)
-    }
-    
-    convenience init(x:Int, y:Int){
-        
-        self.init(x:x,y:y,z:0)
-    }
-    
-    convenience init(){
-        
-        self.init(x:0,y:0,z:0)
-    }
-}
-
-</code></pre>
-
-<h4 id="toc_17">析构器</h4>
-
-<blockquote>
-<p>析构器(deinit),在实例内存被释放前调用，用于释放实例使用的非内存资源。</p>
-</blockquote>
-
-<ul>
-<li>析构器仅可以定义于class，且只能定义一个。</li>
-<li>只有实例析构器，没有类型析构器</li>
-<li>析构器运行根据ARC的释放规则，自动调用，程序员无法手动调用</li>
-</ul>
-
-<pre><code>class FileStream{
-    init(){
-        print(&quot;open file...&quot;)
-    }
-    
-    func process(){
-        print(&quot;process file...&quot;)
-    }
-       
-    deinit{
-        print(&quot;close file...&quot;)
-    }
-}
-
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/10</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628652524688.html" data-count-type="comments" href="14628652524688.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1180,6 +957,12 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
 	      
 		      
 			      <li class="post">
+			        <a href="14891427018088.html">设计模式-策略模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
@@ -1199,12 +982,6 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
 		      
 			      <li class="post">
 			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889379059302.html">剑指Offer-替换空格</a>
 			      </li>
 		     
 		  

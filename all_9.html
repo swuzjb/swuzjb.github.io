@@ -107,6 +107,174 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14610365861382.html">
+                
+                  <h1>GeekBand.iOS-UIView动画</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>这周的两个课程安排都是大坑啊，一周怎么够！</p>
+</blockquote>
+
+<p>先安利：<br/>
+- <a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a><br/>
+- <a href="http://transitiontreasury.com">http://transitiontreasury.com</a><br/>
+- <a href="https://github.com/sxyx2008/awesome-ios-animation">awesome-ios-animation</a></p>
+
+<p>课程知识汇总：</p>
+
+<h2 id="toc_0">UIKit提供的动画支持</h2>
+
+<p>苹果给UIView已经做好了简单的动画操作方法，可以自动的给一些属性的变化添加关键帧，生成动画效果。支持的属性包括：</p>
+
+<ul>
+<li>frame</li>
+<li>bounds</li>
+<li>center</li>
+<li>transform</li>
+<li>alpha</li>
+<li>backgroundColor</li>
+<li>contentStretch</li>
+</ul>
+
+<p>动画方法：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished));
++(void)animationWithDuration:(NSTimeInterval) animations:(void(^)(void));
+</code></pre>
+
+<p>其中可以观察到，duration表述动画的时间，在animation这个block中修改view的可动画属性，系统就会自动添加动画。option是系统提供的各种配置常量，用于不同的动画效果。</p>
+
+<h3 id="toc_1">keyFrame动画支持</h3>
+
+<p>上述的动画操作虽然展示了一些动画效果，但是都比较简单。不能满足我们的日常需要。如果我们需要某个动画，先完成一部分，再完成另一部分。比如将一个view 先从A点移到B点再移到C点，用上面的方法就比较困难。这个时候我们就可以借助。UIView的animateKeyFrame方法。</p>
+
+<pre><code>+(void)animateKeyframesWithDuration:(NSTimeInterval) delay:(NSTimeInterval) options:(UIViewKeyFrameAnimationOptions) animations:(void(^)(void)) completion:(void(^__nullable)(BOOL finished))
+//需要在上述方法的animation中加入
++(void)addKeyFrameWithRelativeStartTime:(double) relativeDuration:(double) animations:(void(^)(void))
+</code></pre>
+
+<p>ps.这里的开始时间，持续时间都是百分比。</p>
+
+<h3 id="toc_2">Spring Animation</h3>
+
+<p>Spring Animation是iOS7.0之后系统新启用的一个动画模式。这里上一篇大神blog作为参考：<a href="https://renfei.org/blog/ios-8-spring-animation.html">ios-8-spring-animation</a>.<br/>
+调用方法如下：</p>
+
+<pre><code>+(void)animationWithDuration:(NSTimeInterval)duration
+        delay:(NSTimeInterval)delay
+        usingSpringWithDamping:(CGFloat)dampingRatio //阻尼值[0,1.0]
+        initialSpringVelocity:(CGFloat)velocity//初速度
+        options:(UIViewAnimationOptions)options
+        animations:(void(^)(void))animations
+        completion:(void(^)(BOOL finished))completion       
+</code></pre>
+
+<h3 id="toc_3">AutoLayout环境下的动画</h3>
+
+<p>在使用AutoLayout之后，我们对view的frame的属性操作就会失效。这个时候，我们制作动画就应该修改的是view的constraint。步骤如下：<br/>
+1. 修改constraint<br/>
+2. -[view setNeedsUpdateConstraints]//设置约束<br/>
+3. -[view layoutIfNeeded]//在 animation block中调用</p>
+
+<h2 id="toc_4">Transition动画</h2>
+
+<p>上一部分介绍了UIView自带的一些动画效果，但是还有一种动画过程没有介绍。那就是用动画过程完成界面切换。这就是View transition动画。</p>
+
+<h3 id="toc_5">小变化，子View发生变化</h3>
+
+<p>UIView API:</p>
+
+<pre><code>+transitionWithView:(UIView)view //父view
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    animations:(void(^)(void))animations
+    completion:(void(^)(BOOL finished))completion
+</code></pre>
+
+<h3 id="toc_6">大变化，场景转化</h3>
+
+<p>从formView切换到toView</p>
+
+<pre><code>+transitionFromView:(UIView)fromView
+    toView:(UIView)toView
+    duration:(NSTimeInterval)duration
+    options:(UIViewAnimationOptions)options
+    completion:(void(^)(BOOL finished))completion           
+</code></pre>
+
+<h2 id="toc_7">UIViewAnimationOptions介绍</h2>
+
+<ul>
+<li>常规动画属性设置（可以同时选择多个进行设置）
+
+<ul>
+<li>UIViewAnimationOptionLayoutSubviews：动画过程中保证子视图跟随运动。</li>
+<li>UIViewAnimationOptionAllowUserInteraction：动画过程中允许用户交互。</li>
+<li>UIViewAnimationOptionBeginFromCurrentState：所有视图从当前状态开始运行。</li>
+<li>UIViewAnimationOptionRepeat：重复运行动画。</li>
+<li>UIViewAnimationOptionAutoreverse ：动画运行到结束点后仍然以动画方式回到初始点。</li>
+<li>UIViewAnimationOptionOverrideInheritedDuration：忽略嵌套动画时间设置。</li>
+<li>UIViewAnimationOptionOverrideInheritedCurve：忽略嵌套动画速度设置。</li>
+<li>UIViewAnimationOptionAllowAnimatedContent：动画过程中重绘视图（注意仅仅适用于转场动画）。  </li>
+<li>UIViewAnimationOptionShowHideTransitionViews：视图切换时直接隐藏旧视图、显示新视图，而不是将旧视图从父视图移除（仅仅适用于转场动画）</li>
+<li>UIViewAnimationOptionOverrideInheritedOptions ：不继承父动画设置或动画类型。</li>
+</ul></li>
+<li>动画速度控制（可从其中选择一个设置）
+
+<ul>
+<li>UIViewAnimationOptionCurveEaseInOut：动画先缓慢，然后逐渐加速。</li>
+<li>UIViewAnimationOptionCurveEaseIn ：动画逐渐变慢。</li>
+<li>UIViewAnimationOptionCurveEaseOut：动画逐渐加速。</li>
+<li>UIViewAnimationOptionCurveLinear ：动画匀速执行，默认值。</li>
+</ul></li>
+<li>转场类型（仅适用于转场动画设置，可以从中选择一个进行设置，基本动画、关键帧动画不需要设置）
+
+<ul>
+<li>UIViewAnimationOptionTransitionNone：没有转场动画效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromLeft ：从左侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionFlipFromRight：从右侧翻转效果。</li>
+<li>UIViewAnimationOptionTransitionCurlUp：向后翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCurlDown ：向前翻页的动画过渡效果。    </li>
+<li>UIViewAnimationOptionTransitionCrossDissolve：旧视图溶解消失显示下一个新视图的效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromTop ：从上方翻转效果。    </li>
+<li>UIViewAnimationOptionTransitionFlipFromBottom：从底部翻转效果。</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_8">Core Animation</h2>
+
+<p>当进行复杂的动画效果时，需要使用Core Animation System系统进行操作。具体请参考：<a href="https://www.gitbook.com/book/zsisme/ios-/details">ios核心动画高级技巧</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/19</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14610365861382.html" data-count-type="comments" href="14610365861382.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14604722520928.html">
                 
                   <h1>GeekBand.iOS-UIScrollView的使用</h1>
@@ -640,111 +808,6 @@ view.subviews;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14603532939876.html">
-                
-                  <h1>GeekBand.iOS-xcode的工程管理</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>从本周开始，课程进入到高级iOS开发，听了一周课，虽然对理论知识有一定的补充，但是仅仅存在于理论层面，可能由于接触代码量太小，也由于自己写的不多，所以对很多问题没有宏观的认识。所以先把知识进行归纳，具体的应用，先挖个坑！！！！（我会回来补的！！！）。</p>
-</blockquote>
-
-<p>注：本文的工程管理指的是Xcode对自身的project的相关操作与架构，与公司中的多人协作等工程管理概念无关，请读者知悉。</p>
-
-<h2 id="toc_0">Xcode的工程结构</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603539333206.jpg" alt=""/></p>
-
-<h2 id="toc_1">Workspace</h2>
-
-<p>workspace（工作空间）从学习java转过来的同学一定不陌生。在Xcode中关于workSpace的理解也差不多，就是一个可以存放多个project的空间合集。<br/>
-其作用是管理一组project，在同一个workspace中的project会有以下联系：</p>
-
-<ul>
-<li>这些项目将使用同一个位置
-
-<ul>
-<li>保存项目状态</li>
-<li>保存构造出来的产品</li>
-<li>自动可以相互引用</li>
-</ul></li>
-<li>Xcode自动为独立的项目提供Workspace</li>
-<li>Workspace中的Project仍然可以独立打开</li>
-</ul>
-
-<p>如果开发人数很多,且负责不同的部分和组件的话,可以用子Project的方式或者Workspace+多个Project的方式来分割功能和组件。由于project.pbxproj这个文件很容易发生冲突(比如新增文件,删除文件,改变Build Setting等都会改变这个文件),且很难合并冲突,那么采用多Project的方式可以降低project.pbxproj冲突的机会,而一些公用的代码或组件也可以放在一个Project中,然后其他Project来依赖这个公用的Project就可以搞定了。</p>
-
-<h2 id="toc_2">Project</h2>
-
-<p>我们接触到的最多的就是Project，再次根据老师的建议，将其翻译为工程。其作用主要为：</p>
-
-<ul>
-<li>组织工程用到的文件</li>
-<li>管理构建目标Traget</li>
-<li>告诉Xcode当前构建和执行目标
-
-<ul>
-<li>通过Scheme选择</li>
-</ul></li>
-</ul>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603545785312.jpg" alt=""/></p>
-
-<h3 id="toc_3">Group vs. Floder Reference</h3>
-
-<p>Group是对Project中的文件进行分组，为了便于查找和管理<br/>
-Floder Reference是对外部文件的一个引用，可以将其关联进入工程，但是文件本身不在工程中，需要额外添加入工程</p>
-
-<h2 id="toc_4">Traget</h2>
-
-<p>Traget（目标），他主要是对Project最后生成的结果进行规划的一个概念，主要作用为：<br/>
-- 定义如何构造一个产品（product）<br/>
-    - 指定用到的文件子集<br/>
-    - 定义依赖关系<br/>
-    - 提供构建过程的规则与参数<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603551277115.jpg" alt=""/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-11-14603553121286.jpg" alt=""/></p>
-
-<h3 id="toc_5">Traget与Project区别</h3>
-
-<p>project就是一个工程，一个project可以对应多个target，比如一个xxx游戏的project，有free版的target，收费版的，或者还有什么节日版，product就是target build出来的一个app。<br/>
-建议参考：<a href="http://www.cnblogs.com/sevenyuan/p/4272561.html">XCode工程中 Project 和 Targets区别</a></p>
-
-<h2 id="toc_6">Scheme和Destination</h2>
-
-<ul>
-<li>Scheme 一组指令在指定Traget上完成特定的任务</li>
-<li>Destination 告诉Xcode使用哪个设备或模拟器</li>
-</ul>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/4/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603532939876.html" data-count-type="comments" href="14603532939876.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -833,6 +896,12 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 	      
 		      
 			      <li class="post">
+			        <a href="14891427018088.html">设计模式-策略模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
@@ -852,12 +921,6 @@ Floder Reference是对外部文件的一个引用，可以将其关联进入工�
 		      
 			      <li class="post">
 			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889379059302.html">剑指Offer-替换空格</a>
 			      </li>
 		     
 		  

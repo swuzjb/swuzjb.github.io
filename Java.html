@@ -107,6 +107,195 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14891427018088.html">
+                
+                  <h1>设计模式-策略模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>策略模式是指：定义一系列算法类，将每一个算法封装起来，并让他们可以互相替换，策略模式让算法独立于使用它的客户而变化，也被称之为政策模式(Policy)。是一种对象行为型模式。</p>
+</blockquote>
+
+<h2 id="toc_0">详细说明</h2>
+
+<p>在策略模式中，我们可以定义一些独立的类来封装不同的算法，每一个类封装一种具体的算法，在这里，每一个封装算法的类我们都可以称之为一种策略(Strategy)，为了保证这些策略在使用时具有一致性，一般会提供一个抽象的策略类来做规则的定义，而每种算法则对应于一个具体策略类。<br/>
+策略模式的主要目的是将算法的定义与使用分开，也就是将算法的行为和环境分开，将算法的定义放在专门的策略类中，每一个策略类封装了一种实现算法，使用算法的环境类针对抽象策略类进行编程，符合“依赖倒转原则”。在出现新的算法时，只需要增加一个新的实现了抽象策略类的具体策略类即可。</p>
+
+<h3 id="toc_1">策略模式中的角色</h3>
+
+<p>在策略模式结构图中包含如下几个角色：</p>
+
+<ul>
+<li>Context（环境类）：环境类是使用算法的角色，它在解决某个问题（即实现某个方法）时可以采用多种策略。在环境类中维持一个对抽象策略类的引用实例，用于定义所采用的策略。</li>
+<li>Strategy（抽象策略类）：它为所支持的算法声明了抽象方法，是所有策略类的父类，它可以是抽象类或具体类，也可以是接口。环境类通过抽象策略类中声明的方法在运行时调用具体策略类中实现的算法。</li>
+<li><p>ConcreteStrategy（具体策略类）：它实现了在抽象策略类中声明的算法，在运行时，具体策略类将覆盖在环境类中定义的抽象策略类对象，使用一种具体的算法实现某个业务处理。</p>
+
+<p>策略模式结构图如下：<br/>
+<img src="media/14891427018088/14891431124940.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+</ul>
+
+<h3 id="toc_2">通用实现</h3>
+
+<p>在使用策略模式时，我们需要将算法从Context类中提取出来，首先应该创建一个策略接口，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public interface Strategy {
+    void algorithm();
+}
+</code></pre>
+
+<p>然后再将封装每一种具体算法的类作为该策略类的实现类，如下代码所示：</p>
+
+<pre><code class="language-java">public class ConcreteStrategyA implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略A&quot;);
+    }
+}
+public class ConcreteStrategyB implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略B&quot;);
+    }
+}
+</code></pre>
+
+<p>于Context类而言，在它与抽象策略类之间建立一个关联关系，其典型代码如下所示：</p>
+
+<pre><code class="language-java">/**
+ * 环境类，调用策略的实例
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Context {
+    private Strategy strategy;
+    public Context(Strategy strategy) {
+        this.strategy = strategy;
+    }
+    /**
+     * 策略调用
+     */
+    public void algorihm() {
+        this.strategy.algorithm();
+    }
+    /**
+     * 动态设置策略
+     * 
+     * @param strategy
+     */
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+}
+</code></pre>
+
+<p>在客户端代码中只需注入一个具体策略对象，可以将具体策略类类名存储在配置文件中，通过反射来动态创建具体策略对象，从而使得用户可以灵活地更换具体策略类，增加新的具体策略类也很方便。策略模式提供了一种可插入式(Pluggable)算法的实现方案。</p>
+
+<h3 id="toc_3">总结</h3>
+
+<p>策略模式用于算法的自由切换和扩展，它是应用较为广泛的设计模式之一。策略模式对应于解决某一问题的一个算法族，允许用户从该算法族中任选一个算法来解决某一问题，同时可以方便地更换算法或者增加新的算法。只要涉及到算法的封装、复用和切换都可以考虑使用策略模式。</p>
+
+<h4 id="toc_4">主要优点</h4>
+
+<p>策略模式的主要优点如下：</p>
+
+<ol>
+<li>策略模式提供了对“开闭原则”的完美支持，用户可以在不修改原有系统的基础上选择算法或行为，也可以灵活地增加新的算法或行为。</li>
+<li>策略模式提供了管理相关的算法族的办法。策略类的等级结构定义了一个算法或行为族，恰当使用继承可以把公共的代码移到抽象策略类中，从而避免重复的代码。</li>
+<li>策略模式提供了一种可以替换继承关系的办法。如果不使用策略模式，那么使用算法的环境类就可能会有一些子类，每一个子类提供一种不同的算法。但是，这样一来算法的使用就和算法本身混在一起，不符合“单一职责原则”，决定使用哪一种算法的逻辑和该算法本身混合在一起，从而不可能再独立演化；而且使用继承无法实现算法或行为在程序运行时的动态切换。</li>
+<li>使用策略模式可以避免多重条件选择语句。多重条件选择语句不易维护，它把采取哪一种算法或行为的逻辑与算法或行为本身的实现逻辑混合在一起，将它们全部硬编码(Hard Coding)在一个庞大的多重条件选择语句中，比直接继承环境类的办法还要原始和落后。</li>
+<li>策略模式提供了一种算法的复用机制，由于将算法单独提取出来封装在策略类中，因此不同的环境类可以方便地复用这些策略类。</li>
+</ol>
+
+<h4 id="toc_5">主要缺点</h4>
+
+<p>策略模式的主要缺点如下：</p>
+
+<ol>
+<li>客户端必须知道所有的策略类，并自行决定使用哪一个策略类。这就意味着客户端必须理解这些算法的区别，以便适时选择恰当的算法。换言之，策略模式只适用于客户端知道所有的算法或行为的情况。</li>
+<li>策略模式将造成系统产生很多具体策略类，任何细小的变化都将导致系统要增加一个新的具体策略类。</li>
+<li>无法同时在客户端使用多个策略类，也就是说，在使用策略模式时，客户端每次只能使用一个策略类，不支持使用一个策略类完成部分功能后再使用另一个策略类来完成剩余功能的情况。</li>
+</ol>
+
+<h4 id="toc_6">适用场景</h4>
+
+<p>在以下情况下可以考虑使用策略模式：</p>
+
+<ol>
+<li>一个系统需要动态地在几种算法中选择一种，那么可以将这些算法封装到一个个的具体算法类中，而这些具体算法类都是一个抽象算法类的子类。换言之，这些具体算法类均有统一的接口，根据“里氏代换原则”和面向对象的多态性，客户端可以选择使用任何一个具体算法类，并只需要维持一个数据类型是抽象算法类的对象。</li>
+<li>一个对象有很多的行为，如果不用恰当的模式，这些行为就只好使用多重条件选择语句来实现。此时，使用策略模式，把这些行为转移到相应的具体策略类里面，就可以避免使用难以维护的多重条件选择语句。</li>
+<li> 不希望客户端知道复杂的、与算法相关的数据结构，在具体策略类中封装算法与相关的数据结构，可以提高算法的保密性与安全性。</li>
+</ol>
+
+<h2 id="toc_7">练习</h2>
+
+<p>某软件公司欲开发一款飞机模拟系统，该系统主要模拟不同种类飞机的飞行特征与起飞特征，需要模拟的飞机种类及其特征如下表所示：</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">飞机种类</th>
+<th style="text-align: center">起飞特征</th>
+<th style="text-align: center">飞行特征</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">直升机(Helicopter)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">客机(AirPlane)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">歼击机(Fighter)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">鹞式战斗机(Harrier)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+</tbody>
+</table>
+
+<p>请使用策略模式完成上述问题的设计。</p>
+
+<h3 id="toc_8">实现</h3>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891427018088.html" data-count-type="comments" href="14891427018088.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14880758779206.html">
                 
                   <h1>Java容器框架分析(九)——WeakHashMap</h1>
@@ -708,395 +897,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879027517066.html">
-                
-                  <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
-
-<h2 id="toc_0">TreeMap简介</h2>
-
-<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
-
-<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
-
-<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
-
-<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
-</code></pre>
-
-<h2 id="toc_1">红黑树</h2>
-
-<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
-
-<ol>
-<li>每个节点要么是红色要么是黑色。</li>
-<li>根节点必须是黑色。</li>
-<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
-<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
-在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
-</ol>
-
-<h3 id="toc_2">预备知识</h3>
-
-<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
-
-<h4 id="toc_3">左旋</h4>
-
-<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
-
-<p>TreeMap中的左旋操作代码：</p>
-
-<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; r = p.right;
-        p.right = r.left;
-        if (r.left != null)
-            r.left.parent = p;
-        r.parent = p.parent;
-        if (p.parent == null)
-            root = r;
-        else if (p.parent.left == p)
-            p.parent.left = r;
-        else
-            p.parent.right = r;
-        r.left = p;
-        p.parent = r;
-    }
-}
-</code></pre>
-
-<h3 id="toc_4">右旋</h3>
-
-<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
-
-<p>TreeMap中的右旋代码：</p>
-
-<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; l = p.left;
-        p.left = l.right;
-        if (l.right != null) l.right.parent = p;
-        l.parent = p.parent;
-        if (p.parent == null)
-            root = l;
-        else if (p.parent.right == p)
-            p.parent.right = l;
-        else p.parent.left = l;
-        l.right = p;
-        p.parent = l;
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">寻找节点后继</h3>
-
-<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
-
-<ol>
-<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
-<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
-</ol>
-
-<p>TreeMap中寻找节点后继的代码如下：</p>
-
-<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
-    if (t == null)
-        return null;
-    else if (t.right != null) {
-            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
-        Entry&lt;K,V&gt; p = t.right;
-        while (p.left != null)
-            p = p.left;
-        return p;
-    } else {
-            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
-        Entry&lt;K,V&gt; p = t.parent;
-        Entry&lt;K,V&gt; ch = t;
-        while (p != null &amp;&amp; ch == p.right) {
-            ch = p;
-            p = p.parent;
-        }
-        return p;
-    }
-}
-</code></pre>
-
-<h2 id="toc_6">常用方法剖析</h2>
-
-<h3 id="toc_7">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    if (key == null)//不允许key值为null
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    Entry&lt;K,V&gt; p = root;
-    while (p != null) {
-        int cmp = k.compareTo(p.key);
-        if (cmp &lt; 0)//向左找
-            p = p.left;
-        else if (cmp &gt; 0)//向右找
-            p = p.right;
-        else
-            return p;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_8">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
-
-<pre><code class="language-java">public V put(K key, V value) {
-    ......
-    int cmp;
-    Entry&lt;K,V&gt; parent;
-    if (key == null)
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    do {
-        parent = t;
-        cmp = k.compareTo(t.key);
-        if (cmp &lt; 0) t = t.left;//向左找
-        else if (cmp &gt; 0) t = t.right;//向右找
-        else return t.setValue(value);
-    } while (t != null);
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
-    if (cmp &lt; 0) parent.left = e;
-    else parent.right = e;
-    fixAfterInsertion(e);//调整
-    size++;
-    return null;
-}
-</code></pre>
-
-<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
-
-<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
-private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
-    x.color = RED;
-    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
-        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
-            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况1
-                setColor(y, BLACK);                        // 情况1
-                setColor(parentOf(parentOf(x)), RED);      // 情况1
-                x = parentOf(parentOf(x));                 // 情况1
-            } else {
-                if (x == rightOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况2
-                    rotateLeft(x);                         // 情况2
-                }
-                setColor(parentOf(x), BLACK);              // 情况3
-                setColor(parentOf(parentOf(x)), RED);      // 情况3
-                rotateRight(parentOf(parentOf(x)));        // 情况3
-            }
-        } else {
-            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况4
-                setColor(y, BLACK);                        // 情况4
-                setColor(parentOf(parentOf(x)), RED);      // 情况4
-                x = parentOf(parentOf(x));                 // 情况4
-            } else {
-                if (x == leftOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况5
-                    rotateRight(x);                        // 情况5
-                }
-                setColor(parentOf(x), BLACK);              // 情况6
-                setColor(parentOf(parentOf(x)), RED);      // 情况6
-                rotateLeft(parentOf(parentOf(x)));         // 情况6
-            }
-        }
-    }
-    root.color = BLACK;
-}
-</code></pre>
-
-<h3 id="toc_9">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
-<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
-
-<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
-
-<ol>
-<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
-<li>删除点p的左右子树都非空。</li>
-</ol>
-
-<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
-基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
-
-<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
-    modCount++;
-    size--;
-    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
-        Entry&lt;K,V&gt; s = successor(p);// 后继
-        p.key = s.key;
-        p.value = s.value;
-        p = s;
-    }
-    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
-    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
-        replacement.parent = p.parent;
-        if (p.parent == null)
-            root = replacement;
-        else if (p == p.parent.left)
-            p.parent.left  = replacement;
-        else
-            p.parent.right = replacement;
-        p.left = p.right = p.parent = null;
-        if (p.color == BLACK)
-            fixAfterDeletion(replacement);// 调整
-    } else if (p.parent == null) {
-        root = null;
-    } else { // 1. 删除点p的左右子树都为空
-        if (p.color == BLACK)
-            fixAfterDeletion(p);// 调整
-        if (p.parent != null) {
-            if (p == p.parent.left)
-                p.parent.left = null;
-            else if (p == p.parent.right)
-                p.parent.right = null;
-            p.parent = null;
-        }
-    }
-}
-</code></pre>
-
-<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
-跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
-
-<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
-
-<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
-
-<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
-    while (x != root &amp;&amp; colorOf(x) == BLACK) {
-        if (x == leftOf(parentOf(x))) {
-            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况1
-                setColor(parentOf(x), RED);             // 情况1
-                rotateLeft(parentOf(x));                // 情况1
-                sib = rightOf(parentOf(x));             // 情况1
-            }
-            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
-                colorOf(rightOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况2
-                x = parentOf(x);                        // 情况2
-            } else {
-                if (colorOf(rightOf(sib)) == BLACK) {
-                    setColor(leftOf(sib), BLACK);       // 情况3
-                    setColor(sib, RED);                 // 情况3
-                    rotateRight(sib);                   // 情况3
-                    sib = rightOf(parentOf(x));         // 情况3
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况4
-                setColor(parentOf(x), BLACK);           // 情况4
-                setColor(rightOf(sib), BLACK);          // 情况4
-                rotateLeft(parentOf(x));                // 情况4
-                x = root;                               // 情况4
-            }
-        } else { // 跟前四种情况对称
-            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况5
-                setColor(parentOf(x), RED);             // 情况5
-                rotateRight(parentOf(x));               // 情况5
-                sib = leftOf(parentOf(x));              // 情况5
-            }
-            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
-                colorOf(leftOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况6
-                x = parentOf(x);                        // 情况6
-            } else {
-                if (colorOf(leftOf(sib)) == BLACK) {
-                    setColor(rightOf(sib), BLACK);      // 情况7
-                    setColor(sib, RED);                 // 情况7
-                    rotateLeft(sib);                    // 情况7
-                    sib = leftOf(parentOf(x));          // 情况7
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况8
-                setColor(parentOf(x), BLACK);           // 情况8
-                setColor(leftOf(sib), BLACK);           // 情况8
-                rotateRight(parentOf(x));               // 情况8
-                x = root;                               // 情况8
-            }
-        }
-    }
-    setColor(x, BLACK);
-}
-</code></pre>
-
-<h2 id="toc_10">TreeSet</h2>
-
-<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
-
-<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    private transient NavigableMap&lt;E,Object&gt; m;
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public TreeSet() {
-        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
-    }
-    ......
-    public boolean add(E e) {
-        return m.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_11">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879027517066.html" data-count-type="comments" href="14879027517066.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1185,6 +985,12 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 	      
 		      
 			      <li class="post">
+			        <a href="14891427018088.html">设计模式-策略模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
@@ -1204,12 +1010,6 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 		      
 			      <li class="post">
 			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889379059302.html">剑指Offer-替换空格</a>
 			      </li>
 		     
 		  

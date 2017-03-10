@@ -107,6 +107,112 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14585643199431.html">
+                
+                  <h1>GeekBand.iOS-UIViewController</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>UIViewController是一个普通的ObjC对象，它的主要功能是管理View、传递数据、响应用户操作、内存管理（状态保持）、适应适配。</p>
+
+<h2 id="toc_0">iOS设计模式</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-cocoa_mvc.gif" alt="iOS设计模式"/></p>
+
+<h2 id="toc_1">UIViewController调用顺序</h2>
+
+<p>ViewController生命周期会经历初始化、加载视图、销毁视图、生命结束等过程。</p>
+
+<ol>
+<li>init方法
+初始化ViewController本身。</li>
+<li>loadView方法
+当view需要被展示而它却是nil时，viewController会调用该方法，如果代码构建View的话需要重写此方法。</li>
+<li>viewDidLoad方法
+执行完loadView后继续执行viewDidLoad，loadView时还没有view，而viewDidLoad时view已经创建好了。</li>
+<li>viewDidUnload方法
+当系统内存吃紧的时候会调用该方法。</li>
+<li>dealloc
+释放其他资源或内存。</li>
+</ol>
+
+<p>View Controller的生命周期如下图所示：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-UIViewController%20Class%20Reference_2x.png" alt="UIViewController生命周期"/></p>
+
+<h2 id="toc_2">rootViewController的过程</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585714986064.jpg" alt="rootViewController"/></p>
+
+<p>使用代码指定rootViewController</p>
+
+<pre><code>- (void) tryNibName {
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+  UIViewController * rootVC = [[UIViewController alloc] initWithNibName:@&quot;rootVC&quot; bundle:nil];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+- (void) tryNibOfUserVCName {
+  // xib can be MyViewController or MyView
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[MyViewController alloc] init];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+- (void) tryNibOfVCName {
+  // UI prefix in class name means system class, which will bypass xib lookup!
+  self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  UIViewController * rootVC = [[UIViewController alloc] init];
+  self.window.rootViewController = rootVC;
+
+  [self.window makeKeyAndVisible];
+}
+
+</code></pre>
+
+<h2 id="toc_3">多个ViewController的替换</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-21-14585720269718.jpg" alt=""/></p>
+
+<h2 id="toc_4">ViewController传值</h2>
+
+<ol>
+<li>使用属性进行传值</li>
+<li>使用delegate进行回调进行传值</li>
+<li>使用segue进行传值</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14585643199431.html" data-count-type="comments" href="14585643199431.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14585638251666.html">
                 
                   <h1>GeekBand.iOS—APP生命周期</h1>
@@ -725,50 +831,6 @@ typedef enum {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14578438756442.html">
-                
-                  <h1>前笔记汇总</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>前面学习的笔记都在简书上完成，但是根据同班的isisYu大神的笔记展示发现，这个方法才是神技。感谢isisYu大神推荐的MWeb，Github page,这样的神器。<br/>
-但是由于自己比较懒，前面的博文就不一一复制粘贴过来了。<br/>
-给大家留个传送门。<br/>
-<a href="http://www.jianshu.com/p/c14efdb79779">第一课笔记</a><br/>
-<a href="http://www.jianshu.com/p/cc828bbd3432">第二课笔记-类与对象</a><br/>
-<a href="http://www.jianshu.com/p/62afb4f745d9">GeekBand-OC类型成员</a><br/>
-<a href="http://www.jianshu.com/p/f2ccf4c422bc">GeekBand-OC继承与多态</a><br/>
-<a href="http://www.jianshu.com/p/14f832bac76c">GeekBand-OC中的字符串</a><br/>
-<a href="http://www.jianshu.com/p/b4263fc2cb16">GeekBand-OC中的集合类型</a><br/>
-<a href="http://www.jianshu.com/p/68f2ed8ef988">GeekBand-OC中的ARC</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/13</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14578438756442.html" data-count-type="comments" href="14578438756442.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -857,6 +919,12 @@ typedef enum {
 	      
 		      
 			      <li class="post">
+			        <a href="14891427018088.html">设计模式-策略模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
@@ -876,12 +944,6 @@ typedef enum {
 		      
 			      <li class="post">
 			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889379059302.html">剑指Offer-替换空格</a>
 			      </li>
 		     
 		  

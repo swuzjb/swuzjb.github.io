@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-数据持久化 - Zhan's Blog
+  设计模式-策略模式 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-数据持久化</h1>
+          <h1>设计模式-策略模式</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/5/4</span>
+          <span class="date">2017/3/10</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14891427018088.html" data-count-type="comments" href="14891427018088.html#ds-thread"></a>
             
           </span>
 
@@ -129,178 +129,161 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
-在iOS中，我们可以采用如下技术进行数据的持久化：</p>
-
-<blockquote>
-<ul>
-<li>文件存储</li>
-<li>SQLite嵌入式数据库</li>
-<li>Core Data</li>
-</ul>
+      <blockquote>
+<p>策略模式是指：定义一系列算法类，将每一个算法封装起来，并让他们可以互相替换，策略模式让算法独立于使用它的客户而变化，也被称之为政策模式(Policy)。是一种对象行为型模式。</p>
 </blockquote>
 
-<h2 id="toc_0">文件存储</h2>
+<h2 id="toc_0">详细说明</h2>
 
-<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+<p>在策略模式中，我们可以定义一些独立的类来封装不同的算法，每一个类封装一种具体的算法，在这里，每一个封装算法的类我们都可以称之为一种策略(Strategy)，为了保证这些策略在使用时具有一致性，一般会提供一个抽象的策略类来做规则的定义，而每种算法则对应于一个具体策略类。<br/>
+策略模式的主要目的是将算法的定义与使用分开，也就是将算法的行为和环境分开，将算法的定义放在专门的策略类中，每一个策略类封装了一种实现算法，使用算法的环境类针对抽象策略类进行编程，符合“依赖倒转原则”。在出现新的算法时，只需要增加一个新的实现了抽象策略类的具体策略类即可。</p>
 
-<h3 id="toc_1">沙盒</h3>
+<h3 id="toc_1">策略模式中的角色</h3>
 
-<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+<p>在策略模式结构图中包含如下几个角色：</p>
 
 <ul>
-<li>根目录：<code>NSHomeDictionary()</code></li>
-<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
-<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
-<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
-<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
+<li>Context（环境类）：环境类是使用算法的角色，它在解决某个问题（即实现某个方法）时可以采用多种策略。在环境类中维持一个对抽象策略类的引用实例，用于定义所采用的策略。</li>
+<li>Strategy（抽象策略类）：它为所支持的算法声明了抽象方法，是所有策略类的父类，它可以是抽象类或具体类，也可以是接口。环境类通过抽象策略类中声明的方法在运行时调用具体策略类中实现的算法。</li>
+<li><p>ConcreteStrategy（具体策略类）：它实现了在抽象策略类中声明的算法，在运行时，具体策略类将覆盖在环境类中定义的抽象策略类对象，使用一种具体的算法实现某个业务处理。</p>
+
+<p>策略模式结构图如下：<br/>
+<img src="media/14891427018088/14891431124940.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
 </ul>
 
-<h3 id="toc_2">APP Bundle</h3>
+<h3 id="toc_2">通用实现</h3>
 
-<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
-cocoa提供了类NSBundle。<br/>
-<code>[NSBundle mainBundle]</code></p>
+<p>在使用策略模式时，我们需要将算法从Context类中提取出来，首先应该创建一个策略接口，其典型代码如下所示：</p>
 
-<h3 id="toc_3">NSFileManager</h3>
-
-<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
-常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
-
-<h2 id="toc_4">数据库SQLite</h2>
-
-<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
-
-<h3 id="toc_5">什么是SQLite</h3>
-
-<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
-
-<h3 id="toc_6">使用SQLite</h3>
-
-<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
-
-<ol>
-<li>链接libSQLite3.dylib</li>
-<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
-</ol>
-
-<p>纯C语言API</p>
-
-<pre><code>//打开 SQLite
-sqlite3* db = NULL
-int result = sqlite3_open([path UTF8String],&amp;db);
-
-//执行SQL语句
-int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
-
-//预定义SQL语句,可以有效防止SQL注入
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
-    sqlite3_bind_int(stmt,2,27);
+<pre><code class="language-java">public interface Strategy {
+    void algorithm();
 }
-sqlite3_finalize(stmt);
+</code></pre>
 
+<p>然后再将封装每一种具体算法的类作为该策略类的实现类，如下代码所示：</p>
 
-//结果集遍历
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    while(sqlite3_step(stmt)==SQLITE_ROW){
-        int _id = sqlite3_column_int(stmt,0);
-        char* _name = sqlite3_column_text(stmt,1);
-        NSString* name = [NSString stringWithUTF8String:_name];
-        ...
+<pre><code class="language-java">public class ConcreteStrategyA implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略A&quot;);
     }
 }
-sqlite3_finalize(stmt);
-
-//关闭SQLite
-sqlite3_close(db);
+public class ConcreteStrategyB implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略B&quot;);
+    }
+}
 </code></pre>
 
-<h3 id="toc_7">FMDB</h3>
+<p>于Context类而言，在它与抽象策略类之间建立一个关联关系，其典型代码如下所示：</p>
 
-<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
-使用方法如下：</p>
-
-<pre><code>//打开
-FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
-[db open];
-
-//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
-[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
-//取插入的id
-contacter.contacterId = (int)[db lastInsertRowId];
-
-//查询
-FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
-while ([result next]) {
-    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
-    contacter.name = [result stringForColumn:@&quot;name&quot;];
-    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
-    contacter.email = [result stringForColumn:@&quot;email&quot;];
-    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
- }
-
-//关闭
-[db close];
+<pre><code class="language-java">/**
+ * 环境类，调用策略的实例
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Context {
+    private Strategy strategy;
+    public Context(Strategy strategy) {
+        this.strategy = strategy;
+    }
+    /**
+     * 策略调用
+     */
+    public void algorihm() {
+        this.strategy.algorithm();
+    }
+    /**
+     * 动态设置策略
+     * 
+     * @param strategy
+     */
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+}
 </code></pre>
 
-<h2 id="toc_8">CoreData简介</h2>
+<p>在客户端代码中只需注入一个具体策略对象，可以将具体策略类类名存储在配置文件中，通过反射来动态创建具体策略对象，从而使得用户可以灵活地更换具体策略类，增加新的具体策略类也很方便。策略模式提供了一种可插入式(Pluggable)算法的实现方案。</p>
 
-<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+<h3 id="toc_3">总结</h3>
 
-<h3 id="toc_9">什么是CoreData</h3>
+<p>策略模式用于算法的自由切换和扩展，它是应用较为广泛的设计模式之一。策略模式对应于解决某一问题的一个算法族，允许用户从该算法族中任选一个算法来解决某一问题，同时可以方便地更换算法或者增加新的算法。只要涉及到算法的封装、复用和切换都可以考虑使用策略模式。</p>
 
-<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+<h4 id="toc_4">主要优点</h4>
 
-<h4 id="toc_10">开始使用CoreData</h4>
+<p>策略模式的主要优点如下：</p>
 
 <ol>
-<li>在新建项目时勾选<code>Use CoreData</code></li>
-<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+<li>策略模式提供了对“开闭原则”的完美支持，用户可以在不修改原有系统的基础上选择算法或行为，也可以灵活地增加新的算法或行为。</li>
+<li>策略模式提供了管理相关的算法族的办法。策略类的等级结构定义了一个算法或行为族，恰当使用继承可以把公共的代码移到抽象策略类中，从而避免重复的代码。</li>
+<li>策略模式提供了一种可以替换继承关系的办法。如果不使用策略模式，那么使用算法的环境类就可能会有一些子类，每一个子类提供一种不同的算法。但是，这样一来算法的使用就和算法本身混在一起，不符合“单一职责原则”，决定使用哪一种算法的逻辑和该算法本身混合在一起，从而不可能再独立演化；而且使用继承无法实现算法或行为在程序运行时的动态切换。</li>
+<li>使用策略模式可以避免多重条件选择语句。多重条件选择语句不易维护，它把采取哪一种算法或行为的逻辑与算法或行为本身的实现逻辑混合在一起，将它们全部硬编码(Hard Coding)在一个庞大的多重条件选择语句中，比直接继承环境类的办法还要原始和落后。</li>
+<li>策略模式提供了一种算法的复用机制，由于将算法单独提取出来封装在策略类中，因此不同的环境类可以方便地复用这些策略类。</li>
 </ol>
 
-<h4 id="toc_11">简单使用</h4>
+<h4 id="toc_5">主要缺点</h4>
 
-<pre><code>//创建一个Entity对象
-NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+<p>策略模式的主要缺点如下：</p>
 
-//填充属性
-[entity setValue:value forKey:@&quot;key&quot;];
+<ol>
+<li>客户端必须知道所有的策略类，并自行决定使用哪一个策略类。这就意味着客户端必须理解这些算法的区别，以便适时选择恰当的算法。换言之，策略模式只适用于客户端知道所有的算法或行为的情况。</li>
+<li>策略模式将造成系统产生很多具体策略类，任何细小的变化都将导致系统要增加一个新的具体策略类。</li>
+<li>无法同时在客户端使用多个策略类，也就是说，在使用策略模式时，客户端每次只能使用一个策略类，不支持使用一个策略类完成部分功能后再使用另一个策略类来完成剩余功能的情况。</li>
+</ol>
 
-//保存
-NSError* error = nil;
-[context save:&amp;error];
+<h4 id="toc_6">适用场景</h4>
 
-//查询
-NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+<p>在以下情况下可以考虑使用策略模式：</p>
 
-//排序过滤
-request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
-request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+<ol>
+<li>一个系统需要动态地在几种算法中选择一种，那么可以将这些算法封装到一个个的具体算法类中，而这些具体算法类都是一个抽象算法类的子类。换言之，这些具体算法类均有统一的接口，根据“里氏代换原则”和面向对象的多态性，客户端可以选择使用任何一个具体算法类，并只需要维持一个数据类型是抽象算法类的对象。</li>
+<li>一个对象有很多的行为，如果不用恰当的模式，这些行为就只好使用多重条件选择语句来实现。此时，使用策略模式，把这些行为转移到相应的具体策略类里面，就可以避免使用难以维护的多重条件选择语句。</li>
+<li> 不希望客户端知道复杂的、与算法相关的数据结构，在具体策略类中封装算法与相关的数据结构，可以提高算法的保密性与安全性。</li>
+</ol>
 
+<h2 id="toc_7">练习</h2>
 
-//执行
-NSError* error = nil;
-NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+<p>某软件公司欲开发一款飞机模拟系统，该系统主要模拟不同种类飞机的飞行特征与起飞特征，需要模拟的飞机种类及其特征如下表所示：</p>
 
-//遍历，正常遍历数组即可。
-for(NSManagedObject *obj in objs){
-    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
-}
+<table>
+<thead>
+<tr>
+<th style="text-align: center">飞机种类</th>
+<th style="text-align: center">起飞特征</th>
+<th style="text-align: center">飞行特征</th>
+</tr>
+</thead>
 
-//删除
-[context deleteObject:managedObject];
+<tbody>
+<tr>
+<td style="text-align: center">直升机(Helicopter)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">客机(AirPlane)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">歼击机(Fighter)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">鹞式战斗机(Harrier)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+</tbody>
+</table>
 
-</code></pre>
+<p>请使用策略模式完成上述问题的设计。</p>
 
-<h4 id="toc_12">参考资料</h4>
+<h3 id="toc_8">实现</h3>
 
-<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
-<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
-<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a></p>
 
       </div>
 
@@ -308,16 +291,13 @@ for(NSManagedObject *obj in objs){
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14626379454584.html" 
-          title="Previous Post: GeekBand.Swift-第一周作业">&laquo; GeekBand.Swift-第一周作业</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14614801701186.html" 
-          title="Next Post: GeekBand.iOS-多线程编程">GeekBand.iOS-多线程编程 &raquo;</a>
+          <a  href="14891123573052.html" 
+          title="Next Post: 剑指offer-旋转数组的最小数字">剑指offer-旋转数组的最小数字 &raquo;</a>
       
       </p>
         </div>
@@ -329,7 +309,7 @@ for(NSManagedObject *obj in objs){
           
 
           
-              <div class="ds-thread" data-thread-key="14623728039466.html" data-url="http://swuzjb.github.io/14623728039466.html" data-title="GeekBand.iOS-数据持久化"></div>
+              <div class="ds-thread" data-thread-key="14891427018088.html" data-url="http://swuzjb.github.io/14891427018088.html" data-title="设计模式-策略模式"></div>
           
         </div>
       </div>

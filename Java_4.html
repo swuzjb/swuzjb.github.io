@@ -107,6 +107,171 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14690817459253.html">
+                
+                  <h1>Java康复性训练——Spring（1）</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
+</blockquote>
+
+<h2 id="toc_0">Spring IOC</h2>
+
+<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
+Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
+
+<h3 id="toc_1">依赖注入</h3>
+
+<ol>
+<li><p>装配一个Bean</p>
+
+<ol>
+<li><p>在Spring的bean.xml文件中填写如下配置：</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
+</code></pre></li>
+<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
+
+<pre><code class="language-java">public static void main(String[] args) {
+
+    //加载Spring-bean配置信息
+    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+
+    //获取id为user1的bean的实例
+    User user1 = (User)ac.getBean(&quot;user1&quot;);
+    System.out.println(user1);
+}
+</code></pre></li>
+</ol></li>
+<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
+    &lt;!-- 通过索引来设置参数值 --&gt;
+    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过类型来设置参数值 --&gt;
+    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
+    &lt;!-- 通过参数名来设置参数值 --&gt;
+    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre></li>
+<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
+
+<ol>
+<li><p>静态工厂方法，在beans.xml中调用。</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
+
+<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h3 id="toc_2">注入参数</h3>
+
+<ol>
+<li>基本类型值：参考上一节属性注入。</li>
+<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
+<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
+<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
+<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
+<li><p>集合类型属性，可以用下列配置来实现。</p>
+
+<pre><code class="language-xml">&lt;!-- list--&gt;
+&lt;property name=&quot;list&quot;&gt;
+    &lt;list&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/list&gt;
+&lt;/property&gt;
+&lt;!--set--&gt;
+&lt;property name=&quot;set&quot;&gt;
+    &lt;set&gt;
+        &lt;value&gt;&lt;/value&gt;
+    &lt;/set&gt;
+&lt;/property&gt;
+&lt;!--map--&gt;
+&lt;property name=&quot;map&quot;&gt;
+    &lt;map&gt;
+        &lt;entry&gt;
+            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
+            &lt;value&gt;value&lt;/value&gt;
+        &lt;/entry&gt;
+    &lt;/map&gt;
+&lt;/property&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_3">自动装配</h3>
+
+<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
+- byName:通过名称进行自动匹配<br/>
+- byType:根据类型进行自动匹配<br/>
+- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
+<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
+
+<h3 id="toc_4">方法注入</h3>
+
+<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
+在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
+
+<h3 id="toc_5">bean之间关系</h3>
+
+<ol>
+<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
+<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
+<li>引用：见上部</li>
+</ol>
+
+<h3 id="toc_6">bean的作用范围</h3>
+
+<ol>
+<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
+<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
+<li>request:每次Http请求时都会创建一个新的实例</li>
+<li>session:同一个Http Session共享一个Bean</li>
+<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
+<li>application:同一个Application共享一个bean</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14689923975384.html">
                 
                   <h1>Java康复性训练——MyBatis3(3)</h1>
@@ -1215,171 +1380,6 @@ public class DBTool {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14676190809439.html">
-                
-                  <h1>Java康复性训练——Java基础1</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">开发环境搭建</h2>
-
-<h3 id="toc_1">JDK的安装与配置</h3>
-
-<ol>
-<li>下载JavaSE版本的安装包。</li>
-<li>双击安装，选定安装目录</li>
-<li>配置环境变量
-
-<ul>
-<li>JAVA_HOME JDK的安装目录</li>
-<li>path(在此项中添加)   %JAVA_HOME%\bin</li>
-</ul></li>
-</ol>
-
-<h3 id="toc_2">开发工具eclipse</h3>
-
-<p>下载地址：<a href="http://eclipse.org"></a></p>
-
-<h2 id="toc_3">Hello Java</h2>
-
-<pre><code class="language-java">
-public class Hello {
-
-    public static void main(String[] args) {
-        System.out.println(&quot;Hello Java&quot;);
-    }
-
-}
-
-</code></pre>
-
-<h2 id="toc_4">输入</h2>
-
-<p>利用Scanner扫描器对数据进行读取：<code>Scanner in = new Scanner(System.in);</code></p>
-
-<h2 id="toc_5">变量</h2>
-
-<p>变量来源于数学，是计算机语言中能储存计算结果或能表示值抽象概念。变量可以通过变量名访问。</p>
-
-<p><code>int price = 0;</code>这一行定义了一个变量。变量的名字是price，类型是int，初始值是0。</p>
-
-<p>Java是一种强类型语言，所有的变量在使用之前必须定义或声明，所有的变量必须具有确定的数据类型。数据类型表示在变量中可以存放什么样的数据，变量中只能存放指定类型的数据，程序运行过程中也不能改变变量的类型。</p>
-
-<h2 id="toc_6">赋值</h2>
-
-<p><code>=</code>在计算机中表示赋值。<code>A = B</code>表示将B的值赋给A。</p>
-
-<h2 id="toc_7">浮点数</h2>
-
-<p>两个整数的运算结果只能是整数。10和10.0在程序中是不一样的概念。<br/>
-带小数点的数值。浮点这个词的本意就是指小数点是浮动的，是计算机内部表示非整数（包含分数和无理数）的一种方式。人们借用浮点数这个词来表示所有带小数点的数。</p>
-
-<h2 id="toc_8">优先级</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-05-14676900576214.jpg" alt=""/></p>
-
-<h2 id="toc_9">类型转换</h2>
-
-<p>就一个值得类型转变为新的类型并赋值给新的变量。</p>
-
-<pre><code class="language-java">float a = 1.0;
-int b = (int)a;
-</code></pre>
-
-<h2 id="toc_10">关系运算</h2>
-
-<p>计算两个值之间的关系，叫做关系运算<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-06-14677691671515.jpg" alt=""/><br/>
-判断两个浮点数是否相等</p>
-
-<pre><code class="language-java">double a = 1.0;
-double b = 0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1+0.1;
-System.out.println(Math.abs(a-b)&lt;1e6);
-</code></pre>
-
-<h2 id="toc_11">IF语句</h2>
-
-<p>一个基本的if语句由一个关键字if开头，跟上在括号里的一个表示条件的逻辑表达式，然后是一对大括号{}之间的若干条语句。如果表示条件的逻辑表达式的结果为true，那么就执行后面跟着的这对大括号中的语句，否则就跳过这些语句不执行，而继续执行下面的其他语句。</p>
-
-<pre><code class="language-java">if(?){
-    //do something
-}else{
-    //do something
-}
-</code></pre>
-
-<h2 id="toc_12">多路分支（Switch-Case）</h2>
-
-<pre><code class="language-java">switch (整型或字符型变量){
-    case 变量可能值1: 
-      　  分支一;
-        　break;
-   case 变量可能值2: 
-      　  分支二;
-        　break;
-   case 变量可能值3: 
-      　  分支三;
-        　break;
-   ...
-   default:
-       最后分支;
-｝
-</code></pre>
-
-<h2 id="toc_13">循环</h2>
-
-<h3 id="toc_14">while循环</h3>
-
-<p>可能一次都不执行</p>
-
-<pre><code class="language-java">while(true){
-    //doSomthing..
-}
-</code></pre>
-
-<h3 id="toc_15">do-while循环</h3>
-
-<p>至少执行一次</p>
-
-<pre><code class="language-java">do{
-    //doSomething..
-}while();
-</code></pre>
-
-<h3 id="toc_16">for循环</h3>
-
-<pre><code class="language-java">for(int i = ?;i&lt;?;i++){
-    //doSomething
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/4</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14676190809439.html" data-count-type="comments" href="14676190809439.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1391,7 +1391,7 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			
+			 <a href="Java_5.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
@@ -1468,6 +1468,12 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 	      
 		      
 			      <li class="post">
+			        <a href="14891427018088.html">设计模式-策略模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
@@ -1487,12 +1493,6 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 		      
 			      <li class="post">
 			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14889379059302.html">剑指Offer-替换空格</a>
 			      </li>
 		     
 		  
