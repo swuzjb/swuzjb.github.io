@@ -123,9 +123,26 @@ NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
 
 <h2 id="toc_0">解题思路</h2>
 
+<h3 id="toc_1">O(n)算法</h3>
+
 <p>数组遍历，如果a[i]&lt;a[i-1]，这该位置为旋转位置，即最小元素。</p>
 
-<h2 id="toc_1">代码示例</h2>
+<h3 id="toc_2">O(logn)算法</h3>
+
+<p>我们可以通过二分的思路，对上述问题进行优化。<br/>
+我们发现，旋转之后的数组实际上可以划分为两个排序的子数组，而且后面的子数组的元素都小于等于前面的子数组的元素。而我们要找的这个最小元素，恰好是这两个数组的分界线。<br/>
+和二分查找一样，我们分别用两个指针指向数组的第一个(start)和最后一个元素(end)，在求一个中间指针指向数组的中间(<code>mid = (start+end)/2</code>)：</p>
+
+<ul>
+<li>如果array[mid] &gt;= array[end],说明分界值应该在数组的后半段，此时将start赋值为mid；</li>
+<li>如果array[mid] &lt;= array[start],说明分界值应该在数组的前半段，此时将end赋值为mid；</li>
+<li>如果<code>end-start == 1</code>，说明array[end]为我们要找的分界值。</li>
+<li>PS.如果 array[mid] == array[start] == array[end]，此时只能通过遍历来实现。</li>
+</ul>
+
+<h2 id="toc_3">代码示例</h2>
+
+<h3 id="toc_4">O(n)</h3>
 
 <pre><code class="language-java">public class Solution {
     public int minNumberInRotateArray(int [] array) {
@@ -138,6 +155,45 @@ NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
             }
         }
         return array[0];
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">O(logn)</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if (array.length == 0) {
+            return 0;
+        }
+        int start = 0;
+        int end = array.length - 1;
+        while (end - start &gt; 1) {
+            int mid = (start + end) / 2;
+            
+            if(array[start] == array [mid] &amp;&amp; array[mid] == array[end]){
+                return order(array, start, end);
+            }
+            
+            if( array[mid] &gt;= array[end]){
+                start = mid;
+                continue;
+            }
+            if(array[mid] &lt;= array[start]){
+                end = mid;
+                continue;
+            }
+        }
+        return array[end];
+    }
+        
+    public int order(int[] array,int start,int end){
+        for(int i = start+1;i&lt;=end;i++){
+            if(array[i]&lt;array[i-1]){
+                return  array[i];
+            }
+        }
+        return array[start];
     }
 }
 </code></pre>
