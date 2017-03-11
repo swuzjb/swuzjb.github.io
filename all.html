@@ -107,6 +107,150 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14891973906960.html">
+                
+                  <h1>剑指Offer-递归和循环</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">求斐波那契额</h2>
+
+<p>这个题目非常简单，2分钟就可以解决。直接上代码！</p>
+
+<pre><code class="language-java">public class Solution {
+    public int Fibonacci(int n) {
+        if(n &lt;= 0){
+            return 0;
+        }
+        if(n == 1){
+            return 1;
+        }
+        return Fibonacci(n-1)+Fibonacci(n-2);
+    }
+}
+</code></pre>
+
+<p>但是，这个解法有很多的问题。当n的值比较大的时候，就会出现栈调用溢出。所以，我们一般在条件允许的情况下，使用循环来替代递归的实现。</p>
+
+<pre><code class="language-java">public class Solution {
+    public int Fibonacci(int n) {
+        if(n &lt;= 1){
+            return n;
+        }
+        int number1 = 0;
+        int number2 = 1;
+        int ans = 0;
+        for(int i = 2;i&lt;=n;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        } 
+        return ans;
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">跳台阶</h2>
+
+<p>一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法。</p>
+
+<h3 id="toc_2">思路</h3>
+
+<p>首先我们考虑最简单的情况。如果只有1级台阶，那显然只有一种跳法。如果有2级台阶，那就有两种跳的方法了：一种是分2次跳，每次跳1级；另外一种就是一次跳2级。<br/>
+接着我们再来讨论一般情况，我们把n级台阶时的跳法看成是n的函数，记为f(n)。当n&gt;2时，第一次跳的时候就有两种不同的选择：一是一次跳1级，此时跳法数目等于后面剩下的n-1级台阶的跳法数目，即为f(n-1)；另一种跳法是一次跳2级，这是跳法数目就是后面剩下n-2级台阶的跳法数目，即f(n-2)。因此n级台阶的跳法数目f(n) = f(n-1) + f(n - 2);</p>
+
+<h3 id="toc_3">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int JumpFloor(int target) {
+        if(target &lt;= 2){
+            return target;
+        }
+        int number1 = 1;
+        int number2 = 2;
+        int ans = 0;
+        for(int i = 3;i&lt;=target;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        }
+        return ans;
+    }
+}
+</code></pre>
+
+<h2 id="toc_4">变态跳台阶</h2>
+
+<p>一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。</p>
+
+<h3 id="toc_5">思路</h3>
+
+<p>借鉴上面的思路，我们把n级台阶时的跳法看成是n的函数，记为f(n)。此时<code>f(n) = f(n-1) + f(n-2) + ...+ f(1) + 1</code>;经过数学推导可得：f(n) = 2<sup>n-1</sup>;</p>
+
+<h3 id="toc_6">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int JumpFloorII(int target) {
+        return 1 &lt;&lt; target-1;
+    }
+}
+</code></pre>
+
+<h2 id="toc_7">矩形覆盖</h2>
+
+<p>我们可以用<code>2*1</code>的小矩形横着或者竖着去覆盖更大的矩形。请问用n个2*1的小矩形无重叠地覆盖一个<code>2*n</code>的大矩形，总共有多少种方法？</p>
+
+<h3 id="toc_8">思路</h3>
+
+<p>既然放在这个章节，自然是递推解决。当我们使用一个<code>1*2</code>的矩形去覆盖大矩形（<code>2*n</code>）的左侧时，我们有两个选择，横着放或者竖着放。当竖着放时，右边剩下的区域长度就为<code>n-1</code>；当横着放时，左边剩下的区域长度就为<code>n-2</code>。所以可以发现<code>f(n) = f(n-1) + f(n-2)</code>。</p>
+
+<h3 id="toc_9">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int RectCover(int target) {
+        if(target &lt;=2){
+            return target;
+        }
+        int number1 = 1;
+        int number2 = 2;
+        int ans = 0;
+        for(int i = 3;i &lt;= target;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        }
+        return ans;
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891973906960.html" data-count-type="comments" href="14891973906960.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14891427018088.html">
                 
                   <h1>设计模式-策略模式</h1>
@@ -569,129 +713,6 @@ public class Solution {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14890230803105.html">
-                
-                  <h1>剑指Offer-从尾到头打印链表</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>输入一个链表，从尾到头打印链表每个节点的值。</p>
-</blockquote>
-
-<h2 id="toc_0">问题解答</h2>
-
-<p>要解决这个问题肯定要遍历链表。遍历的顺序是从头到尾的顺序，可是输出的要求顺序却是从尾到头。也就是说第一个遍历到的节点，最后一个输出，而最后一个遍历到的节点第一个输出。这就是典型的后进先出，我们可以用栈实现这个顺序。每经过一个节点的时候，把该节点放入到一个栈中。当遍历完整个链表后，再从栈顶开始逐个输出节点的值，此时，输出的节点顺序已经反转过来了。<br/>
-既然可以使用栈实现这个需求，那么我们就可以考虑使用递归，递归本质上就是一个栈结构。这样要实现反过来输出链表，我们每访问到一个结点的时候，先递归输出它后面的节点，在输出该节点自身，这样链表的输出就反过来了。</p>
-
-<h2 id="toc_1">递归实现</h2>
-
-<pre><code class="language-java">/**
-*    public class ListNode {
-*        int val;
-*        ListNode next = null;
-*
-*        ListNode(int val) {
-*            this.val = val;
-*        }
-*    }
-*
-*/
-import java.util.ArrayList;
-public class Solution {
-    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        search(listNode);
-        return array;
-    }
-    public void  search(ListNode listNode){
-        if(listNode != null){
-            search(listNode.next);
-            array.add(listNode.val);
-        }
-        
-    }
-}
-</code></pre>
-
-<p>本题基于递归实现看起来很简洁，但是有个问题，当链表非常长的时候，就会导致函数调用层级很深，从而有可能导致函数调用栈溢出。</p>
-
-<h2 id="toc_2">显示栈实现</h2>
-
-<pre><code class="language-java">import java.util.*;
-
-public class Solution {
-    
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        ArrayDeque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
-        while(listNode != null){
-            stack.offerFirst(listNode.val);
-            listNode = listNode.next;
-        }
-        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;(stack.size());
-        while (stack.size()&gt;0) {
-            array.add(stack.pollFirst());
-        }
-        return array;
-    }
-    
-}
-</code></pre>
-
-<h2 id="toc_3">翻转链表</h2>
-
-<p>如果可以改变原链表的结构，就可以对链表进行翻转。</p>
-
-<pre><code class="language-java">import java.util.ArrayList;
-public class Solution {
-    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-        ListNode head = null;
-        ListNode next = null;
-        while (listNode != null) {
-            next = listNode.next;
-            listNode.next = head;
-            head = listNode;
-            listNode = next;
-        }
-        while (head != null) {
-            array.add(head.val);
-            head = head.next;
-        }
-        return array;
-    }
-    
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/9</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890230803105.html" data-count-type="comments" href="14890230803105.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -780,6 +801,12 @@ public class Solution {
 	      
 		      
 			      <li class="post">
+			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
@@ -799,12 +826,6 @@ public class Solution {
 		      
 			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
 			      </li>
 		     
 		  

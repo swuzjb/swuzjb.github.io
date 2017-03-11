@@ -107,6 +107,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14889379059302.html">
+                
+                  <h1>剑指Offer-替换空格</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>请实现一个函数，将一个字符串中的空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>这个题目Java开发者可能一下就笑了，so easy啊，一个库函数就解决了。但是，我们还是要尝试去造一下轮子，追求原理。<br/>
+由于要将空格替换为%20，字符串前后的长度肯定不一样，那么就肯定涉及到了重新申请内存地址。</p>
+
+<p>最简单的思路，我们遍历字符串，发现空格，就将空格后面的字符进行移动，然后继续遍历。这样的做法时间复杂度为O(n<sup>2)，因为每次都移动了大量的字符。</sup></p>
+
+<p>所以我们提出一个简要的方法，重新申请一个字符串（C/C++中准确的成为字符数组），这个新字符串的长度为原字符串长度+空格个数*2（空格的个数，可以通过一次遍历获得），然后用两个指针变量分别指向两个字符串的首位，然后进行复制，当原字符串指针指向空格时，新字符串插入“%20”，直到末尾。</p>
+
+<h2 id="toc_1">实现代码</h2>
+
+<p>库函数解决：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        return str.toString().replaceAll(&quot; &quot;, &quot;%20&quot;);
+    }
+}
+</code></pre>
+
+<p>自己过不去版：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        StringBuffer newStr = new StringBuffer();
+        
+        int i = 0;
+        
+        while(i&lt;str.length()){
+            if(str.charAt(i) != &#39; &#39;){
+                newStr.append(str.charAt(i));
+            }else{
+                newStr.append(&quot;%20&quot;);
+            }
+            i++;
+        }
+        return newStr.toString();
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889379059302.html" data-count-type="comments" href="14889379059302.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14889364537323.html">
                 
                   <h1>剑指Offer-二维数组中的查找</h1>
@@ -271,6 +349,12 @@
 	      
 		      
 			      <li class="post">
+			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
@@ -290,12 +374,6 @@
 		      
 			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
 			      </li>
 		     
 		  

@@ -107,6 +107,125 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14603730042058.html">
+                
+                  <h1>GeekBand.iOS-View的层次结构与属性</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>UIView是UIkit中非常重要的一个基本类型，几乎所有的View都是继承于UIView的今天我们对UIView相关知识进行简单地汇总。</p>
+
+<h2 id="toc_0">什么是UIView</h2>
+
+<p>UIView表示屏幕上一块矩形区域：负责提供相应区域的显示内容，也处理相应区域的事件相应。</p>
+
+<h2 id="toc_1">屏幕对象UIScreen</h2>
+
+<p>UIScreen类代表了屏幕,根据个人理解，UIScreen一般也只是用来获取屏幕大小。如下例所示:</p>
+
+<pre><code>CGrect screenBounds = [[UIScreen mainScreen] bounds];//返回的是带有状态栏的Rect (0.0,0.0,320.0,480.0)
+</code></pre>
+
+<h3 id="toc_2">iOS8+</h3>
+
+<pre><code>//可变坐标系
+.coordinateSpace
+//固定坐标系
+.fixedCoordinateSpace
+</code></pre>
+
+<h3 id="toc_3">截图</h3>
+
+<p><code>-(UIView *)snapshotViewAfterScreenUpdates:(BOOL)afterUpdates</code></p>
+
+<h2 id="toc_4">UIWindow</h2>
+
+<p>UIWindow代表当前应用可用的屏幕区域,由UIApplication或appDelegate创建，保存到appdelegate.window里。使用<code>-makeVisibleAndKey</code>显示。</p>
+
+<h2 id="toc_5">UIView</h2>
+
+<h3 id="toc_6">UIView的树状层次</h3>
+
+<p>前面的文章已经描述过了。<a href="http://zhanjingbo.site/14595674718251.html">View的定位</a></p>
+
+<h3 id="toc_7">UIView的层次管理方法 Create Read Update Delete</h3>
+
+<ul>
+<li><p>增加(Create)</p>
+
+<pre><code>-(void)addSubView:(UIView *)view
+-(void)insertSubView:(UIView *)view atIndex:(NSInteger) index
+-(void)insertSubView:(UIView *)view belowSubView:(UIView *)siblingSubview
+-(void)insertSubView:(UIView *)view aboveSubView:(UIView *)siblingSubview
+</code></pre></li>
+<li><p>删除(delete)</p>
+
+<pre><code>//子View调用
+-(void)removeFromSuperview
+</code></pre></li>
+<li><p>修改(update)</p>
+
+<pre><code>-(void)bringSubViewToFront:(UIView *)view
+-(void)sendSubviewToBack:(UIView *)view
+-(void)exchangeSubviewAtIndex:(NSInteger)index1 withSubviewAtIndex:(NSInteger)index2
+</code></pre></li>
+<li><p>查找(Read)</p>
+
+<pre><code>view.window;
+view.superview;
+view.subviews;
+
+-(BOOL)isDescendantOfView:(UIView *)view
+</code></pre></li>
+</ul>
+
+<h3 id="toc_8">UIView的重要属性</h3>
+
+<ul>
+<li>定位
+
+<ul>
+<li>frame/bounds/center/transform</li>
+<li>resizeToFit</li>
+</ul></li>
+<li>视觉
+
+<ul>
+<li>backgroundColor</li>
+<li>alpha vs. opaque</li>
+<li>maskView(iOS8+)</li>
+</ul></li>
+<li>访问
+.tag =&gt; -viewWithTag</li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14603730042058.html" data-count-type="comments" href="14603730042058.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14603532939876.html">
                 
                   <h1>GeekBand.iOS-xcode的工程管理</h1>
@@ -539,121 +658,6 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14592472421509.html">
-                
-                  <h1>GeekBand.iOS-UICollectionView</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<pre><code>虽然tableView可以提供很强大的数据展示功能。但是它还是有一定的局限性的，那就是在一些媒体展示时不够灵活，一行只能展示一个item。
-为了克服这样的情况，最初的大神们都是使用自定义table。但是从iOS6开始，苹果为我们提供了一个新的View组件，CollectionView。
-它对TableView的优化：
-- 对表格的自然扩展：网格式界面
-- 对表格内部职责进一步细分：分离Layout
-</code></pre>
-
-<h2 id="toc_0">CollectionView实例</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479241360.jpg" alt="CollectionView"/></p>
-
-<h2 id="toc_1">CollectionView界面构成</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592479722467.jpg" alt="CollectionView"/></p>
-
-<p>ps.CollectionView可以通过自定义Layout子类实现cells位置自定义。</p>
-
-<h2 id="toc_2">说明</h2>
-
-<p>Collection的总体结构与Table相似，但是需要注意以下几点：<br/>
-- cell在collection中被称为item<br/>
-- header/footer被称为supplementary view<br/>
-- item view必须register<br/>
-- 布局要交给独立的Layout子类，edit方法不再指定动画类型</p>
-
-<h2 id="toc_3">Cell（Item）供应</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592483311021.jpg" alt=""/></p>
-
-<h2 id="toc_4">基本使用</h2>
-
-<ol>
-<li>创建CollectionView对象</li>
-<li><p>提供DataSource(实现UICollectionViewDataSource协议)</p>
-
-<pre><code>//返回item的数量
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
-
-//返回item实例
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
-</code></pre></li>
-</ol>
-
-<h2 id="toc_5">交互</h2>
-
-<p>UICollectionView的交互能力强大，除了索引，tableView有的都有。实现UICollectionViewDelegate协议</p>
-
-<ul>
-<li>点选</li>
-<li><p>编辑格子</p>
-
-<ul>
-<li>插入、删除</li>
-<li>移动格子的位置</li>
-</ul></li>
-<li><p>刷新数据</p></li>
-<li><p>将一组编辑或刷新动作合并到一个动画过程里</p></li>
-<li><p>滚动到某个格子</p></li>
-<li><p>动态更换布局</p></li>
-</ul>
-
-<h3 id="toc_6">交互响应机会</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592502377483.jpg" alt=""/></p>
-
-<h3 id="toc_7">刷新CollectionView</h3>
-
-<ul>
-<li>reloadData  全部刷新</li>
-<li>reloadSection  刷新某个section</li>
-<li>reloadItemsAtIndexPaths 刷新某个cell</li>
-</ul>
-
-<h3 id="toc_8">手工移动格子</h3>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-29-14592504685410.jpg" alt=""/></p>
-
-<h2 id="toc_9">参考资料</h2>
-
-<p><a href="https://developer.apple.com/videos/play/wwdc2012-205/">wwdc2012-205</a><br/>
-<a href="https://developer.apple.com/videos/play/wwdc2012-219/">wwdc2012-219</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/3/29</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14592472421509.html" data-count-type="comments" href="14592472421509.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -742,6 +746,12 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
 	      
 		      
 			      <li class="post">
+			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
@@ -761,12 +771,6 @@ NSLog(@&quot;view2 frame:%@========view2 bounds:%@&quot;,NSStringFromCGRect(view
 		      
 			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
 			      </li>
 		     
 		  

@@ -107,6 +107,212 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14689923975384.html">
+                
+                  <h1>Java康复性训练——MyBatis3(3)</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+</blockquote>
+
+<h2 id="toc_0">动态SQL</h2>
+
+<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
+
+<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
+
+<h3 id="toc_1">IF标签</h3>
+
+<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
+以实现一个用户检索为例：</p>
+
+<ol>
+<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
+<li><p>在UserMapper.xml中对接口进行实现：</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+    select * from user where 1=1
+    &lt;if test=&quot;username!=null&quot;&gt;
+        and username like #{username}
+    &lt;/if&gt;
+    &lt;if test=&quot;id!=null&quot;&gt;
+        and id=#{id}
+    &lt;/if&gt;
+    &lt;if test=&quot;role!=null&quot;&gt;
+        and roleId=#{role.id}
+    &lt;/if&gt;
+&lt;/select&gt;
+</code></pre></li>
+<li><p>调用查询，传入查询条件的Map即可。</p>
+
+<pre><code class="language-java">public void testSearch(){
+    Role role = new Role();
+    role.setId(1);
+    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
+    map.put(&quot;role&quot;, role);  
+    List&lt;User&gt; userList = userMapper.searchUser(map);
+    for(User user:userList){
+        System.out.println(user);
+    }   
+}
+</code></pre></li>
+</ol>
+
+<h3 id="toc_2">Choose、when和otherwise标签</h3>
+
+<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
+当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
+
+<pre><code class="language-xml">&lt;choose&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
+    &lt;otherwise&gt;&lt;/otherwise&gt;
+&lt;/choose&gt;
+</code></pre>
+
+<h3 id="toc_3">where标签</h3>
+
+<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
+
+<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user 
+        &lt;where&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                and username like #{username}
+            &lt;/if&gt;
+            &lt;if test=&quot;id!=null&quot;&gt;
+                and id=#{id}
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                and roleId=#{role.id}
+            &lt;/if&gt;
+        &lt;/where&gt;
+    &lt;/select&gt;
+</code></pre>
+
+<h3 id="toc_4">trim标签</h3>
+
+<p>与where语句类似，给语句增加前后缀。</p>
+
+<h3 id="toc_5">Foreach标签</h3>
+
+<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
+
+<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
+#{itemName}
+&lt;/foreach&gt;
+</code></pre>
+
+<h3 id="toc_6">set标签</h3>
+
+<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
+
+<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user 
+        &lt;set&gt;
+            &lt;if test=&quot;username!=null&quot;&gt;
+                username=#{username},
+            &lt;/if&gt;
+            &lt;if test=&quot;password!=null&quot;&gt;
+                password=#{password},
+            &lt;/if&gt;
+            &lt;if test=&quot;role!=null&quot;&gt;
+                roleId=#{role.id},
+            &lt;/if&gt;
+        &lt;/set&gt;
+        where id=#{id}
+&lt;/update&gt;
+</code></pre>
+
+<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
+
+<ul>
+<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
+<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
+</ul>
+
+<h3 id="toc_8">传入多个输入参数</h3>
+
+<ul>
+<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
+<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
+</ul>
+
+<h3 id="toc_9">MyBatis分页</h3>
+
+<ul>
+<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
+<li>物理分页，使用limit子句来实现分页</li>
+</ul>
+
+<h3 id="toc_10">MyBatis缓存</h3>
+
+<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
+开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
+
+<h3 id="toc_11">使用注解配置SQL映射器</h3>
+
+<h4 id="toc_12">基本映射语句</h4>
+
+<ol>
+<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
+<li>@Update：同上；</li>
+<li>@delete：同上；</li>
+<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
+<li><p>@select：当需要返回集合时：</p>
+
+<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
+@Results({
+    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
+    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
+    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
+})
+public User getUserById(Integer id);
+</code></pre></li>
+</ol>
+
+<h4 id="toc_13">关系映射</h4>
+
+<ol>
+<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
+<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
+</ol>
+
+<h4 id="toc_14">动态SQL</h4>
+
+<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/20</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689923975384.html" data-count-type="comments" href="14689923975384.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14689148951216.html">
                 
                   <h1>Java康复性训练——MyBatis3(2)</h1>
@@ -1174,203 +1380,6 @@ System.out.println(Math.abs(a-b)&lt;1e6);
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14640741638557.html">
-                
-                  <h1>GeekBand.Swift-Homework13</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">题目</h2>
-
-<p>请说出下面代码存在的问题，以及改进方式。</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    } 
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-</code></pre>
-
-<h2 id="toc_1">回答</h2>
-
-<h3 id="toc_2">问题分析</h3>
-
-<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
-如果在实际操作过程中，执行如下代码：</p>
-
-<pre><code class="language-swift">var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-</code></pre>
-
-<p>执行之后内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
-可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
-
-<pre><code class="language-swift">card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存关系如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
-
-<p>card和customer的引用计数非0，无法吸收。</p>
-
-<h3 id="toc_3">解决方法</h3>
-
-<h4 id="toc_4">方案A——手动打破循环引用</h4>
-
-<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
-
-<pre><code class="language-swift">card = nil;
-customer.card = nil;
-customer = nil;
-</code></pre>
-
-<p>执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
-
-<h4 id="toc_5">方案B-weak(弱)引用</h4>
-
-<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    //注意这里！！
-    weak var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存结构:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
-
-<h4 id="toc_6">方案C-unowned(无主)引用</h4>
-
-<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
-
-<pre><code class="language-swift">class Customer{
-    let name:String;
-    var card:CreditCard?;
-    init(name:String){
-        self.name = name;
-    }
-    deinit{
-        print(&quot;\(name) is being deinitialized&quot;);
-    }
-}
-class CreditCard{
-    let number:UInt64;
-    //注意这里！！！！
-    unowned let customer:Customer;
-    init(number:UInt64,customer:Customer){
-        self.number = number;
-        self.customer = customer;
-    }
-    
-    deinit{
-        print(&quot;Card #\(number) is being deinitialized&quot;);
-    }
-}
-
-var customer :Customer?;
-customer = Customer(name:&quot;Jobs&quot;);
-var card :CreditCard?;
-card = CreditCard(number: 10000,customer: customer!);
-customer!.card = card;
-card = nil;
-customer = nil;
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
-执行结果，deinit析构器成功执行。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
-
-<h5 id="toc_7">方案B和C的区别</h5>
-
-<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
-
-<h2 id="toc_8">写在最后</h2>
-
-<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
-
-<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1459,6 +1468,12 @@ customer = nil;
 	      
 		      
 			      <li class="post">
+			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
@@ -1478,12 +1493,6 @@ customer = nil;
 		      
 			      <li class="post">
 			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890230803105.html">剑指Offer-从尾到头打印链表</a>
 			      </li>
 		     
 		  
