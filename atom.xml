@@ -4,13 +4,128 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-03-10T20:43:07+08:00</updated>
+  <updated>2017-03-11T10:44:18+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[设计模式-观察者模式]]></title>
+    <link href="http://swuzjb.github.io/14892030475974.html"/>
+    <updated>2017-03-11T11:30:47+08:00</updated>
+    <id>http://swuzjb.github.io/14892030475974.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>定义对象之间的一种一对多依赖关系，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。观察者模式的别名包括发布-订阅（Publish/Subscribe）模式、模型-视图（Model/View）模式、源-监听器（Source/Listener）模式或从属者（Dependents）模式。观察者模式是一种对象行为型模式。</p>
+</blockquote>
+
+<p>观察者模式是使用频率最高的设计模式之一，它用于建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应作出反应。在观察者模式中，发生改变的对象称为观察目标，而被通知的对象称为观察者，一个观察目标可以对应多个观察者，而且这些观察者之间可以没有任何相互联系，可以根据需要增加和删除观察者，使得系统更易于扩展。</p>
+
+<h2 id="toc_0">观察者模式中的角色</h2>
+
+<p>在观察者模式中包含如下几个角色：</p>
+
+<ol>
+<li>Subject（目标）：目标又称为主题，它是指被观察的对象。在目标中定义了一个观察者集合，一个观察目标可以接受任意数量的观察者来观察，它提供一系列方法来增加和删除观察者对象，同时它定义了通知方法notify()。目标类可以是接口，也可以是抽象类或具体类。</li>
+<li>ConcreteSubject（具体目标）：具体目标是目标类的子类，通常它包含有经常发生改变的数据，当它的状态发生改变时，向它的各个观察者发出通知；同时它还实现了在目标类中定义的抽象业务逻辑方法（如果有的话）。如果无须扩展目标类，则具体目标类可以省略。</li>
+<li>Observer（观察者）：观察者将对观察目标的改变做出反应，观察者一般定义为接口，该接口声明了更新数据的方法update()，因此又称为抽象观察者。</li>
+<li>ConcreteObserver（具体观察者）：在具体观察者中维护一个指向具体目标对象的引用，它存储具体观察者的有关状态，这些状态需要和具体目标的状态保持一致；它实现了在抽象观察者Observer中定义的update()方法。通常在实现时，可以调用具体目标类的attach()方法将自己添加到目标类的集合中或通过detach()方法将自己从目标类的集合中删除。</li>
+</ol>
+
+<p><img src="media/14892030475974/14892033599821.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+观察者模式描述了如何建立对象与对象之间的依赖关系，以及如何构造满足这种需求的系统。观察者模式包含观察目标和观察者两类对象，一个目标可以有任意数目的与之相依赖的观察者，一旦观察目标的状态发生改变，所有的观察者都将得到通知。作为对这个通知的响应，每个观察者都将监视观察目标的状态以使其状态与目标状态同步，这种交互也称为发布-订阅(Publish-Subscribe)。观察目标是通知的发布者，它发出通知时并不需要知道谁是它的观察者，可以有任意数目的观察者订阅它并接收通知。</p>
+
+<h2 id="toc_1">通用代码实现</h2>
+
+<p>目标类的实现：</p>
+
+<pre><code class="language-java">package com.swu.ObserverPattern;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 主题的实现类，如有需要可以进一步将此类抽象
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Subject {
+    /**
+     * 维护所有观察者的队列
+     */
+    private List&lt;Observer&gt; observers = new ArrayList&lt;Observer&gt;();
+
+    /**
+     * 将观察者添加入通知队列
+     * 
+     * @param obs
+     */
+    public void attach(Observer obs) {
+        this.observers.add(obs);
+    }
+
+    /**
+     * 将观察者移除出通知队列
+     * 
+     * @param obs
+     */
+    public void detach(Observer obs) {
+        this.observers.remove(obs);
+    }
+
+    /**
+     * 通知所有观察者
+     */
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
+}
+</code></pre>
+
+<p>观察者抽象的接口：</p>
+
+<pre><code class="language-java">public interface Observer {
+    void update();
+}
+</code></pre>
+
+<p>观察者的具体实现：</p>
+
+<pre><code class="language-java">public class ConcerteObserversA implements Observer {
+    public void update() {
+        System.out.println(&quot;A类观察者收到消息&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">JDK对观察者模式的支持</h2>
+
+<p>观察者模式在Java语言中的地位非常重要。在JDK的java.util包中，提供了Observable类以及Observer接口，它们构成了JDK对观察者模式的支持。如图所示：<br/>
+<img src="media/14892030475974/14892071855093.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h3 id="toc_3">Observer接口</h3>
+
+<p>在java.util.Observer接口中只声明一个方法，它充当抽象观察者，其方法声明代码如下所示：<code>void  update(Observable o, Object arg);</code>当观察目标的状态发生变化时，该方法将会被调用，在Observer的子类中将实现update()方法，即具体观察者可以根据需要具有不同的更新行为。当调用观察目标类Observable的notifyObservers()方法时，将执行观察者类中的update()方法。</p>
+
+<h3 id="toc_4">Observable类</h3>
+
+<p>java.util.Observable类充当观察目标类，在Observable中定义了一个向量Vector来存储观察者对象，它所包含的方法及说明见表：<br/>
+<img src="media/14892030475974/14892075822399.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+我们可以直接使用Observer接口和Observable类来作为观察者模式的抽象层，再自定义具体观察者类和具体观察目标类，通过使用JDK中的Observer接口和Observable类，可以更加方便地在Java语言中应用观察者模式。</p>
+
+<h2 id="toc_5">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a></p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[剑指Offer-递归和循环]]></title>
@@ -2403,342 +2518,6 @@ StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的�
 <img src="media/14814626217350/14814632882974.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
 </ol></li>
 </ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Hadoop搭建实例]]></title>
-    <link href="http://swuzjb.github.io/14786108252793.html"/>
-    <updated>2016-11-08T21:13:45+08:00</updated>
-    <id>http://swuzjb.github.io/14786108252793.html</id>
-    <content type="html"><![CDATA[
-<blockquote>
-<p>本次课程要求自主搭建Hadoop集群环境，并进行MapReduce作业操作<br/>
-本文以统计知乎用户地域分布情况为例进行统计展示</p>
-</blockquote>
-
-<h2 id="toc_0">数据获取与格式说明</h2>
-
-<h3 id="toc_1">数据获取</h3>
-
-<p>实验数据采用爬虫方式从知乎进行爬取，并保存进入数据库，总数据量3383054条。为了后续处理方便，我们将数据从数据库中倒成csv文件进行存储。<br/>
-数据爬取代码：<a href="https://github.com/wycm/mycrawler">知乎爬虫</a></p>
-
-<h3 id="toc_2">数据格式</h3>
-
-<p>导出的数据格式为：<code>id,name,headline,gender,school,major,address,industry,company,job</code><br/>
-<img src="media/14786108252793/14786149854526.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_3">Hadoop集群搭建</h2>
-
-<p>Hadoop是一个由Apache基金会所开发的分布式系统基础架构。用户可以在不了解分布式底层细节的情况下，开发分布式程序。充分利用集群的威力进行高速运算和存储。<br/>
-本次课程实例基于ubuntu12.04、jdk1.8.111、hadoop2.7.3进行说明，其中ubuntu服务器以虚拟机的形式搭建。</p>
-
-<ol>
-<li><p>ubuntu虚拟机搭建</p>
-
-<p>虚拟机创建的步骤在本文中不加以介绍，如有需要请自行百度。ps.为了简便操作，我们可以先创建并配置一台虚拟机然后进行克隆。为了简便操作，可以使用<code>sudo apt-get install ubuntu-desktop</code>安装ubuntu的图形操作界面。</p></li>
-<li><p>建立软件目录</p>
-
-<p>为了后续更好的管理我们按照的软件。我们使用mkdir命令，建立软件的安装目录。命令：<code>sudo mkdir /usr/soft</code></p></li>
-<li><p>jdk的安装与环境变量设置</p>
-
-<ol>
-<li>首先我们从Oracle的官网上下载jdk的压缩文件。下载地址：<a href="http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz">jdk</a>;</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv jdk1.8.0_111/ /usr/soft</code></li>
-<li><p>设置java所需要的环境变量:</p>
-
-<ol>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export JAVA_HOME=&quot;/usr/soft/jdk1.8.0_111&quot;</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-</ol></li>
-<li><p>调用<code>javac -version</code>命令，检查配置是否生效,安装是否成功。</p></li>
-</ol></li>
-<li><p>Hadoop的安装与环境变量设置</p>
-
-<ol>
-<li>从Apache Hadoop网站上下载对应的Hadoop安装包。下载地址：<a href="http://mirrors.cnnic.cn/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz">Hadoop2.7.3</a>；</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv Hadoop-2.7.3 /usr/soft</code></li>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin:/usr/soft/hadoop-2.7.3/bin:/usr/soft/hadoop-2.7.3/sbin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-<li>调用<code>Hadoop version</code>命令，检查配置是否生效,安装是否成功。</li>
-</ol></li>
-<li><p>SSH免密码登录配置</p>
-
-<ol>
-<li>使用<code>sudo apt-get install ssh</code>安装完整的ssh客户端；</li>
-<li>使用<code>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa</code>生成公私钥；</li>
-<li>使用<code>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</code>将公钥复制；</li>
-<li>使用<code>ssh localhost</code>命令检验是否可以免密码登录系统。</li>
-</ol></li>
-<li><p>修改服务器的名称</p>
-
-<ol>
-<li>使用<code>sudo vi /etc/hostname</code>,修改服务器的名称</li>
-<li>重启服务器使配置生效</li>
-</ol></li>
-<li><p>配置Hadoop配置文件</p>
-
-<p>Hadoop的配置文件位于其安装目录下的etc/hadoop/目录下</p>
-
-<ol>
-<li><p>修改yarn-site.xml，内容如下（master代表主服务器名）：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;fs.defaultFS&lt;/name&gt;
-        &lt;value&gt;hdfs://master/&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
-        &lt;value&gt;~/hadoop/data&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改hdfs-site.xml，内容如下:</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;dfs.replication&lt;/name&gt;
-        &lt;value&gt;3&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改mapred-site.xml（此文件需要从mapred-site.xml.template复制），内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
-        &lt;value&gt;yarn&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改yarn-site.xml,内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
-        &lt;value&gt;master&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
-        &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
-        &lt;value&gt;master:8032&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;
-        &lt;value&gt;master:8030&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改slaves文件，将附属机主机名添加入内，每行一个，样例为:</p>
-
-<pre><code class="language-xml">s1
-s3
-</code></pre></li>
-</ol></li>
-<li><p>克隆宿主机，配置hosts文件</p>
-
-<ol>
-<li>使用VM的克隆功能，克隆虚拟机，并依次修改主机名</li>
-<li><p>根据实际IP修改各个机器的hosts文件，ip查看可以使用<code>ifconfig</code>命令，样例如下：</p>
-
-<pre><code>127.0.0.1  localhost    
-10.104.234.203  master
-182.254.216.245 s1
-123.207.252.11 s2
-123.207.24.98 s3
-</code></pre></li>
-</ol></li>
-<li><p>格式化HDFS文件系统，执行<code>hdfs namenode -format</code>命令，对HDFS进行格式化。</p></li>
-<li><p>启动Hadoop集群</p>
-
-<ol>
-<li>启动文件系统,<code>start-dfs.sh</code>;</li>
-<li>启动yarn，<code>start-yarn.sh</code>;</li>
-<li>可以使用<code>jps</code>命令，检查各个服务的启动情况</li>
-</ol></li>
-</ol>
-
-<h2 id="toc_4">统计程序的编写与运行</h2>
-
-<p>本次实验所用的MapReduce程序采用Maven的方式进行构建，具体操作可以参考文章：<a href="http://www.cnblogs.com/Leo_wl/p/4862820.html">Maven构建Hadoop工程</a></p>
-
-<ol>
-<li><p>编写Mapper类，本次我们实现的功能从原理上与Hadoop自带的WordCount实验非常相似。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
-
-public class CountMapper extends Mapper&lt;Object, Text, Text, IntWritable&gt; {
-
-    private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
-
-    @Override
-    protected void map(Object key, Text value, Mapper&lt;Object, Text, Text, IntWritable&gt;.Context context)
-            throws IOException, InterruptedException {
-        // 获取每一行数据，并以逗号为基准进行分割
-        String[] data = value.toString().split(&quot;,&quot;);
-        // 设置word的key为地址信息
-        word.set(data[5]);
-        // 设置value为1
-        context.write(word, one);
-    }
-
-}
-</code></pre></li>
-<li><p>编写Reducer类。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
-
-public class CountReduce extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt; {
-    private IntWritable result = new IntWritable();
-    private Text keyEx = new Text();
-
-    @Override
-    protected void reduce(Text key, Iterable&lt;IntWritable&gt; values,
-            Reducer&lt;Text, IntWritable, Text, IntWritable&gt;.Context context) throws IOException, InterruptedException {
-        int sum = 0;
-        // 遍历value相加
-        for (IntWritable val : values) {
-            sum += val.get();
-        }
-        // 返回新的key-value
-        result.set(sum);
-        keyEx.set(key);
-        context.write(keyEx, result);
-    }
-}
-</code></pre></li>
-<li><p>编写Comparator类，用于第二次作业的排序。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.WritableComparable;
-
-public class CountComparator extends IntWritable.Comparator {
-
-    @Override
-    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-        // TODO Auto-generated method stub
-        return -super.compare(b1, s1, l1, b2, s2, l2);
-    }
-    public int compare(WritableComparable a, WritableComparable b) {
-        // TODO Auto-generated method stub
-        return -super.compare(a, b);
-    }
-}
-</code></pre></li>
-<li><p>编写主方法。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
-import java.util.Random;
-
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.map.InverseMapper;
-
-public class Main {
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-        if (otherArgs.length != 2) {
-            System.err.println(&quot;Usage: zhihuCount &lt;in&gt; &lt;out&gt;&quot;);
-            System.exit(2);
-        }
-        Path tempDir = new Path(&quot;wordcount-temp-&quot; + Integer.toString(new Random().nextInt(Integer.MAX_VALUE))); // 定义一个临时目录
-
-        Job job = new Job(conf, &quot;zhihuCount&quot;);
-        job.setJarByClass(Main.class);
-        try {
-            job.setMapperClass(CountMapper.class);
-            job.setCombinerClass(CountReduce.class);
-            job.setReducerClass(CountReduce.class);
-
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(IntWritable.class);
-
-            FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-            FileOutputFormat.setOutputPath(job, tempDir);
-            // 先将词频统计任务的输出结果写到临时目录中,下一个排序任务以临时目录为输入目录。
-            job.setOutputFormatClass(SequenceFileOutputFormat.class);
-            if (job.waitForCompletion(true)) {
-                Job sortJob = new Job(conf, &quot;sort&quot;);
-                sortJob.setJarByClass(Main.class);
-                FileInputFormat.addInputPath(sortJob, tempDir);
-                sortJob.setInputFormatClass(SequenceFileInputFormat.class);
-
-                /* InverseMapper由hadoop库提供，作用是实现map()之后的数据对的key和value交换 */
-                sortJob.setMapperClass(InverseMapper.class);
-                /* 将 Reducer 的个数限定为1, 最终输出的结果文件就是一个。 */
-                sortJob.setNumReduceTasks(1);
-                FileOutputFormat.setOutputPath(sortJob, new Path(otherArgs[1]));
-
-                sortJob.setOutputKeyClass(IntWritable.class);
-                sortJob.setOutputValueClass(Text.class);
-                /*
-                 * Hadoop 默认对 IntWritable 按升序排序，而我们需要的是按降序排列。 因此我们实现了一个
-                 * IntWritableDecreasingComparator 类, 并指定使用这个自定义的 Comparator
-                 * 类对输出结果中的 key (词频)进行排序
-                 */
-                sortJob.setSortComparatorClass(CountComparator.class);
-
-                System.exit(sortJob.waitForCompletion(true) ? 0 : 1);
-            }
-        } finally {
-            FileSystem.get(conf).deleteOnExit(tempDir);
-        }
-    }
-}
-</code></pre></li>
-<li><p>将写好的程序编译为jar包(注意指定Main方法)，上传至服务器。</p></li>
-<li><p>执行<code>hadoop jar XXX.jar /inputFile /outputFile</code>，执行作业。</p></li>
-</ol>
-
-<h2 id="toc_5">结果展示与说明</h2>
-
-<p>上述作业结束后，我们就可以通过查询输出文件得到我们的统计结果。本次实验统计结果如下：<br/>
-<img src="media/14786108252793/14787497512630.jpg" alt=""/><br/>
-输出文件如下：<br/>
-<img src="media/14786108252793/14787497741393.jpg" alt=""/></p>
-
-<h2 id="toc_6">相关代码</h2>
-
-<p>本次实验相关代码和所用的数据资料，均已上传至码云仓库（OSChina git）地址为：<a href="https://git.oschina.net/cobber/HadoopPractice">HadoopPractice</a></p>
 
 ]]></content>
   </entry>

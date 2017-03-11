@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-UITableView - Zhan's Blog
+  设计模式-观察者模式 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-UITableView</h1>
+          <h1>设计模式-观察者模式</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/3/27</span>
+          <span class="date">2017/3/11</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14590829108890.html" data-count-type="comments" href="14590829108890.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14892030475974.html" data-count-type="comments" href="14892030475974.html#ds-thread"></a>
             
           </span>
 
@@ -129,150 +129,111 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>第三周的课程终于迎来了大杀器——tableView。table这个view可能是使用面最广泛的一个数据展示方法了吧。本文就简要的介绍一下tableview在iOS开发过程中的使用。</p>
+      <blockquote>
+<p>定义对象之间的一种一对多依赖关系，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。观察者模式的别名包括发布-订阅（Publish/Subscribe）模式、模型-视图（Model/View）模式、源-监听器（Source/Listener）模式或从属者（Dependents）模式。观察者模式是一种对象行为型模式。</p>
+</blockquote>
 
-<h2 id="toc_0">建立</h2>
+<p>观察者模式是使用频率最高的设计模式之一，它用于建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应作出反应。在观察者模式中，发生改变的对象称为观察目标，而被通知的对象称为观察者，一个观察目标可以对应多个观察者，而且这些观察者之间可以没有任何相互联系，可以根据需要增加和删除观察者，使得系统更易于扩展。</p>
 
-<p>一个tableView要想顺利的现实在iOS的VC当中，必须要实现两个协议，他们分别是：UITableViewDataSource，UITableViewDelegate。<br/>
-其中UITableViewDataSource负责Table的数据供应，UITableViewDelegate负责对Table的各种事件进行相应。<br/>
-Table主要由两个部分组成section和cell（或者称为row）。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591617617364.jpg" alt=""/></p>
+<h2 id="toc_0">观察者模式中的角色</h2>
+
+<p>在观察者模式中包含如下几个角色：</p>
 
 <ol>
-<li><p>UITableViewDataSource</p>
-
-<pre><code>//在UITableViewDataSource中有两个方法是必须实现的
-
-//返回某个section中的行数，应由数据进行指定
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
-
-//根据indexPath（包括section和row）来返回对应的cell实例
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath; 
-
-//非必须
-
-//返回表格的section数量，下标从0开始计算，默认为1
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView; 
-
-// cell是否可以进入编辑模式，默认为true
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath;
-//返回section的索引，主要用于通讯录类表格(e.g. &quot;ABCD...Z#&quot;)
-- (nullable NSArray&lt;NSString *&gt; *)sectionIndexTitlesForTableView:(UITableView *)tableView ；
-//返回对应section的编号
-- (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index;  
-
-// Data manipulation - insert and delete support
-// After a row has the minus or plus button invoked (based on the UITableViewCellEditingStyle for the cell), the dataSource must commit the change
-// Not called for edit actions using UITableViewRowAction - the action&#39;s handler will be invoked instead
--(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
-
-</code></pre></li>
-<li><p>UITableViewDelegate</p>
-
-<pre><code>//在delegate中没有必须实现的方法，但是有几个非常常用的方法
-//设置section的header和footer的view
-- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
-- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section; 
-//点击操作响应方法
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
-</code></pre>
-
-<p>delegate中对table的各项操作定义了非常详细的操作，在这里仅简要介绍。</p></li>
+<li>Subject（目标）：目标又称为主题，它是指被观察的对象。在目标中定义了一个观察者集合，一个观察目标可以接受任意数量的观察者来观察，它提供一系列方法来增加和删除观察者对象，同时它定义了通知方法notify()。目标类可以是接口，也可以是抽象类或具体类。</li>
+<li>ConcreteSubject（具体目标）：具体目标是目标类的子类，通常它包含有经常发生改变的数据，当它的状态发生改变时，向它的各个观察者发出通知；同时它还实现了在目标类中定义的抽象业务逻辑方法（如果有的话）。如果无须扩展目标类，则具体目标类可以省略。</li>
+<li>Observer（观察者）：观察者将对观察目标的改变做出反应，观察者一般定义为接口，该接口声明了更新数据的方法update()，因此又称为抽象观察者。</li>
+<li>ConcreteObserver（具体观察者）：在具体观察者中维护一个指向具体目标对象的引用，它存储具体观察者的有关状态，这些状态需要和具体目标的状态保持一致；它实现了在抽象观察者Observer中定义的update()方法。通常在实现时，可以调用具体目标类的attach()方法将自己添加到目标类的集合中或通过detach()方法将自己从目标类的集合中删除。</li>
 </ol>
 
-<h2 id="toc_1">Cell定制</h2>
+<p><img src="media/14892030475974/14892033599821.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+观察者模式描述了如何建立对象与对象之间的依赖关系，以及如何构造满足这种需求的系统。观察者模式包含观察目标和观察者两类对象，一个目标可以有任意数目的与之相依赖的观察者，一旦观察目标的状态发生改变，所有的观察者都将得到通知。作为对这个通知的响应，每个观察者都将监视观察目标的状态以使其状态与目标状态同步，这种交互也称为发布-订阅(Publish-Subscribe)。观察目标是通知的发布者，它发出通知时并不需要知道谁是它的观察者，可以有任意数目的观察者订阅它并接收通知。</p>
 
-<p>在tableView中，最重要的就是定制cell，用于显示数据。在这里简要的说明几种cell的产生方法。</p>
+<h2 id="toc_1">通用代码实现</h2>
 
-<ol>
-<li><p>使用系统预定义的cell</p>
+<p>目标类的实现：</p>
 
-<pre><code>//先根据Identifier取对象实例,实现复用
-UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@&quot;&quot;]; 
-//如果为空进行创建
-if(cell == nil){
-    cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@&quot;Default&quot;];
+<pre><code class="language-java">package com.swu.ObserverPattern;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 主题的实现类，如有需要可以进一步将此类抽象
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Subject {
+    /**
+     * 维护所有观察者的队列
+     */
+    private List&lt;Observer&gt; observers = new ArrayList&lt;Observer&gt;();
+
+    /**
+     * 将观察者添加入通知队列
+     * 
+     * @param obs
+     */
+    public void attach(Observer obs) {
+        this.observers.add(obs);
+    }
+
+    /**
+     * 将观察者移除出通知队列
+     * 
+     * @param obs
+     */
+    public void detach(Observer obs) {
+        this.observers.remove(obs);
+    }
+
+    /**
+     * 通知所有观察者
+     */
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
 }
-
 </code></pre>
 
-<p>initWithStyle:UITableViewCellStyle的几种值：</p>
+<p>观察者抽象的接口：</p>
 
-<ol>
-<li><p>UITableViewCellStyleDefault<br/>
-该格式提供了一个简单的左对齐的文本标签textLabel和一个可选的图像imageView。如果显示图像，那么图像将在最左边。这种格式虽然可以设置detailTextLabel，但是不会显示该标签。</p></li>
-<li><p>UITableViewCellStyleSubtitle<br/>
-该格式与前一种相比，增加了对detailTextLabel的支持，该标签将会显示在textLabel标签的下面，字体相对较小。</p></li>
-<li><p>UITableViewCellStyleValue1<br/>
-该格式居左显示textLabel，居右显示detailTextLabel，且字体较小</p></li>
-<li><p>UITableViewCellStyleValue2<br/>
-该格式居左现实一个小型蓝色主标签textLabel，在其右边显示一个小型黑色副标题详细标签detailTextLabel。该格式不支持图像.<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591626918504.jpg" alt=""/></p></li>
-</ol></li>
-<li><p>自定义Cell</p>
+<pre><code class="language-java">public interface Observer {
+    void update();
+}
+</code></pre>
 
-<ol>
-<li><p>使用StoryBoard绘制<br/>
-在SB中使用IB对cell进行绘制，并指定identifier，内部的view指定tag.</p>
+<p>观察者的具体实现：</p>
 
-<pre><code>UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@&quot;&quot;]; 
-UIView* view =(UIView *) [cell viewWithTag:int];
-</code></pre></li>
-<li><p>xib方式<br/>
-创建一个XibCell继承UITableViewCell，并创建xib文件，在xib中对cell进行绘制</p>
+<pre><code class="language-java">public class ConcerteObserversA implements Observer {
+    public void update() {
+        System.out.println(&quot;A类观察者收到消息&quot;);
+    }
+}
+</code></pre>
 
-<pre><code>//0.覆盖initWithStyle方法,手工加载xib
-//1.在VC的viewDidLoad方法中对xib进行注册
-//2.使用Identifier创建Cell实例
-</code></pre></li>
-<li><p>使用UITableViewController设计静态表格<br/>
-对类似于系统设置这些界面，使用静态表格直接完成设计</p></li>
-</ol></li>
-</ol>
+<h2 id="toc_2">JDK对观察者模式的支持</h2>
 
-<h2 id="toc_2">TableView交互</h2>
+<p>观察者模式在Java语言中的地位非常重要。在JDK的java.util包中，提供了Observable类以及Observer接口，它们构成了JDK对观察者模式的支持。如图所示：<br/>
+<img src="media/14892030475974/14892071855093.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-<ul>
-<li><p>选中<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591667830172.jpg" alt=""/></p></li>
-<li><p>控制表格滚动<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591668374304.jpg" alt=""/></p></li>
-<li><p>刷新table</p>
+<h3 id="toc_3">Observer接口</h3>
 
-<pre><code>//重载所有数据
-[tableView reloadData];
-//刷新行
-[tableView reloadRowsAtIndexPaths:withRowAnimation];
-//刷新组
-[tableView reloadSections:WithAnimation];
-//刷新组索引
-[tableView reloadSectionIndexTitles];
-</code></pre></li>
-<li><p>编辑模式<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591672893977.jpg" alt=""/><br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591673261962.jpg" alt=""/></p></li>
-<li><p>表格与搜索<br/>
-搜索并非表格的一部分，但实际使用中经常联系在一起。</p>
+<p>在java.util.Observer接口中只声明一个方法，它充当抽象观察者，其方法声明代码如下所示：<code>void  update(Observable o, Object arg);</code>当观察目标的状态发生变化时，该方法将会被调用，在Observer的子类中将实现update()方法，即具体观察者可以根据需要具有不同的更新行为。当调用观察目标类Observable的notifyObservers()方法时，将执行观察者类中的update()方法。</p>
 
-<ul>
-<li><p>UISearchBar（iOS2+）<br/>
-<code>[tableView setTableViewHeaderView:searchBar];</code></p></li>
-<li><p>UISearchDisplayController(iOS7)</p></li>
-<li><p>UISearchController(iOS8)</p></li>
-</ul></li>
-<li><p>高亮与菜单<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591676374088.jpg" alt=""/></p></li>
-<li><p>表格索引<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-03-28-14591676858863.jpg" alt=""/></p></li>
-</ul>
+<h3 id="toc_4">Observable类</h3>
 
-<h2 id="toc_3">UITableViewController</h2>
+<p>java.util.Observable类充当观察目标类，在Observable中定义了一个向量Vector来存储观察者对象，它所包含的方法及说明见表：<br/>
+<img src="media/14892030475974/14892075822399.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+我们可以直接使用Observer接口和Observable类来作为观察者模式的抽象层，再自定义具体观察者类和具体观察目标类，通过使用JDK中的Observer接口和Observable类，可以更加方便地在Java语言中应用观察者模式。</p>
 
-<p>该类主要用于实现静态表格，以及封装了下拉刷新等操作。</p>
+<h2 id="toc_5">实现</h2>
 
-<h2 id="toc_4">数据传递</h2>
-
-<p>和其它VC一样使用segue或delegate</p>
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a></p>
 
       </div>
 
@@ -280,16 +241,13 @@ UIView* view =(UIView *) [cell viewWithTag:int];
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14591686020244.html" 
-          title="Previous Post: ViewController生命周期">&laquo; ViewController生命周期</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14586526599234.html" 
-          title="Next Post: GeekBand.iOS-UIKIT继承关系">GeekBand.iOS-UIKIT继承关系 &raquo;</a>
+          <a  href="14891973906960.html" 
+          title="Next Post: 剑指Offer-递归和循环">剑指Offer-递归和循环 &raquo;</a>
       
       </p>
         </div>
@@ -301,7 +259,7 @@ UIView* view =(UIView *) [cell viewWithTag:int];
           
 
           
-              <div class="ds-thread" data-thread-key="14590829108890.html" data-url="http://swuzjb.github.io/14590829108890.html" data-title="GeekBand.iOS-UITableView"></div>
+              <div class="ds-thread" data-thread-key="14892030475974.html" data-url="http://swuzjb.github.io/14892030475974.html" data-title="设计模式-观察者模式"></div>
           
         </div>
       </div>

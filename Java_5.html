@@ -107,6 +107,403 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14686724239639.html">
+                
+                  <h1>Java康复性训练-JDBC</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">什么是JDBC</h2>
+
+<blockquote>
+<p>JDBC(Java Data Base Connectivity，Java数据库链接)是一种用于执行SQL语句的Java API。可以为多种关系数据库提供统一的访问，它由一组Java语言编写的类和接口组成。JDBC提供了一种标准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
+</blockquote>
+
+<h3 id="toc_1">JDBC原理</h3>
+
+<p>JDBC原理：JDBC是以前SUN公司定义的一套访问数据库的接口（没有具体实现），具体实现是由各大数据库厂商自己实现的。每个数据库厂商都有自己的JDBC实现，也被称为JDBC驱动实现类。Java应用程序连接指定数据库，需要使用厂家提供的JDBC驱动才能连接。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-07-16-14686740816527.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_2">JDBC链接数据库步骤</h2>
+
+<ol>
+<li>加载驱动</li>
+<li>链接数据库</li>
+<li>使用语句操作数据库</li>
+<li>关闭数据库，释放资源</li>
+</ol>
+
+<h3 id="toc_3">在项目中配置数据库驱动（Eclipse）</h3>
+
+<p>右击项目-&gt;Build Path-&gt;Configure Build Path-&gt; Add External JARS</p>
+
+<h3 id="toc_4">加载JDBC驱动</h3>
+
+<p>MySQL JDBC 驱动名称：<em>com.mysql.jdbc.Driver</em><br/>
+加载方式：<code>Class.forName(&quot;驱动名&quot;);</code></p>
+
+<h3 id="toc_5">连接及关闭数据库</h3>
+
+<ol>
+<li><p>DriverManager 驱动管理类，主要负责一个数据的连接。<code>static Connection getConnection(String url, String user, String password)</code>试图建立到给定数据库 URL 的连接。</p></li>
+<li><p>Mysql 数据的连接地址格式：</p>
+
+<ul>
+<li>jdbc:mysql://127.0.0.1:3306/DataBaseName</li>
+<li>jdbc协议：JDBC URL 中的协议总是jdbc</li>
+<li>子协议： 驱动程序名称或数据库连接机制（这种驱动可由一个或多个驱动程序支持）的名称如：mysql</li>
+<li>子名称：一种标示数据库的方法。必须遵循<em>//主机名：端口/数据库</em>的标准URL命名约定，如：<code>//localhost:3306/test</code></li>
+</ul></li>
+<li><p>Connection接口：与特定的数据库的连接(也称为会话)。</p>
+
+<ul>
+<li><code>void close()</code>立即释放此Connection对象的数据库和JDBC资源，而不是等待自动释放</li>
+</ul></li>
+</ol>
+
+<h4 id="toc_6">Demo Code</h4>
+
+<p>封装一个用于获取和关闭连接的工具类DBTool。</p>
+
+<pre><code class="language-Java">package com.swu.JDBC;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DBTool {
+    public static Connection getConnection(){
+        String dbURL = &quot;jdbc:mysql://localhost:3306/test&quot;;
+        String username = &quot;root&quot;;
+        String password = &quot;&quot;;
+        Connection conn = null;
+        try {
+            //注册驱动类
+            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);
+            //获取连接
+            conn = DriverManager.getConnection(dbURL,username,password);
+            
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;加载驱动失败&quot;);
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println(&quot;连接失败&quot;);
+            e.printStackTrace();
+        }
+        return conn;
+    }
+    public static void closeConnection(Connection conn){
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            System.out.println(&quot;关闭失败&quot;);
+            e.printStackTrace();
+        }
+    }
+}
+
+</code></pre>
+
+<h2 id="toc_7">使用Statement接口实现数据的增、删、改、查</h2>
+
+<h3 id="toc_8">Statement接口</h3>
+
+<ul>
+<li>作用：用于执行静态SQL语句并返回它所产生的结果的对象。</li>
+<li><code>int executeUpdate(String sql)</code> 执行给定SQL语句。该语句可能为INSERT,UPDATE,DELETE语句或者不返回人格内容的SQL语句。</li>
+<li><code>void close()</code> 立即释放此Statement对象的数据库和JDBC资源，而不是等待对象自动关闭时发生此操作。</li>
+</ul>
+
+<h4 id="toc_9">Statement接口实现添加数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">public void addUser(String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;insert into user(username,password) values(&#39;&quot;+username+&quot;&#39;,&#39;&quot;+password+&quot;&#39;)&quot;;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_10">Statement接口实现修改数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;update user set username=&#39;&quot;+username+&quot;&#39;,password=&#39;&quot;+password+&quot;&#39; where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {              e.printStackTrace();
+            }
+            
+        }
+    }
+</code></pre>
+
+<h4 id="toc_11">Statement接口实现删除数据操作</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;delete from user where id=&quot;+id;
+        Statement stmt = null;
+        try {
+            //通过Connection获取Statement
+            stmt = conn.createStatement();
+            int result = stmt.executeUpdate(sql);
+            System.out.println(result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                stmt.close();
+                DBTool.closeConnection(conn);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+</code></pre>
+
+<h4 id="toc_12">Statment接口实现数据查询</h4>
+
+<p>demo如下（里面的ResultSet后面详细介绍）:</p>
+
+<pre><code class="language-java">public void getAllUser(){
+        Connection conn = DBTool.getConnection();
+        String sql = &quot;select * from user&quot;;
+        Statement stmt = null;
+        //保存查询返回结果
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally {
+            try {
+                rs.close();
+                stmt.close();
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+        }
+}
+</code></pre>
+
+<h3 id="toc_13">PreparedStatement接口</h3>
+
+<p>PreparedStatement是Statement的子接口，是一个SQL语句预处理Statement。与直接Statement不同的是PreparedStatement在操作时，是先在数据表中准备好了一条SQL语句，但是此SQL语句的内容暂时不设置，而是之后再进行设置。<em>实际开发过程中建议使用PreparedStatement，可以避免一定的SQL注入问题</em></p>
+
+<h4 id="toc_14">PreparedStatement接口实现数据添加</h4>
+
+<p>demo如下:</p>
+
+<pre><code class="language-java">    public void addUser(String username,String password) throws Exception{
+        //预处理SQL语句
+        String sql = &quot;insert into user(username,password) values(?,?)&quot;;
+        Connection conn = DBTool.getConnection();
+        //获得PreparedStatement对象
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        //设置预处理占位符的实际值
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        //执行添加
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_15">PreparedStatement接口实现数据修改</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void updateUser(int id,String username,String password) throws SQLException{
+        String sql = &quot;update user set username=?,password=? where id=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        stmt.setInt(3, id);
+        
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+        
+    }
+</code></pre>
+
+<h3 id="toc_16">PreparedStatement接口实现数据删除</h3>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void deleteUser(int id) throws SQLException{
+        String sql = &quot;delete from user where id = ?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setInt(1, id);
+    
+        stmt.executeUpdate();
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h4 id="toc_17">PreparedStatement接口实现数据查询</h4>
+
+<p>demo如下：</p>
+
+<pre><code class="language-java">    public void getUserByUsername(String username) throws SQLException{
+        String sql = &quot;select * from user where username=?&quot;;
+        Connection conn = DBTool.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        
+        stmt.setString(1, username);
+    
+        ResultSet rs = stmt.executeQuery();
+        
+        while(rs.next()){
+            System.out.println(rs.getInt(1)+&quot;\t&quot;+rs.getString(2)+&quot;\t&quot;+rs.getString(3));
+        }
+        
+        DBTool.closeConnection(stmt, conn);
+    }
+</code></pre>
+
+<h3 id="toc_18">ResultSet结果集</h3>
+
+<blockquote>
+<p>当我们对数据库的数据进行查询的时候，返回的是一个二维的结果集。我们这个时候需要使用ResultSet来遍历结果集，获取每一行的数据。</p>
+</blockquote>
+
+<h4 id="toc_19">获取数据</h4>
+
+<ul>
+<li><code>boolean next()</code>将光标从当前位置向前移动一行</li>
+<li><code>String getString(int columnIndex)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+<li><code>String getString(String columnLabel)</code>以String的形式获取此ResultSet对象的当前行中指定列的值。</li>
+</ul>
+
+<h4 id="toc_20">使用例子</h4>
+
+<p>见上方实现的数据查询。</p>
+
+<h3 id="toc_21">处理大数据对象</h3>
+
+<blockquote>
+<p>大数据对象处理主要有CLOB(character large object)和BLOB(binary large object)两种类型的字段。在CLOB中可以存储大字符数据对象，比如长篇小说;在BLOB中可以存放二进制大数据对象，比如图片、电影、音乐</p>
+</blockquote>
+
+<h4 id="toc_22">处理CLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setAsciiStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getClob(String columnLabel);</code>获得一个Clob对象，然后可以转为字符串对象。</li>
+</ul>
+
+<h4 id="toc_23">处理BLOB数据</h4>
+
+<ul>
+<li>使用PreparedStatement插入数据。<code>statement.setBinaryStream(parameterIndex, x, length);</code></li>
+<li>使用ResultSet读取数据。<code>resultSet.getBlob(String columnLabel);</code>获得一个Blob对象，然后可以转为目标对象。</li>
+</ul>
+
+<h3 id="toc_24">使用CallableStatement接口调用存储过程</h3>
+
+<blockquote>
+<p>CallableStatement 主要是调用数据库中的存储过程,CallableStatement 也是 Statement 接口的子接口。在使用 CallableStatement 时可以接收存储过程的返回值。 </p>
+</blockquote>
+
+<h3 id="toc_25">使用DatabaseMetaData分析数据库</h3>
+
+<blockquote>
+<p>DatabaseMetaData可以得到数据库的一些基本信息,包括数据库的名称、版本,以及得到表的信息。 </p>
+</blockquote>
+
+<ul>
+<li><code>String getDatabaseProductName()</code> 获取此数据库产品的名称。</li>
+<li><code>int getDriverMajorVersion()</code>获取此 JDBC 驱动程序的主版本号。</li>
+<li><code>int getDriverMinorVersion()</code> 获取此 JDBC 驱动程序的次版本号。 </li>
+</ul>
+
+<h3 id="toc_26">使用 ResultSetMetaData 获取 ResultSet 对象中的信息</h3>
+
+<blockquote>
+<p>ResultSetMetaData 可获取关于 ResultSet 对象中列的基本信息;</p>
+</blockquote>
+
+<ul>
+<li><code>int getColumnCount()</code> 返回此 ResultSet 对象中的列数。</li>
+<li><code>String getColumnName(int column)</code> 获取指定列的名称。 </li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14686724239639.html" data-count-type="comments" href="14686724239639.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14676190809439.html">
                 
                   <h1>Java康复性训练——Java基础1</h1>
@@ -359,6 +756,12 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 	      
 		      
 			      <li class="post">
+			        <a href="14892030475974.html">设计模式-观察者模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
 			      </li>
 		     
@@ -378,12 +781,6 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 		      
 			      <li class="post">
 			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
 		  

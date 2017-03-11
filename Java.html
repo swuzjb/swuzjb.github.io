@@ -107,6 +107,145 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14892030475974.html">
+                
+                  <h1>设计模式-观察者模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>定义对象之间的一种一对多依赖关系，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。观察者模式的别名包括发布-订阅（Publish/Subscribe）模式、模型-视图（Model/View）模式、源-监听器（Source/Listener）模式或从属者（Dependents）模式。观察者模式是一种对象行为型模式。</p>
+</blockquote>
+
+<p>观察者模式是使用频率最高的设计模式之一，它用于建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应作出反应。在观察者模式中，发生改变的对象称为观察目标，而被通知的对象称为观察者，一个观察目标可以对应多个观察者，而且这些观察者之间可以没有任何相互联系，可以根据需要增加和删除观察者，使得系统更易于扩展。</p>
+
+<h2 id="toc_0">观察者模式中的角色</h2>
+
+<p>在观察者模式中包含如下几个角色：</p>
+
+<ol>
+<li>Subject（目标）：目标又称为主题，它是指被观察的对象。在目标中定义了一个观察者集合，一个观察目标可以接受任意数量的观察者来观察，它提供一系列方法来增加和删除观察者对象，同时它定义了通知方法notify()。目标类可以是接口，也可以是抽象类或具体类。</li>
+<li>ConcreteSubject（具体目标）：具体目标是目标类的子类，通常它包含有经常发生改变的数据，当它的状态发生改变时，向它的各个观察者发出通知；同时它还实现了在目标类中定义的抽象业务逻辑方法（如果有的话）。如果无须扩展目标类，则具体目标类可以省略。</li>
+<li>Observer（观察者）：观察者将对观察目标的改变做出反应，观察者一般定义为接口，该接口声明了更新数据的方法update()，因此又称为抽象观察者。</li>
+<li>ConcreteObserver（具体观察者）：在具体观察者中维护一个指向具体目标对象的引用，它存储具体观察者的有关状态，这些状态需要和具体目标的状态保持一致；它实现了在抽象观察者Observer中定义的update()方法。通常在实现时，可以调用具体目标类的attach()方法将自己添加到目标类的集合中或通过detach()方法将自己从目标类的集合中删除。</li>
+</ol>
+
+<p><img src="media/14892030475974/14892033599821.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+观察者模式描述了如何建立对象与对象之间的依赖关系，以及如何构造满足这种需求的系统。观察者模式包含观察目标和观察者两类对象，一个目标可以有任意数目的与之相依赖的观察者，一旦观察目标的状态发生改变，所有的观察者都将得到通知。作为对这个通知的响应，每个观察者都将监视观察目标的状态以使其状态与目标状态同步，这种交互也称为发布-订阅(Publish-Subscribe)。观察目标是通知的发布者，它发出通知时并不需要知道谁是它的观察者，可以有任意数目的观察者订阅它并接收通知。</p>
+
+<h2 id="toc_1">通用代码实现</h2>
+
+<p>目标类的实现：</p>
+
+<pre><code class="language-java">package com.swu.ObserverPattern;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 主题的实现类，如有需要可以进一步将此类抽象
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Subject {
+    /**
+     * 维护所有观察者的队列
+     */
+    private List&lt;Observer&gt; observers = new ArrayList&lt;Observer&gt;();
+
+    /**
+     * 将观察者添加入通知队列
+     * 
+     * @param obs
+     */
+    public void attach(Observer obs) {
+        this.observers.add(obs);
+    }
+
+    /**
+     * 将观察者移除出通知队列
+     * 
+     * @param obs
+     */
+    public void detach(Observer obs) {
+        this.observers.remove(obs);
+    }
+
+    /**
+     * 通知所有观察者
+     */
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
+}
+</code></pre>
+
+<p>观察者抽象的接口：</p>
+
+<pre><code class="language-java">public interface Observer {
+    void update();
+}
+</code></pre>
+
+<p>观察者的具体实现：</p>
+
+<pre><code class="language-java">public class ConcerteObserversA implements Observer {
+    public void update() {
+        System.out.println(&quot;A类观察者收到消息&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">JDK对观察者模式的支持</h2>
+
+<p>观察者模式在Java语言中的地位非常重要。在JDK的java.util包中，提供了Observable类以及Observer接口，它们构成了JDK对观察者模式的支持。如图所示：<br/>
+<img src="media/14892030475974/14892071855093.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h3 id="toc_3">Observer接口</h3>
+
+<p>在java.util.Observer接口中只声明一个方法，它充当抽象观察者，其方法声明代码如下所示：<code>void  update(Observable o, Object arg);</code>当观察目标的状态发生变化时，该方法将会被调用，在Observer的子类中将实现update()方法，即具体观察者可以根据需要具有不同的更新行为。当调用观察目标类Observable的notifyObservers()方法时，将执行观察者类中的update()方法。</p>
+
+<h3 id="toc_4">Observable类</h3>
+
+<p>java.util.Observable类充当观察目标类，在Observable中定义了一个向量Vector来存储观察者对象，它所包含的方法及说明见表：<br/>
+<img src="media/14892030475974/14892075822399.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+我们可以直接使用Observer接口和Observable类来作为观察者模式的抽象层，再自定义具体观察者类和具体观察目标类，通过使用JDK中的Observer接口和Observable类，可以更加方便地在Java语言中应用观察者模式。</p>
+
+<h2 id="toc_5">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14892030475974.html" data-count-type="comments" href="14892030475974.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14891427018088.html">
                 
                   <h1>设计模式-策略模式</h1>
@@ -752,151 +891,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879172287548.html">
-                
-                  <h1>Java容器框架分析(六)——HashSet与HashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
-
-<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
-
-<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
-
-<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
-
-<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
-当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
-
-<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
-算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
-上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
-         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
-        Object k;
-        //依据equals()方法判断是否相等
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
-            return e;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_2">put()</h3>
-
-<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
-
-<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
-        resize(2 * table.length);//自动扩容，并重新哈希
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = hash &amp; (table.length-1);//hash%table.length
-    }
-    //在冲突链表头部插入新的entry
-    Entry&lt;K,V&gt; e = table[bucketIndex];
-    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
-    size++;
-}
-</code></pre>
-
-<h3 id="toc_3">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
-
-<pre><code class="language-java">//removeEntryForKey()
-final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
-    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
-    Entry&lt;K,V&gt; e = prev;
-    while (e != null) {//遍历冲突链表
-        Entry&lt;K,V&gt; next = e.next;
-        Object k;
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
-            modCount++; size--;
-            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
-            else prev.next = next;
-            return e;
-        }
-        prev = e; e = next;
-    }
-    return e;
-}
-</code></pre>
-
-<h2 id="toc_4">HashSet</h2>
-
-<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
-
-<pre><code class="language-java">public class HashSet&lt;E&gt;
-{
-    ......
-    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public HashSet() {
-        map = new HashMap&lt;&gt;();
-    }
-    ......
-    public boolean add(E e) {//简单的方法转换
-        return map.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879172287548.html" data-count-type="comments" href="14879172287548.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -985,6 +979,12 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 	      
 		      
 			      <li class="post">
+			        <a href="14892030475974.html">设计模式-观察者模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
 			      </li>
 		     
@@ -1004,12 +1004,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 		      
 			      <li class="post">
 			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
 		  

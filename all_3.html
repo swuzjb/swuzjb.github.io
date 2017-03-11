@@ -107,6 +107,164 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14878187570598.html">
+                
+                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">LinkedList简介</h2>
+
+<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
+LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
+双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
+
+<pre><code class="language-java">//Node内部类
+private static class Node&lt;E&gt; {
+    E item;
+    Node&lt;E&gt; next;
+    Node&lt;E&gt; prev;
+    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
+
+<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
+
+<h2 id="toc_1">常用方法剖析</h2>
+
+<h3 id="toc_2">add()</h3>
+
+<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
+
+<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    final Node&lt;E&gt; l = last;
+    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
+    last = newNode;
+    if (l == null)
+        first = newNode;//原来链表为空，这是插入的第一个元素
+    else
+        l.next = newNode;
+    size++;
+    return true;
+}
+</code></pre>
+
+<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
+
+<pre><code class="language-java">public void add(int index, E element) {
+     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
+    checkPositionIndex(index);
+    if (index == size)//插入位置是末尾，包括列表为空的情况
+        add(element);
+    else{
+        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
+        //2.修改引用，完成插入操作。
+        final Node&lt;E&gt; pred = succ.prev;
+        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
+        succ.prev = newNode;
+        if (pred == null)//插入位置为0
+            first = newNode;
+        else
+            pred.next = newNode;
+        size++;
+    }
+}
+</code></pre>
+
+<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
+两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
+
+<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
+    final E element = x.item;
+    final Node&lt;E&gt; next = x.next;
+    final Node&lt;E&gt; prev = x.prev;
+    if (prev == null) {//删除的是第一个元素
+        first = next;
+    } else {
+        prev.next = next;
+        x.prev = null;
+    }
+    if (next == null) {//删除的是最后一个元素
+        last = prev;
+    } else {
+        next.prev = prev;
+        x.next = null;
+    }
+    x.item = null;//let GC work
+    size--;
+    return element;
+}
+</code></pre>
+
+<h3 id="toc_4">get()</h3>
+
+<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
+
+<pre><code class="language-java">public E get(int index) {
+    //检测index是否越界
+    checkElementIndex(index);
+    return node(index).item;
+}
+</code></pre>
+
+<h3 id="toc_5">set()</h3>
+
+<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
+
+<pre><code class="language-java">public E set(int index, E element) {
+    checkElementIndex(index);
+    Node&lt;E&gt; x = node(index);
+    E oldVal = x.item;
+    x.item = element;//替换新值
+    return oldVal;
+}
+</code></pre>
+
+<h2 id="toc_6">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/23</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14876660718478.html">
                 
                   <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
@@ -674,366 +832,6 @@ StartSSL是StartCom公司旗下的SSL证书，应该算是免费SSL证书中的�
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14786108252793.html">
-                
-                  <h1>Hadoop搭建实例</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>本次课程要求自主搭建Hadoop集群环境，并进行MapReduce作业操作<br/>
-本文以统计知乎用户地域分布情况为例进行统计展示</p>
-</blockquote>
-
-<h2 id="toc_0">数据获取与格式说明</h2>
-
-<h3 id="toc_1">数据获取</h3>
-
-<p>实验数据采用爬虫方式从知乎进行爬取，并保存进入数据库，总数据量3383054条。为了后续处理方便，我们将数据从数据库中倒成csv文件进行存储。<br/>
-数据爬取代码：<a href="https://github.com/wycm/mycrawler">知乎爬虫</a></p>
-
-<h3 id="toc_2">数据格式</h3>
-
-<p>导出的数据格式为：<code>id,name,headline,gender,school,major,address,industry,company,job</code><br/>
-<img src="media/14786108252793/14786149854526.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_3">Hadoop集群搭建</h2>
-
-<p>Hadoop是一个由Apache基金会所开发的分布式系统基础架构。用户可以在不了解分布式底层细节的情况下，开发分布式程序。充分利用集群的威力进行高速运算和存储。<br/>
-本次课程实例基于ubuntu12.04、jdk1.8.111、hadoop2.7.3进行说明，其中ubuntu服务器以虚拟机的形式搭建。</p>
-
-<ol>
-<li><p>ubuntu虚拟机搭建</p>
-
-<p>虚拟机创建的步骤在本文中不加以介绍，如有需要请自行百度。ps.为了简便操作，我们可以先创建并配置一台虚拟机然后进行克隆。为了简便操作，可以使用<code>sudo apt-get install ubuntu-desktop</code>安装ubuntu的图形操作界面。</p></li>
-<li><p>建立软件目录</p>
-
-<p>为了后续更好的管理我们按照的软件。我们使用mkdir命令，建立软件的安装目录。命令：<code>sudo mkdir /usr/soft</code></p></li>
-<li><p>jdk的安装与环境变量设置</p>
-
-<ol>
-<li>首先我们从Oracle的官网上下载jdk的压缩文件。下载地址：<a href="http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz">jdk</a>;</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv jdk1.8.0_111/ /usr/soft</code></li>
-<li><p>设置java所需要的环境变量:</p>
-
-<ol>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export JAVA_HOME=&quot;/usr/soft/jdk1.8.0_111&quot;</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-</ol></li>
-<li><p>调用<code>javac -version</code>命令，检查配置是否生效,安装是否成功。</p></li>
-</ol></li>
-<li><p>Hadoop的安装与环境变量设置</p>
-
-<ol>
-<li>从Apache Hadoop网站上下载对应的Hadoop安装包。下载地址：<a href="http://mirrors.cnnic.cn/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz">Hadoop2.7.3</a>；</li>
-<li>使用<code>tar -xzvf 文件名</code>对安装包进行解压;</li>
-<li>将解压后的文件夹移至上一步我们建立的软件安装目录。<code>mv Hadoop-2.7.3 /usr/soft</code></li>
-<li>打开配置文件 <code>sudo vi /etc/profile</code>；</li>
-<li>在配置文件中加入<code>export PATH=&quot;$PATH:$JAVA_HOME/bin:/usr/soft/hadoop-2.7.3/bin:/usr/soft/hadoop-2.7.3/sbin&quot;</code>；</li>
-<li>保存配置文件退出；</li>
-<li>使用source命令让配置文件生效，<code>source /etc/profile</code></li>
-<li>调用<code>Hadoop version</code>命令，检查配置是否生效,安装是否成功。</li>
-</ol></li>
-<li><p>SSH免密码登录配置</p>
-
-<ol>
-<li>使用<code>sudo apt-get install ssh</code>安装完整的ssh客户端；</li>
-<li>使用<code>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa</code>生成公私钥；</li>
-<li>使用<code>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</code>将公钥复制；</li>
-<li>使用<code>ssh localhost</code>命令检验是否可以免密码登录系统。</li>
-</ol></li>
-<li><p>修改服务器的名称</p>
-
-<ol>
-<li>使用<code>sudo vi /etc/hostname</code>,修改服务器的名称</li>
-<li>重启服务器使配置生效</li>
-</ol></li>
-<li><p>配置Hadoop配置文件</p>
-
-<p>Hadoop的配置文件位于其安装目录下的etc/hadoop/目录下</p>
-
-<ol>
-<li><p>修改yarn-site.xml，内容如下（master代表主服务器名）：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;fs.defaultFS&lt;/name&gt;
-        &lt;value&gt;hdfs://master/&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
-        &lt;value&gt;~/hadoop/data&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改hdfs-site.xml，内容如下:</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;dfs.replication&lt;/name&gt;
-        &lt;value&gt;3&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改mapred-site.xml（此文件需要从mapred-site.xml.template复制），内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
-        &lt;value&gt;yarn&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改yarn-site.xml,内容如下：</p>
-
-<pre><code class="language-xml">&lt;configuration&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.hostname&lt;/name&gt;
-        &lt;value&gt;master&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
-        &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
-        &lt;value&gt;master:8032&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property&gt;
-        &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;
-        &lt;value&gt;master:8030&lt;/value&gt;
-    &lt;/property&gt;
-&lt;/configuration&gt;
-</code></pre></li>
-<li><p>修改slaves文件，将附属机主机名添加入内，每行一个，样例为:</p>
-
-<pre><code class="language-xml">s1
-s3
-</code></pre></li>
-</ol></li>
-<li><p>克隆宿主机，配置hosts文件</p>
-
-<ol>
-<li>使用VM的克隆功能，克隆虚拟机，并依次修改主机名</li>
-<li><p>根据实际IP修改各个机器的hosts文件，ip查看可以使用<code>ifconfig</code>命令，样例如下：</p>
-
-<pre><code>127.0.0.1  localhost    
-10.104.234.203  master
-182.254.216.245 s1
-123.207.252.11 s2
-123.207.24.98 s3
-</code></pre></li>
-</ol></li>
-<li><p>格式化HDFS文件系统，执行<code>hdfs namenode -format</code>命令，对HDFS进行格式化。</p></li>
-<li><p>启动Hadoop集群</p>
-
-<ol>
-<li>启动文件系统,<code>start-dfs.sh</code>;</li>
-<li>启动yarn，<code>start-yarn.sh</code>;</li>
-<li>可以使用<code>jps</code>命令，检查各个服务的启动情况</li>
-</ol></li>
-</ol>
-
-<h2 id="toc_4">统计程序的编写与运行</h2>
-
-<p>本次实验所用的MapReduce程序采用Maven的方式进行构建，具体操作可以参考文章：<a href="http://www.cnblogs.com/Leo_wl/p/4862820.html">Maven构建Hadoop工程</a></p>
-
-<ol>
-<li><p>编写Mapper类，本次我们实现的功能从原理上与Hadoop自带的WordCount实验非常相似。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
-
-public class CountMapper extends Mapper&lt;Object, Text, Text, IntWritable&gt; {
-
-    private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
-
-    @Override
-    protected void map(Object key, Text value, Mapper&lt;Object, Text, Text, IntWritable&gt;.Context context)
-            throws IOException, InterruptedException {
-        // 获取每一行数据，并以逗号为基准进行分割
-        String[] data = value.toString().split(&quot;,&quot;);
-        // 设置word的key为地址信息
-        word.set(data[5]);
-        // 设置value为1
-        context.write(word, one);
-    }
-
-}
-</code></pre></li>
-<li><p>编写Reducer类。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import java.io.IOException;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
-
-public class CountReduce extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt; {
-    private IntWritable result = new IntWritable();
-    private Text keyEx = new Text();
-
-    @Override
-    protected void reduce(Text key, Iterable&lt;IntWritable&gt; values,
-            Reducer&lt;Text, IntWritable, Text, IntWritable&gt;.Context context) throws IOException, InterruptedException {
-        int sum = 0;
-        // 遍历value相加
-        for (IntWritable val : values) {
-            sum += val.get();
-        }
-        // 返回新的key-value
-        result.set(sum);
-        keyEx.set(key);
-        context.write(keyEx, result);
-    }
-}
-</code></pre></li>
-<li><p>编写Comparator类，用于第二次作业的排序。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.WritableComparable;
-
-public class CountComparator extends IntWritable.Comparator {
-
-    @Override
-    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-        // TODO Auto-generated method stub
-        return -super.compare(b1, s1, l1, b2, s2, l2);
-    }
-    public int compare(WritableComparable a, WritableComparable b) {
-        // TODO Auto-generated method stub
-        return -super.compare(a, b);
-    }
-}
-</code></pre></li>
-<li><p>编写主方法。</p>
-
-<pre><code class="language-java">package com.swu.count;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
-import java.util.Random;
-
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.map.InverseMapper;
-
-public class Main {
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-        if (otherArgs.length != 2) {
-            System.err.println(&quot;Usage: zhihuCount &lt;in&gt; &lt;out&gt;&quot;);
-            System.exit(2);
-        }
-        Path tempDir = new Path(&quot;wordcount-temp-&quot; + Integer.toString(new Random().nextInt(Integer.MAX_VALUE))); // 定义一个临时目录
-
-        Job job = new Job(conf, &quot;zhihuCount&quot;);
-        job.setJarByClass(Main.class);
-        try {
-            job.setMapperClass(CountMapper.class);
-            job.setCombinerClass(CountReduce.class);
-            job.setReducerClass(CountReduce.class);
-
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(IntWritable.class);
-
-            FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-            FileOutputFormat.setOutputPath(job, tempDir);
-            // 先将词频统计任务的输出结果写到临时目录中,下一个排序任务以临时目录为输入目录。
-            job.setOutputFormatClass(SequenceFileOutputFormat.class);
-            if (job.waitForCompletion(true)) {
-                Job sortJob = new Job(conf, &quot;sort&quot;);
-                sortJob.setJarByClass(Main.class);
-                FileInputFormat.addInputPath(sortJob, tempDir);
-                sortJob.setInputFormatClass(SequenceFileInputFormat.class);
-
-                /* InverseMapper由hadoop库提供，作用是实现map()之后的数据对的key和value交换 */
-                sortJob.setMapperClass(InverseMapper.class);
-                /* 将 Reducer 的个数限定为1, 最终输出的结果文件就是一个。 */
-                sortJob.setNumReduceTasks(1);
-                FileOutputFormat.setOutputPath(sortJob, new Path(otherArgs[1]));
-
-                sortJob.setOutputKeyClass(IntWritable.class);
-                sortJob.setOutputValueClass(Text.class);
-                /*
-                 * Hadoop 默认对 IntWritable 按升序排序，而我们需要的是按降序排列。 因此我们实现了一个
-                 * IntWritableDecreasingComparator 类, 并指定使用这个自定义的 Comparator
-                 * 类对输出结果中的 key (词频)进行排序
-                 */
-                sortJob.setSortComparatorClass(CountComparator.class);
-
-                System.exit(sortJob.waitForCompletion(true) ? 0 : 1);
-            }
-        } finally {
-            FileSystem.get(conf).deleteOnExit(tempDir);
-        }
-    }
-}
-</code></pre></li>
-<li><p>将写好的程序编译为jar包(注意指定Main方法)，上传至服务器。</p></li>
-<li><p>执行<code>hadoop jar XXX.jar /inputFile /outputFile</code>，执行作业。</p></li>
-</ol>
-
-<h2 id="toc_5">结果展示与说明</h2>
-
-<p>上述作业结束后，我们就可以通过查询输出文件得到我们的统计结果。本次实验统计结果如下：<br/>
-<img src="media/14786108252793/14787497512630.jpg" alt=""/><br/>
-输出文件如下：<br/>
-<img src="media/14786108252793/14787497741393.jpg" alt=""/></p>
-
-<h2 id="toc_6">相关代码</h2>
-
-<p>本次实验相关代码和所用的数据资料，均已上传至码云仓库（OSChina git）地址为：<a href="https://git.oschina.net/cobber/HadoopPractice">HadoopPractice</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/11/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html'>课程相关</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14786108252793.html" data-count-type="comments" href="14786108252793.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1122,6 +920,12 @@ public class Main {
 	      
 		      
 			      <li class="post">
+			        <a href="14892030475974.html">设计模式-观察者模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
 			      </li>
 		     
@@ -1141,12 +945,6 @@ public class Main {
 		      
 			      <li class="post">
 			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
 		  

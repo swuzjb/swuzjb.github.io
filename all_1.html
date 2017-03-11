@@ -107,6 +107,90 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14890277021887.html">
+                
+                  <h1>剑指Offer-重建二叉树</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
+
+<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
+
+<h2 id="toc_1">代码</h2>
+
+<pre><code class="language-java">/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
+        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
+    }
+    
+    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
+        if(pStart &gt; pEnd || iStart &gt; iEnd ){
+            return null;
+        }
+        
+        TreeNode node = new TreeNode(pre[pStart]);
+        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
+        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
+        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
+        return node;
+        
+    }
+    
+    public int find(int[] array,int target,int start,int end){
+        for(int i = start;i&lt;=end;i++){
+            if(array[i] == target){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890277021887.html" data-count-type="comments" href="14890277021887.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14890230803105.html">
                 
                   <h1>剑指Offer-从尾到头打印链表</h1>
@@ -489,183 +573,6 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879958366746.html">
-                
-                  <h1>Java容器框架分析(八)——PriorityQueue</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
-
-<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
-
-<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
-
-<ul>
-<li><code>leftNo = parentNo*2+1</code></li>
-<li><code>rightNo = parentNo*2+2</code></li>
-<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
-</ul>
-
-<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
-
-<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">add()&amp;offer()</h3>
-
-<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
-
-<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
-
-<pre><code class="language-java">public boolean offer(E e) {
-    if (e == null)//不允许放入null元素
-        throw new NullPointerException();
-    modCount++;
-    int i = size;
-    if (i &gt;= queue.length)
-        grow(i + 1);//自动扩容
-    size = i + 1;
-    if (i == 0)//队列原来为空，这是插入的第一个元素
-        queue[0] = e;
-    else
-        siftUp(i, e);//调整
-    return true;
-}
-</code></pre>
-
-<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
-
-<pre><code class="language-java">private void siftUp(int k, E x) {
-    while (k &gt; 0) {
-        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
-        Object e = queue[parent];
-        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
-            break;
-        queue[k] = e;
-        k = parent;
-    }
-    queue[k] = x;
-}
-</code></pre>
-
-<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
-
-<h3 id="toc_2">element()&amp;peek()</h3>
-
-<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
-
-<pre><code class="language-java">//peek()
-public E peek() {
-    if (size == 0)
-        return null;
-    return (E) queue[0];//0下标处的那个元素就是最小的那个
-}
-</code></pre>
-
-<h3 id="toc_3">remove()&amp;poll()</h3>
-
-<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
-代码如下：</p>
-
-<pre><code class="language-java">public E poll() {
-    if (size == 0)
-        return null;
-    int s = --size;
-    modCount++;
-    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
-    E x = (E) queue[s];
-    queue[s] = null;
-    if (s != 0)
-        siftDown(0, x);//调整
-    return result;
-}
-</code></pre>
-
-<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
-
-<pre><code class="language-java">//siftDown()
-private void siftDown(int k, E x) {
-    int half = size &gt;&gt;&gt; 1;
-    while (k &lt; half) {
-        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
-        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
-        Object c = queue[child];
-        int right = child + 1;
-        if (right &lt; size &amp;&amp;
-            comparator.compare((E) c, (E) queue[right]) &gt; 0)
-            c = queue[child = right];
-        if (comparator.compare(x, (E) c) &lt;= 0)
-            break;
-        queue[k] = c;//然后用c取代原来的值
-        k = child;
-    }
-    queue[k] = x;
-}
-</code></pre>
-
-<h3 id="toc_4">remove(Object o)</h3>
-
-<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
-
-<pre><code class="language-java">//remove(Object o)
-public boolean remove(Object o) {
-    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
-    int i = indexOf(o);
-    if (i == -1)
-        return false;
-    int s = --size;
-    if (s == i) //情况1
-        queue[i] = null;
-    else {
-        E moved = (E) queue[s];
-        queue[s] = null;
-        siftDown(i, moved);//情况2
-        ......
-    }
-    return true;
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -754,6 +661,12 @@ public boolean remove(Object o) {
 	      
 		      
 			      <li class="post">
+			        <a href="14892030475974.html">设计模式-观察者模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
 			      </li>
 		     
@@ -773,12 +686,6 @@ public boolean remove(Object o) {
 		      
 			      <li class="post">
 			        <a href="14891114918366.html">剑指Offer-用两个栈实现队列</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14890277021887.html">剑指Offer-重建二叉树</a>
 			      </li>
 		     
 		  
