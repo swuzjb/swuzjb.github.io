@@ -107,6 +107,164 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14878187570598.html">
+                
+                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">LinkedList简介</h2>
+
+<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
+LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
+双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
+
+<pre><code class="language-java">//Node内部类
+private static class Node&lt;E&gt; {
+    E item;
+    Node&lt;E&gt; next;
+    Node&lt;E&gt; prev;
+    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+</code></pre>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
+
+<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
+
+<h2 id="toc_1">常用方法剖析</h2>
+
+<h3 id="toc_2">add()</h3>
+
+<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
+
+<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    final Node&lt;E&gt; l = last;
+    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
+    last = newNode;
+    if (l == null)
+        first = newNode;//原来链表为空，这是插入的第一个元素
+    else
+        l.next = newNode;
+    size++;
+    return true;
+}
+</code></pre>
+
+<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
+
+<pre><code class="language-java">public void add(int index, E element) {
+     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
+    checkPositionIndex(index);
+    if (index == size)//插入位置是末尾，包括列表为空的情况
+        add(element);
+    else{
+        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
+        //2.修改引用，完成插入操作。
+        final Node&lt;E&gt; pred = succ.prev;
+        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
+        succ.prev = newNode;
+        if (pred == null)//插入位置为0
+            first = newNode;
+        else
+            pred.next = newNode;
+        size++;
+    }
+}
+</code></pre>
+
+<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
+两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
+
+<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
+    final E element = x.item;
+    final Node&lt;E&gt; next = x.next;
+    final Node&lt;E&gt; prev = x.prev;
+    if (prev == null) {//删除的是第一个元素
+        first = next;
+    } else {
+        prev.next = next;
+        x.prev = null;
+    }
+    if (next == null) {//删除的是最后一个元素
+        last = prev;
+    } else {
+        next.prev = prev;
+        x.next = null;
+    }
+    x.item = null;//let GC work
+    size--;
+    return element;
+}
+</code></pre>
+
+<h3 id="toc_4">get()</h3>
+
+<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
+
+<pre><code class="language-java">public E get(int index) {
+    //检测index是否越界
+    checkElementIndex(index);
+    return node(index).item;
+}
+</code></pre>
+
+<h3 id="toc_5">set()</h3>
+
+<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
+
+<pre><code class="language-java">public E set(int index, E element) {
+    checkElementIndex(index);
+    Node&lt;E&gt; x = node(index);
+    E oldVal = x.item;
+    x.item = element;//替换新值
+    return oldVal;
+}
+</code></pre>
+
+<h2 id="toc_6">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/23</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14876660718478.html">
                 
                   <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
@@ -845,257 +1003,6 @@ http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14766902757975.html">
-                
-                  <h1>网易Java Web微专业Spring-数据访问单元作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>根据本单介绍的Spring JDBC，事务管理，MyBatis等内容，分别使用Spring JDBC及MyBatis提供一个转帐服务（保证事务），提供一个transferMoney接口：<br/>
-transferMoney(Long srcUserId, Long targetUserId, double count)；// srcUserId及targetUserId为转帐用户标识</p>
-</blockquote>
-
-<h2 id="toc_0">相关表结构</h2>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">列名</th>
-<th style="text-align: center">类型</th>
-<th style="text-align: center">备注</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">userId</td>
-<td style="text-align: center">Long</td>
-<td style="text-align: center">唯一用户标识</td>
-</tr>
-<tr>
-<td style="text-align: center">balance</td>
-<td style="text-align: center">double</td>
-<td style="text-align: center">账户余额</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="toc_1">程序架构</h2>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-17-14766906872633.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_2">说明</h3>
-
-<ul>
-<li>UserDao 为统一的User数据库访问接口</li>
-<li>UserService 为外部服务提供直接调用的接口</li>
-</ul>
-
-<h2 id="toc_3">实现说明</h2>
-
-<ol>
-<li><p>application-config配置，相关配置均有注释说明。其中事务的处理可以采用注解或AOP的XML配置方式，下列代码均有体现。</p>
-
-<pre><code class="language-java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-xmlns:context=&quot;http://www.springframework.org/schema/context&quot; xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
-xmlns:mybatis=&quot;http://mybatis.org/schema/mybatis-spring&quot;
-xsi:schemaLocation=&quot;
-http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/aop
-http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
-http://www.springframework.org/schema/tx
-http://www.springframework.org/schema/tx/spring-tx.xsd
-http://mybatis.org/schema/mybatis-spring
-http://mybatis.org/schema/mybatis-spring.xsd
-http://www.springframework.org/schema/context
-http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
-
-    &lt;!-- 数据库连接配置文件导入 --&gt;
-    &lt;context:property-placeholder location=&quot;db.properties&quot; /&gt;
-    &lt;!-- 扫描注解 --&gt;
-    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-    &lt;!-- 使用注解声明事务 --&gt;
-    &lt;tx:annotation-driven transaction-manager=&quot;txManager&quot; /&gt;
-    &lt;!-- MyBatis的自动扫描 --&gt;
-    &lt;mybatis:scan base-package=&quot;site.zhanjingbo&quot; /&gt;
-
-    &lt;!-- 数据源配置 --&gt;
-    &lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot;
-        destroy-method=&quot;close&quot;&gt;
-        &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
-        &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
-        &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
-        &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
-    &lt;/bean&gt;
-    &lt;!-- 事务管理器 --&gt;
-    &lt;bean id=&quot;txManager&quot;
-        class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-    &lt;/bean&gt;
-
-    &lt;!-- 使用AOP-XML声明事务 --&gt;
-    &lt;!-- &lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;txManager&quot;&gt; &lt;tx:attributes&gt; 
-        &lt;tx:method name=&quot;transfer*&quot; /&gt; &lt;/tx:attributes&gt; &lt;/tx:advice&gt; &lt;aop:config&gt; 
-        &lt;aop:pointcut id=&quot;daoOperation&quot; expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; 
-        /&gt; &lt;aop:advisor advice-ref=&quot;txAdvice&quot; pointcut-ref=&quot;daoOperation&quot; /&gt; &lt;/aop:config&gt; --&gt;
-
-    &lt;!-- 配置myBatis的sqlSessionFactory --&gt;
-    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;
-        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
-        &lt;!-- 自动扫描mappers.xml文件 --&gt;
-        &lt;property name=&quot;mapperLocations&quot;
-            value=&quot;classpath:site/zhanjingbo/dao/myBatiesImpl/*.xml&quot;&gt;&lt;/property&gt;
-        &lt;!-- myBatis配置文件 --&gt;
-        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;&gt;&lt;/property&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;
-</code></pre></li>
-<li><p>UserDao的接口声明</p>
-
-<pre><code class="language-java">public interface UserDao {
-    public void reset();
-    public List&lt;User&gt; getUserList();
-    public void updateMoney(Long userId, double count);
-}
-</code></pre></li>
-<li><p>UserDao的JDBC实现，其中JdbcTemplete由Spring进行装载。</p>
-
-<pre><code class="language-java">@Component(&quot;UserJDBCDao&quot;)
-public class UserDaoJDBCImpl implements UserDao {
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-    public void reset() {
-        this.jdbcTemplate.execute(&quot;update UserBalance set balance=1000&quot;);
-    }
-    public List&lt;User&gt; getUserList() {
-        return this.jdbcTemplate.query(&quot;select * from UserBalance&quot;, new RowMapper&lt;User&gt;() {
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                User user = new User();
-                user.setUserId(rs.getLong(&quot;userId&quot;));
-                user.setBalance(rs.getDouble(&quot;balance&quot;));
-                return user;
-            }
-        });
-    }
-    public void updateMoney(Long userId, double count) {
-        this.jdbcTemplate.update(&quot;update UserBalance set balance=balance+? where userId=?&quot;, count, userId);
-    }
-}
-</code></pre></li>
-<li><p>UserDao的MyBatis实现，采用Mapper.xml的方式进行声明实现</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.dao.UserDao&quot;&gt;
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
-        &lt;result property=&quot;balance&quot; column=&quot;balance&quot; /&gt;
-    &lt;/resultMap&gt;
-    &lt;update id=&quot;reset&quot;&gt;
-        update UserBalance set balance=500
-    &lt;/update&gt;
-
-    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from userBalance
-    &lt;/select&gt;
-    &lt;update id=&quot;updateMoney&quot;&gt;
-        update UserBalance set balance=balance+#{param2} where userId=#{param1}
-    &lt;/update&gt;
-&lt;/mapper&gt; 
-</code></pre></li>
-<li><p>UserService的实现，其中主要为transferMoney方法的实现。由于该方法的业务逻辑，该方法应该确保事务性。采用注解的方式声明事务，则在该方法前添加<code>@Transactional</code>注解。采用配置文件方式对事务进行声明参考第1小节中的配置文件。</p>
-
-<pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRED)
-public void transferMoney(Long srcUserId, Long targetUserId, double count) {
-    userDao.updateMoney(srcUserId, 0 - count);
-    userDao.updateMoney(targetUserId, count);
-}
-</code></pre>
-
-<p>在UserService的实现过程中，我们需要调用UserDao的具体实例，在本次作业过程中我们采用了两种方法来实现UserDao。在测试不同的实现方式时只需要修改注入的UserDao的具体实例就可完成。为了明显区分两种实例的实现，我们在reset的方法中做了区别。其中JDBC实现方式Reset之后balance的值为1000，MyBatis实现方式reset之后的balance值为500。</p></li>
-<li><p>Application调用代码</p>
-
-<pre><code class="language-java">    public static void main(String[] args) {
-        //加载Spring
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
-        //获取UserService实例
-        UserService userService = applicationContext.getBean(UserService.class);
-        userService.reset();
-        try {
-            userService.transferMoney(new Long(10000), new Long(10001), 100);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        List&lt;User&gt; userList = userService.getUserList();
-        for (User user : userList) {
-            System.out.println(user);
-        }
-
-        ((ConfigurableApplicationContext) applicationContext).close();
-    }
-</code></pre></li>
-</ol>
-
-<h2 id="toc_4">运行结果</h2>
-
-<h3 id="toc_5">JDBC运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766935577292.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766935207561.jpg" alt=""/></p></li>
-</ol>
-
-<h3 id="toc_6">MyBatis运行结果</h3>
-
-<ol>
-<li><p>正常执行<br/>
-<img src="media/14766902757975/14766936235948.jpg" alt=""/></p></li>
-<li><p>执行中异常，打印异常信息，数据回滚<br/>
-<img src="media/14766902757975/14766936425847.jpg" alt=""/></p></li>
-</ol>
-
-<h2 id="toc_7">程序地址</h2>
-
-<p><a href="http://git.oschina.net/cobber/SpringHomework4_1">SpringHomework4_1</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/10/17</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14766902757975.html" data-count-type="comments" href="14766902757975.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1184,6 +1091,12 @@ public void transferMoney(Long srcUserId, Long targetUserId, double count) {
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -1203,12 +1116,6 @@ public void transferMoney(Long srcUserId, Long targetUserId, double count) {
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  

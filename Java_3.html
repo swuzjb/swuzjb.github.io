@@ -107,6 +107,257 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14766902757975.html">
+                
+                  <h1>网易Java Web微专业Spring-数据访问单元作业</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>根据本单介绍的Spring JDBC，事务管理，MyBatis等内容，分别使用Spring JDBC及MyBatis提供一个转帐服务（保证事务），提供一个transferMoney接口：<br/>
+transferMoney(Long srcUserId, Long targetUserId, double count)；// srcUserId及targetUserId为转帐用户标识</p>
+</blockquote>
+
+<h2 id="toc_0">相关表结构</h2>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">列名</th>
+<th style="text-align: center">类型</th>
+<th style="text-align: center">备注</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">userId</td>
+<td style="text-align: center">Long</td>
+<td style="text-align: center">唯一用户标识</td>
+</tr>
+<tr>
+<td style="text-align: center">balance</td>
+<td style="text-align: center">double</td>
+<td style="text-align: center">账户余额</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_1">程序架构</h2>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-10-17-14766906872633.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h3 id="toc_2">说明</h3>
+
+<ul>
+<li>UserDao 为统一的User数据库访问接口</li>
+<li>UserService 为外部服务提供直接调用的接口</li>
+</ul>
+
+<h2 id="toc_3">实现说明</h2>
+
+<ol>
+<li><p>application-config配置，相关配置均有注释说明。其中事务的处理可以采用注解或AOP的XML配置方式，下列代码均有体现。</p>
+
+<pre><code class="language-java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+xmlns:context=&quot;http://www.springframework.org/schema/context&quot; xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
+xmlns:mybatis=&quot;http://mybatis.org/schema/mybatis-spring&quot;
+xsi:schemaLocation=&quot;
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx.xsd
+http://mybatis.org/schema/mybatis-spring
+http://mybatis.org/schema/mybatis-spring.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
+
+    &lt;!-- 数据库连接配置文件导入 --&gt;
+    &lt;context:property-placeholder location=&quot;db.properties&quot; /&gt;
+    &lt;!-- 扫描注解 --&gt;
+    &lt;context:component-scan base-package=&quot;site.zhanjingbo&quot; /&gt;
+    &lt;!-- 使用注解声明事务 --&gt;
+    &lt;tx:annotation-driven transaction-manager=&quot;txManager&quot; /&gt;
+    &lt;!-- MyBatis的自动扫描 --&gt;
+    &lt;mybatis:scan base-package=&quot;site.zhanjingbo&quot; /&gt;
+
+    &lt;!-- 数据源配置 --&gt;
+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot;
+        destroy-method=&quot;close&quot;&gt;
+        &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
+        &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
+        &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
+        &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
+    &lt;/bean&gt;
+    &lt;!-- 事务管理器 --&gt;
+    &lt;bean id=&quot;txManager&quot;
+        class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+    &lt;/bean&gt;
+
+    &lt;!-- 使用AOP-XML声明事务 --&gt;
+    &lt;!-- &lt;tx:advice id=&quot;txAdvice&quot; transaction-manager=&quot;txManager&quot;&gt; &lt;tx:attributes&gt; 
+        &lt;tx:method name=&quot;transfer*&quot; /&gt; &lt;/tx:attributes&gt; &lt;/tx:advice&gt; &lt;aop:config&gt; 
+        &lt;aop:pointcut id=&quot;daoOperation&quot; expression=&quot;execution(* site.zhanjingbo.service.*.*(..))&quot; 
+        /&gt; &lt;aop:advisor advice-ref=&quot;txAdvice&quot; pointcut-ref=&quot;daoOperation&quot; /&gt; &lt;/aop:config&gt; --&gt;
+
+    &lt;!-- 配置myBatis的sqlSessionFactory --&gt;
+    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;
+        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+        &lt;!-- 自动扫描mappers.xml文件 --&gt;
+        &lt;property name=&quot;mapperLocations&quot;
+            value=&quot;classpath:site/zhanjingbo/dao/myBatiesImpl/*.xml&quot;&gt;&lt;/property&gt;
+        &lt;!-- myBatis配置文件 --&gt;
+        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre></li>
+<li><p>UserDao的接口声明</p>
+
+<pre><code class="language-java">public interface UserDao {
+    public void reset();
+    public List&lt;User&gt; getUserList();
+    public void updateMoney(Long userId, double count);
+}
+</code></pre></li>
+<li><p>UserDao的JDBC实现，其中JdbcTemplete由Spring进行装载。</p>
+
+<pre><code class="language-java">@Component(&quot;UserJDBCDao&quot;)
+public class UserDaoJDBCImpl implements UserDao {
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+    public void reset() {
+        this.jdbcTemplate.execute(&quot;update UserBalance set balance=1000&quot;);
+    }
+    public List&lt;User&gt; getUserList() {
+        return this.jdbcTemplate.query(&quot;select * from UserBalance&quot;, new RowMapper&lt;User&gt;() {
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User();
+                user.setUserId(rs.getLong(&quot;userId&quot;));
+                user.setBalance(rs.getDouble(&quot;balance&quot;));
+                return user;
+            }
+        });
+    }
+    public void updateMoney(Long userId, double count) {
+        this.jdbcTemplate.update(&quot;update UserBalance set balance=balance+? where userId=?&quot;, count, userId);
+    }
+}
+</code></pre></li>
+<li><p>UserDao的MyBatis实现，采用Mapper.xml的方式进行声明实现</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.dao.UserDao&quot;&gt;
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;result property=&quot;userId&quot; column=&quot;userId&quot; /&gt;
+        &lt;result property=&quot;balance&quot; column=&quot;balance&quot; /&gt;
+    &lt;/resultMap&gt;
+    &lt;update id=&quot;reset&quot;&gt;
+        update UserBalance set balance=500
+    &lt;/update&gt;
+
+    &lt;select id=&quot;getUserList&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from userBalance
+    &lt;/select&gt;
+    &lt;update id=&quot;updateMoney&quot;&gt;
+        update UserBalance set balance=balance+#{param2} where userId=#{param1}
+    &lt;/update&gt;
+&lt;/mapper&gt; 
+</code></pre></li>
+<li><p>UserService的实现，其中主要为transferMoney方法的实现。由于该方法的业务逻辑，该方法应该确保事务性。采用注解的方式声明事务，则在该方法前添加<code>@Transactional</code>注解。采用配置文件方式对事务进行声明参考第1小节中的配置文件。</p>
+
+<pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRED)
+public void transferMoney(Long srcUserId, Long targetUserId, double count) {
+    userDao.updateMoney(srcUserId, 0 - count);
+    userDao.updateMoney(targetUserId, count);
+}
+</code></pre>
+
+<p>在UserService的实现过程中，我们需要调用UserDao的具体实例，在本次作业过程中我们采用了两种方法来实现UserDao。在测试不同的实现方式时只需要修改注入的UserDao的具体实例就可完成。为了明显区分两种实例的实现，我们在reset的方法中做了区别。其中JDBC实现方式Reset之后balance的值为1000，MyBatis实现方式reset之后的balance值为500。</p></li>
+<li><p>Application调用代码</p>
+
+<pre><code class="language-java">    public static void main(String[] args) {
+        //加载Spring
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(&quot;application-context.xml&quot;);
+        //获取UserService实例
+        UserService userService = applicationContext.getBean(UserService.class);
+        userService.reset();
+        try {
+            userService.transferMoney(new Long(10000), new Long(10001), 100);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        List&lt;User&gt; userList = userService.getUserList();
+        for (User user : userList) {
+            System.out.println(user);
+        }
+
+        ((ConfigurableApplicationContext) applicationContext).close();
+    }
+</code></pre></li>
+</ol>
+
+<h2 id="toc_4">运行结果</h2>
+
+<h3 id="toc_5">JDBC运行结果</h3>
+
+<ol>
+<li><p>正常执行<br/>
+<img src="media/14766902757975/14766935577292.jpg" alt=""/></p></li>
+<li><p>执行中异常，打印异常信息，数据回滚<br/>
+<img src="media/14766902757975/14766935207561.jpg" alt=""/></p></li>
+</ol>
+
+<h3 id="toc_6">MyBatis运行结果</h3>
+
+<ol>
+<li><p>正常执行<br/>
+<img src="media/14766902757975/14766936235948.jpg" alt=""/></p></li>
+<li><p>执行中异常，打印异常信息，数据回滚<br/>
+<img src="media/14766902757975/14766936425847.jpg" alt=""/></p></li>
+</ol>
+
+<h2 id="toc_7">程序地址</h2>
+
+<p><a href="http://git.oschina.net/cobber/SpringHomework4_1">SpringHomework4_1</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/10/17</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14766902757975.html" data-count-type="comments" href="14766902757975.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14759932535473.html">
                 
                   <h1>网易Java Web微专业Spring-AOP容器作业</h1>
@@ -723,91 +974,6 @@ public class HelloDBCP {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14720186733605.html">
-                
-                  <h1>简述HTTP请求过程</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>HTTP请求是web程序服务的基础，要想写好web程序，必然要对http请求的过程进行掌握。</p>
-</blockquote>
-
-<h2 id="toc_0">HTTP请求步骤</h2>
-
-<ol>
-<li>如果是以域名形式进行web访问，则浏览器会先通过DNS服务将域名转化为对应的IP地址，为下一步访问做准备。</li>
-<li>通过IP地址与服务器建立TCP连接</li>
-<li>客户端向服务器端发送Request请求</li>
-<li>服务器端向客户端发送Response响应</li>
-<li>服务器端关闭TCP连接。一般情况下，一旦Web服务器向浏览器发送了请求数据，它就要关闭TCP连接，然后如果浏览器或者服务器在其头信息加入了这行代码：<code>Connection:keep-alive</code>。TCP连接在发送后将仍然保持打开状态，于是，浏览器可以继续通过相同的连接发送请求。保持连接节省了为每个请求建立新连接所需的时间，还节约了网络带宽。 </li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-08-24-14720197735370.jpg" alt=""/></p>
-
-<h2 id="toc_1">HTTP请求头,响应头字段</h2>
-
-<h3 id="toc_2">请求头</h3>
-
-<ul>
-<li>Accept: text/html, image/* ：客户机支持的数据类型</li>
-<li>Accept-Charset: UTF-8 ：客户机采用的编码</li>
-<li>Accept-Encoding: gzip,compress:客户机支持的数据压缩格式</li>
-<li>Accept-Language: en-us,zh-cn:客户机的语言环境</li>
-<li>Host: localhost:8080 :访问的主机名</li>
-<li>If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT : 资源的缓存时间,用以判断服务器上的资源是否发生变化</li>
-<li>Referer: <a href="http://www.zhanjingbo.site">http://www.zhanjingbo.site</a> : 从哪个页面跳转来访问资源的,用以实现防盗链</li>
-<li>User-Agent: Mozilla/4.0 (compatible;MSIE 5.5;Windows NT 5.0):客户机的软件环境</li>
-<li>Connection: close/Keep-Alive:请求结束后,是关闭连接还是保持连接</li>
-<li>Date: Tue, 11 Jul 2000 18:23:51 GMT当前请求时间</li>
-<li>Range:指示服务器只传输一部分web资源.可以用来实现断点续传功能
-
-<ul>
-<li>Range字段可以通过3种格式设置要传输的字节范围:</li>
-<li>Range: bytes=1000-2000:传输范围从1000到2000字节</li>
-<li>Range: bytes=1000-:传输第1000个字节以后的所有内容</li>
-<li>Range: bytes=10000:传输最后1000个字节</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_3">响应头</h3>
-
-<ul>
-<li>Location：这个头配合302状态码使用，重定向地址</li>
-<li>Server:Apache-Coyote/1.1:服务器类的类型</li>
-<li>Content-Encoding：服务器通过这个头，数据压缩的格式</li>
-<li>Content-Type：服务器通过这个头告诉浏览器送回数据的类型</li>
-<li>Refresh：服务器通过这个头，告诉浏览器隔多长时间刷新一次</li>
-<li>Connection:keep-alive\close:访问完后的状态</li>
-</ul>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/8/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14720186733605.html" data-count-type="comments" href="14720186733605.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -896,6 +1062,12 @@ public class HelloDBCP {
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -915,12 +1087,6 @@ public class HelloDBCP {
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  

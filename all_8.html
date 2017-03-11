@@ -107,6 +107,149 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14634889513152.html">
+                
+                  <h1>GeekBand.Swift-协议</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>协议，在很多语言中也叫作接口，常用于定义一套规范，使用者可以根据自己的不同需求，进行不同的实现。<br/>
+协议：类型的约束合同，只描述外部的接口，不提供具体的实现</p>
+</blockquote>
+
+<h2 id="toc_0">协议的成员</h2>
+
+<p>协议可以包含如下成员：属性、方法、初始化器、下标、操作符</p>
+
+<h2 id="toc_1">协议的使用</h2>
+
+<p>一个类型可以实现多个协议。协议可以应用在<em>类</em>、<em>结构</em>、<em>枚举</em>上。</p>
+
+<pre><code class="language-swift">protocol  Drawable{
+    var description: String{
+        get
+    }
+    func draw();
+    init(); 
+    subscript(index: Int) -&gt; Int {
+        get
+    }
+    func ==(leftValue: Self, rightValue: Self) -&gt; Bool
+}
+class Image :Drawable{
+    var description:String{
+        get{
+            return self.description;
+        }
+    }
+    func draw(){
+        print(&quot;draw&quot;);
+    }
+    ……
+}
+</code></pre>
+
+<p>协议本质上是一种类型，可以最为声明类型，但是无法创建实例。<br/>
+协议变量的内存模型遵从实际类型的内存模型：</p>
+
+<ul>
+<li>引用类型传参、拷贝采用传引用的方式</li>
+<li>值类型传参、拷贝采用值拷贝方式</li>
+</ul>
+
+<h3 id="toc_2">检查协议类型实现</h3>
+
+<ul>
+<li>使用is检查类型是否实现了协议</li>
+<li>使用as?和as!将类型转换为协议</li>
+</ul>
+
+<h3 id="toc_3">协议中的属性</h3>
+
+<ol>
+<li>协议可以定义只读属性或读写属性</li>
+<li>协议可以定义实例属性，也可以定义类型属性</li>
+<li>协议只能定义变量属性，不能定义常量属性</li>
+<li>实现属性时，可以实现为存储属性或计算属性</li>
+</ol>
+
+<h3 id="toc_4">协议中的方法</h3>
+
+<ol>
+<li>协议可以定义实例方法，也可以定义类型方法</li>
+<li>协议中的方法不能定义参数的默认值</li>
+<li>针对值类型的mutaing协议方法：
+
+<ul>
+<li>值类型实现的实例方法如果要修改实例本身，需要在协议方法的定义中标明mutaing关键字。同时在方法实现时也添加该关键字。</li>
+<li>添加了mutaing的协议方法，对类的实现方法无影响。</li>
+</ul></li>
+</ol>
+
+<h3 id="toc_5">协议中的初始化器</h3>
+
+<ol>
+<li>协议可以定义初始化器，但不可以定义析构器</li>
+<li>当class中实现协议定义的初始化器时，需要添加required关键字。
+
+<ul>
+<li>标明子类也需要提供该初始化器</li>
+<li>如果定义为final类，则不需要添加required关键字</li>
+</ul></li>
+<li>协议可以定义可失败的初始化器init?，具体实现时可以失败或成功。</li>
+</ol>
+
+<h3 id="toc_6">更多协议形式</h3>
+
+<ul>
+<li>协议继承
+
+<ul>
+<li>一个协议可以继承一个或多个协议</li>
+<li>实现子协议的类型，也必须实现父协议</li>
+</ul></li>
+<li>协议组合
+
+<ul>
+<li>可以使用protocol<A,B,....>来组合多个协议</li>
+<li>实现组合协议的类型，必须实现组合中的每一个协议</li>
+<li>组合协议是一个临时类型</li>
+</ul></li>
+<li>可选协议
+
+<ul>
+<li>协议的某些成员可以定义为optional,不必实现</li>
+<li>可选协议只能用于class</li>
+<li>可选协议必须标明@objc特性</li>
+</ul></li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/17</span>
+                    
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14634889513152.html" data-count-type="comments" href="14634889513152.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14633841095158.html">
                 
                   <h1>GeekBand.Swift-面向对象</h1>
@@ -949,134 +1092,6 @@ print(&quot;max=\(range.max), min=\(range.min)&quot;)
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14626379454584.html">
-                
-                  <h1>GeekBand.Swift-第一周作业</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>请为以下四种类型设计方式画出类型的内存模型。分析每种设计方案的优缺点，选出你认为最佳的实现方式，并解释为什么?<br/>
-心中有沟壑<br/>
-原谅我。。英语拼错了。。。</p>
-</blockquote>
-
-<h2 id="toc_0">设计方式一</h2>
-
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
-}
-class  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626385544542.jpg" alt="设计模式一内存模型 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_1">设计方式二</h2>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-}
- 
-class Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626393972640.jpg" alt="设计方式二 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_2">设计方式三</h2>
-
-<pre><code class="language-swift">class Point{
-    var x:Int;
-    var y:Int;
-}
- 
-struct  Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626397872766.jpg" alt="设计方式三 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_3">设计方式四</h2>
-
-<pre><code class="language-swift">struct Point{
-    var x:Int;
-    var y:Int;
-} 
-struct Rectangle{
-    var leftUp:Point;
-    var width:Int;
-    var height:Int;
-}
-</code></pre>
-
-<p>内存模型：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-08-14626400459638.jpg" alt="设计方式四 " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_4">Swift中struct和class的区别</h2>
-
-<p>WWDC2014 Introduction to Swift有比较清楚的介绍，总结区别主要有两点：</p>
-
-<ol>
-<li>struct没有继承的功能，而class是可以继承的，这是面向对象语言的核心能力，class当然会有这个能力</li>
-<li>体现在内存使用上，struct是通过值传递，数据保存在栈上。而class是通过引用传递的，数据保存在堆中。</li>
-</ol>
-
-<h3 id="toc_5">使用情景</h3>
-
-<p>当满足以下条件的时候，建议使用struct，否则建议使用class</p>
-
-<ol>
-<li>封装少量、简单的数据的时候。比如题目中的Point。</li>
-<li>数值在传递的过程中应使用值拷贝的情况。比如Frame，Point的实现。</li>
-<li>不需要继承。这个是面向对象的基本特性。</li>
-</ol>
-
-<h2 id="toc_6">结论</h2>
-
-<p>综上所示，个人认为四种设计方式按照设计良好来排序应为（在具体实际情况下可能有所改变）：2&gt;1&gt;4&gt;3 </p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14626379454584.html" data-count-type="comments" href="14626379454584.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1165,6 +1180,12 @@ struct Rectangle{
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -1184,12 +1205,6 @@ struct Rectangle{
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  

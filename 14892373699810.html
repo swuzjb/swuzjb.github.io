@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-数据持久化 - Zhan's Blog
+  设计模式-简单工厂模式 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-数据持久化</h1>
+          <h1>设计模式-简单工厂模式</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/5/4</span>
+          <span class="date">2017/3/11</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14892373699810.html" data-count-type="comments" href="14892373699810.html#ds-thread"></a>
             
           </span>
 
@@ -129,178 +129,117 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
-在iOS中，我们可以采用如下技术进行数据的持久化：</p>
-
-<blockquote>
-<ul>
-<li>文件存储</li>
-<li>SQLite嵌入式数据库</li>
-<li>Core Data</li>
-</ul>
+      <blockquote>
+<p>简单工厂模式(Simple Factory Pattern)：定义一个工厂类，它可以根据参数的不同返回不同类的实例，被创建的实例通常都具有共同的父类。因为在简单工厂模式中用于创建实例的方法是静态(static)方法，因此简单工厂模式又被称为静态工厂方法(Static Factory Method)模式，它属于类创建型模式。</p>
 </blockquote>
 
-<h2 id="toc_0">文件存储</h2>
+<p>简单工厂模式的要点在于：当你需要什么，只需要传入一个正确的参数，就可以获取你所需要的对象，而无须知道其创建细节。简单工厂模式结构比较简单，其核心是工厂类的设计，其结构如图所示：<br/>
+<img src="media/14892373699810/14892374346473.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+<h2 id="toc_0">简单工厂模式中的角色</h2>
 
-<h3 id="toc_1">沙盒</h3>
-
-<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
-
-<ul>
-<li>根目录：<code>NSHomeDictionary()</code></li>
-<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
-<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
-<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
-<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
-</ul>
-
-<h3 id="toc_2">APP Bundle</h3>
-
-<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
-cocoa提供了类NSBundle。<br/>
-<code>[NSBundle mainBundle]</code></p>
-
-<h3 id="toc_3">NSFileManager</h3>
-
-<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
-常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
-
-<h2 id="toc_4">数据库SQLite</h2>
-
-<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
-
-<h3 id="toc_5">什么是SQLite</h3>
-
-<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
-
-<h3 id="toc_6">使用SQLite</h3>
-
-<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
+<p>在简单工厂模式结构图中包含如下几个角色：</p>
 
 <ol>
-<li>链接libSQLite3.dylib</li>
-<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
+<li>Factory（工厂角色）：工厂角色即工厂类，它是简单工厂模式的核心，负责实现创建所有产品实例的内部逻辑；工厂类可以被外界直接调用，创建所需的产品对象；在工厂类中提供了静态的工厂方法factoryMethod()，它的返回类型为抽象产品类型Product。</li>
+<li>Product（抽象产品角色）：它是工厂类所创建的所有对象的父类，封装了各种产品对象的公有方法，它的引入将提高系统的灵活性，使得在工厂类中只需定义一个通用的工厂方法，因为所有创建的具体产品对象都是其子类对象。</li>
+<li>ConcreteProduct（具体产品角色）：它是简单工厂模式的创建目标，所有被创建的对象都充当这个角色的某个具体类的实例。每一个具体产品角色都继承了抽象产品角色，需要实现在抽象产品中声明的抽象方法</li>
 </ol>
 
-<p>纯C语言API</p>
+<h2 id="toc_1">实现</h2>
 
-<pre><code>//打开 SQLite
-sqlite3* db = NULL
-int result = sqlite3_open([path UTF8String],&amp;db);
+<p>在简单工厂模式中，客户端通过工厂类来创建一个产品类的实例，而无须直接使用new关键字来创建对象，它是工厂模式家族中最简单的一员。<br/>
+在使用简单工厂模式时，首先需要对产品类进行重构，不能设计一个包罗万象的产品类，而需根据实际情况设计一个产品层次结构，将所有产品类公共的代码移至抽象产品类，并在抽象产品类中声明一些抽象方法，以供不同的具体产品类来实现，典型的抽象产品类代码如下所示：</p>
 
-//执行SQL语句
-int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
+<pre><code class="language-java">public abstract class Product {
+    //公共方法的实现
+    public void methodSame() {
+    }
 
-//预定义SQL语句,可以有效防止SQL注入
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
-    sqlite3_bind_int(stmt,2,27);
+    // 声明抽象业务方法
+    public abstract void methodDiff();
 }
-sqlite3_finalize(stmt);
+</code></pre>
 
+<p>在具体产品类中实现了抽象产品类中声明的抽象业务方法，不同的具体产品类可以提供不同的实现，典型的具体产品类代码如下所示：</p>
 
-//结果集遍历
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    while(sqlite3_step(stmt)==SQLITE_ROW){
-        int _id = sqlite3_column_int(stmt,0);
-        char* _name = sqlite3_column_text(stmt,1);
-        NSString* name = [NSString stringWithUTF8String:_name];
-        ...
+<pre><code class="language-java">public class ConcreteProductA extends Product {
+    @Override
+    public void methodDiff() {
+        System.out.println(&quot;具体产品A的特性实现&quot;);
     }
 }
-sqlite3_finalize(stmt);
-
-//关闭SQLite
-sqlite3_close(db);
 </code></pre>
 
-<h3 id="toc_7">FMDB</h3>
+<p>简单工厂模式的核心是工厂类，在没有工厂类之前，客户端一般会使用new关键字来直接创建产品对象，而在引入工厂类之后，客户端可以通过工厂类来创建产品，在简单工厂模式中，工厂类提供了一个静态工厂方法供客户端使用，根据所传入的参数不同可以创建不同的产品对象，典型的工厂类代码如下所示：</p>
 
-<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
-使用方法如下：</p>
-
-<pre><code>//打开
-FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
-[db open];
-
-//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
-[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
-//取插入的id
-contacter.contacterId = (int)[db lastInsertRowId];
-
-//查询
-FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
-while ([result next]) {
-    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
-    contacter.name = [result stringForColumn:@&quot;name&quot;];
-    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
-    contacter.email = [result stringForColumn:@&quot;email&quot;];
-    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
- }
-
-//关闭
-[db close];
+<pre><code class="language-java">public class SimpleFactory {
+    public static Product getProduct(String arg) {
+        Product product = null;
+        if (arg.equalsIgnoreCase(&quot;A&quot;)) {
+            product = new ConcreteProductA();
+            // 初始化设置product
+        } else if (arg.equalsIgnoreCase(&quot;B&quot;)) {
+            product = new ConcreteProductB();
+            // 初始化设置product
+        }
+        return product;
+    }
+}
 </code></pre>
 
-<h2 id="toc_8">CoreData简介</h2>
+<p>客户端调用，如果追求进一步解耦，可以引入配置文件，每次根据配置文件的值，对产品进行实例化：</p>
 
-<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+<pre><code class="language-java">    public static void main(String[] args) {
+        Product product;
+        product = SimpleFactory.getProduct(&quot;A&quot;); // 通过工厂类创建产品对象
+        product.methodSame();
+        product.methodDiff();
+    }
+</code></pre>
 
-<h3 id="toc_9">什么是CoreData</h3>
+<h2 id="toc_2">总结</h2>
 
-<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
+<p>简单工厂模式提供了专门的工厂类用于创建对象，将对象的创建和对象的使用分离开，它作为一种最简单的工厂模式在软件开发中得到了较为广泛的应用。</p>
 
-<h4 id="toc_10">开始使用CoreData</h4>
+<h3 id="toc_3">主要优点</h3>
+
+<p>简单工厂模式的主要优点如下：</p>
 
 <ol>
-<li>在新建项目时勾选<code>Use CoreData</code></li>
-<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
+<li>工厂类包含必要的判断逻辑，可以决定在什么时候创建哪一个产品类的实例，客户端可以免除直接创建产品对象的职责，而仅仅“消费”产品，简单工厂模式实现了对象创建和使用的分离。</li>
+<li>客户端无须知道所创建的具体产品类的类名，只需要知道具体产品类所对应的参数即可，对于一些复杂的类名，通过简单工厂模式可以在一定程度减少使用者的记忆量。</li>
+<li>通过引入配置文件，可以在不修改任何客户端代码的情况下更换和增加新的具体产品类，在一定程度上提高了系统的灵活性。</li>
 </ol>
 
-<h4 id="toc_11">简单使用</h4>
+<h3 id="toc_4">主要缺点</h3>
 
-<pre><code>//创建一个Entity对象
-NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
+<p>简单工厂模式的主要缺点如下：</p>
 
-//填充属性
-[entity setValue:value forKey:@&quot;key&quot;];
+<ol>
+<li>由于工厂类集中了所有产品的创建逻辑，职责过重，一旦不能正常工作，整个系统都要受到影响。</li>
+<li>使用简单工厂模式势必会增加系统中类的个数（引入了新的工厂类），增加了系统的复杂度和理解难度。</li>
+<li>系统扩展困难，一旦添加新产品就不得不修改工厂逻辑，在产品类型较多时，有可能造成工厂逻辑过于复杂，不利于系统的扩展和维护。</li>
+<li>简单工厂模式由于使用了静态工厂方法，造成工厂角色无法形成基于继承的等级结构。</li>
+</ol>
 
-//保存
-NSError* error = nil;
-[context save:&amp;error];
+<h3 id="toc_5">适用场景</h3>
 
-//查询
-NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
+<p>在以下情况下可以考虑使用简单工厂模式：</p>
 
-//排序过滤
-request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
-request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+<ol>
+<li>工厂类负责创建的对象比较少，由于创建的对象较少，不会造成工厂方法中的业务逻辑太过复杂。</li>
+<li>客户端只知道传入工厂类的参数，对于如何创建对象并不关心。</li>
+</ol>
 
+<h2 id="toc_6">练习</h2>
 
-//执行
-NSError* error = nil;
-NSArray* objs =[context executeFetchRequest:request error:&amp;error];
+<p>使用简单工厂模式设计一个可以创建不同几何形状（如圆形、方形和三角形等）的绘图工具，每个几何图形都具有绘制draw()和擦除erase()两个方法，要求在绘制不支持的几何图形时，提示一个UnSupportedShapeException。</p>
 
-//遍历，正常遍历数组即可。
-for(NSManagedObject *obj in objs){
-    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
-}
+<h2 id="toc_7">实现</h2>
 
-//删除
-[context deleteObject:managedObject];
-
-</code></pre>
-
-<h4 id="toc_12">参考资料</h4>
-
-<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
-<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
-<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
 
       </div>
 
@@ -308,16 +247,13 @@ for(NSManagedObject *obj in objs){
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14626379454584.html" 
-          title="Previous Post: GeekBand.Swift-第一周作业">&laquo; GeekBand.Swift-第一周作业</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14614801701186.html" 
-          title="Next Post: GeekBand.iOS-多线程编程">GeekBand.iOS-多线程编程 &raquo;</a>
+          <a  href="14892189846734.html" 
+          title="Next Post: 设计模式-装饰模式">设计模式-装饰模式 &raquo;</a>
       
       </p>
         </div>
@@ -329,7 +265,7 @@ for(NSManagedObject *obj in objs){
           
 
           
-              <div class="ds-thread" data-thread-key="14623728039466.html" data-url="http://swuzjb.github.io/14623728039466.html" data-title="GeekBand.iOS-数据持久化"></div>
+              <div class="ds-thread" data-thread-key="14892373699810.html" data-url="http://swuzjb.github.io/14892373699810.html" data-title="设计模式-简单工厂模式"></div>
           
         </div>
       </div>

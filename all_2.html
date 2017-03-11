@@ -107,6 +107,83 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14889364537323.html">
+                
+                  <h1>剑指Offer-二维数组中的查找</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
+</blockquote>
+
+<h2 id="toc_0">解题思路</h2>
+
+<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
+
+<ul>
+<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
+<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
+<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
+<li>若遍历到<code>i==n，j==0</code>,依旧没有找到匹配数据，则返回false；</li>
+</ul>
+
+<h2 id="toc_1">实现代码</h2>
+
+<pre><code class="language-java">public class Solution {
+    public boolean Find(int target, int [][] array) {
+        if(array.length == 0){
+            return false;
+        }
+        int i = 0;
+        int j = array[0].length - 1;
+        
+        while(i &lt; array.length &amp;&amp; j &gt;=0){
+            if(array[i][j] == target){
+                return true;
+            }
+            if(target &gt; array[i][j]){
+                i++;
+                continue;
+            }
+            if(target &lt; array[i][j]){
+                j--;
+                continue;
+            }
+        }
+        return false;
+
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889364537323.html" data-count-type="comments" href="14889364537323.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14880758779206.html">
                 
                   <h1>Java容器框架分析(九)——WeakHashMap</h1>
@@ -708,395 +785,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879027517066.html">
-                
-                  <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
-
-<h2 id="toc_0">TreeMap简介</h2>
-
-<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
-
-<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
-
-<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
-
-<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
-</code></pre>
-
-<h2 id="toc_1">红黑树</h2>
-
-<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
-
-<ol>
-<li>每个节点要么是红色要么是黑色。</li>
-<li>根节点必须是黑色。</li>
-<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
-<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
-在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
-</ol>
-
-<h3 id="toc_2">预备知识</h3>
-
-<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
-
-<h4 id="toc_3">左旋</h4>
-
-<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
-
-<p>TreeMap中的左旋操作代码：</p>
-
-<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; r = p.right;
-        p.right = r.left;
-        if (r.left != null)
-            r.left.parent = p;
-        r.parent = p.parent;
-        if (p.parent == null)
-            root = r;
-        else if (p.parent.left == p)
-            p.parent.left = r;
-        else
-            p.parent.right = r;
-        r.left = p;
-        p.parent = r;
-    }
-}
-</code></pre>
-
-<h3 id="toc_4">右旋</h3>
-
-<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
-
-<p>TreeMap中的右旋代码：</p>
-
-<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; l = p.left;
-        p.left = l.right;
-        if (l.right != null) l.right.parent = p;
-        l.parent = p.parent;
-        if (p.parent == null)
-            root = l;
-        else if (p.parent.right == p)
-            p.parent.right = l;
-        else p.parent.left = l;
-        l.right = p;
-        p.parent = l;
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">寻找节点后继</h3>
-
-<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
-
-<ol>
-<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
-<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
-</ol>
-
-<p>TreeMap中寻找节点后继的代码如下：</p>
-
-<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
-    if (t == null)
-        return null;
-    else if (t.right != null) {
-            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
-        Entry&lt;K,V&gt; p = t.right;
-        while (p.left != null)
-            p = p.left;
-        return p;
-    } else {
-            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
-        Entry&lt;K,V&gt; p = t.parent;
-        Entry&lt;K,V&gt; ch = t;
-        while (p != null &amp;&amp; ch == p.right) {
-            ch = p;
-            p = p.parent;
-        }
-        return p;
-    }
-}
-</code></pre>
-
-<h2 id="toc_6">常用方法剖析</h2>
-
-<h3 id="toc_7">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    if (key == null)//不允许key值为null
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    Entry&lt;K,V&gt; p = root;
-    while (p != null) {
-        int cmp = k.compareTo(p.key);
-        if (cmp &lt; 0)//向左找
-            p = p.left;
-        else if (cmp &gt; 0)//向右找
-            p = p.right;
-        else
-            return p;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_8">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
-
-<pre><code class="language-java">public V put(K key, V value) {
-    ......
-    int cmp;
-    Entry&lt;K,V&gt; parent;
-    if (key == null)
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    do {
-        parent = t;
-        cmp = k.compareTo(t.key);
-        if (cmp &lt; 0) t = t.left;//向左找
-        else if (cmp &gt; 0) t = t.right;//向右找
-        else return t.setValue(value);
-    } while (t != null);
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
-    if (cmp &lt; 0) parent.left = e;
-    else parent.right = e;
-    fixAfterInsertion(e);//调整
-    size++;
-    return null;
-}
-</code></pre>
-
-<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
-
-<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
-private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
-    x.color = RED;
-    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
-        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
-            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况1
-                setColor(y, BLACK);                        // 情况1
-                setColor(parentOf(parentOf(x)), RED);      // 情况1
-                x = parentOf(parentOf(x));                 // 情况1
-            } else {
-                if (x == rightOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况2
-                    rotateLeft(x);                         // 情况2
-                }
-                setColor(parentOf(x), BLACK);              // 情况3
-                setColor(parentOf(parentOf(x)), RED);      // 情况3
-                rotateRight(parentOf(parentOf(x)));        // 情况3
-            }
-        } else {
-            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况4
-                setColor(y, BLACK);                        // 情况4
-                setColor(parentOf(parentOf(x)), RED);      // 情况4
-                x = parentOf(parentOf(x));                 // 情况4
-            } else {
-                if (x == leftOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况5
-                    rotateRight(x);                        // 情况5
-                }
-                setColor(parentOf(x), BLACK);              // 情况6
-                setColor(parentOf(parentOf(x)), RED);      // 情况6
-                rotateLeft(parentOf(parentOf(x)));         // 情况6
-            }
-        }
-    }
-    root.color = BLACK;
-}
-</code></pre>
-
-<h3 id="toc_9">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
-<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
-
-<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
-
-<ol>
-<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
-<li>删除点p的左右子树都非空。</li>
-</ol>
-
-<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
-基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
-
-<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
-    modCount++;
-    size--;
-    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
-        Entry&lt;K,V&gt; s = successor(p);// 后继
-        p.key = s.key;
-        p.value = s.value;
-        p = s;
-    }
-    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
-    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
-        replacement.parent = p.parent;
-        if (p.parent == null)
-            root = replacement;
-        else if (p == p.parent.left)
-            p.parent.left  = replacement;
-        else
-            p.parent.right = replacement;
-        p.left = p.right = p.parent = null;
-        if (p.color == BLACK)
-            fixAfterDeletion(replacement);// 调整
-    } else if (p.parent == null) {
-        root = null;
-    } else { // 1. 删除点p的左右子树都为空
-        if (p.color == BLACK)
-            fixAfterDeletion(p);// 调整
-        if (p.parent != null) {
-            if (p == p.parent.left)
-                p.parent.left = null;
-            else if (p == p.parent.right)
-                p.parent.right = null;
-            p.parent = null;
-        }
-    }
-}
-</code></pre>
-
-<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
-跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
-
-<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
-
-<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
-
-<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
-    while (x != root &amp;&amp; colorOf(x) == BLACK) {
-        if (x == leftOf(parentOf(x))) {
-            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况1
-                setColor(parentOf(x), RED);             // 情况1
-                rotateLeft(parentOf(x));                // 情况1
-                sib = rightOf(parentOf(x));             // 情况1
-            }
-            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
-                colorOf(rightOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况2
-                x = parentOf(x);                        // 情况2
-            } else {
-                if (colorOf(rightOf(sib)) == BLACK) {
-                    setColor(leftOf(sib), BLACK);       // 情况3
-                    setColor(sib, RED);                 // 情况3
-                    rotateRight(sib);                   // 情况3
-                    sib = rightOf(parentOf(x));         // 情况3
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况4
-                setColor(parentOf(x), BLACK);           // 情况4
-                setColor(rightOf(sib), BLACK);          // 情况4
-                rotateLeft(parentOf(x));                // 情况4
-                x = root;                               // 情况4
-            }
-        } else { // 跟前四种情况对称
-            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况5
-                setColor(parentOf(x), RED);             // 情况5
-                rotateRight(parentOf(x));               // 情况5
-                sib = leftOf(parentOf(x));              // 情况5
-            }
-            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
-                colorOf(leftOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况6
-                x = parentOf(x);                        // 情况6
-            } else {
-                if (colorOf(leftOf(sib)) == BLACK) {
-                    setColor(rightOf(sib), BLACK);      // 情况7
-                    setColor(sib, RED);                 // 情况7
-                    rotateLeft(sib);                    // 情况7
-                    sib = leftOf(parentOf(x));          // 情况7
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况8
-                setColor(parentOf(x), BLACK);           // 情况8
-                setColor(leftOf(sib), BLACK);           // 情况8
-                rotateRight(parentOf(x));               // 情况8
-                x = root;                               // 情况8
-            }
-        }
-    }
-    setColor(x, BLACK);
-}
-</code></pre>
-
-<h2 id="toc_10">TreeSet</h2>
-
-<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
-
-<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    private transient NavigableMap&lt;E,Object&gt; m;
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public TreeSet() {
-        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
-    }
-    ......
-    public boolean add(E e) {
-        return m.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_11">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879027517066.html" data-count-type="comments" href="14879027517066.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1185,6 +873,12 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -1204,12 +898,6 @@ private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  

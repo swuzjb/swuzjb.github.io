@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-数据持久化 - Zhan's Blog
+  Zhan's Blog
   
   </title>
   
@@ -98,246 +98,158 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>GeekBand.iOS-数据持久化</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2016/5/4</span>
-
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-           
-         
-          <span class="comments">
-            
-
-            
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14623728039466.html" data-count-type="comments" href="14623728039466.html#ds-thread"></a>
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <p>在我们日常的开发过程中，从网络下载的数据或者由用户产生的数据，一般都需要保存下来。并且可以供给用户进行进一步的修改。这个过程被称之为数据持久化。<br/>
-在iOS中，我们可以采用如下技术进行数据的持久化：</p>
-
-<blockquote>
-<ul>
-<li>文件存储</li>
-<li>SQLite嵌入式数据库</li>
-<li>Core Data</li>
-</ul>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14577530083114.html">
+                
+                  <h1>GeekBand-OC中的类别和协议</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
 </blockquote>
 
-<h2 id="toc_0">文件存储</h2>
+<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
 
-<p>使用文件存储数据是最简单的方式，把数据以二进制的形式或字符串的形式写入文件。</p>
+<pre><code> @interface 已有类 （类别名）
+    //.......方法实现
+ @end
+</code></pre>
 
-<h3 id="toc_1">沙盒</h3>
+<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
 
-<p>在iOS中，为了保证用户的数据安全。苹果对文件数据的访问采用了很大的限制。主要概述为Sandbox(沙盒)。即一个APP只能访问自己盒内的文件，对外部文件没有访问权限。</p>
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+@interface NSNumber (code)
+ -(NSNumber *) add:(double) num;
+ -(NSNumber *) mult:(double) num
+@end
+</code></pre>
 
-<ul>
-<li>根目录：<code>NSHomeDictionary()</code></li>
-<li><code>/Docouments</code>:程序的文件数据保存在该目录下，iTunes备份时会包含该目录</li>
-<li><code>/Library</code>:储存程序的默认设置或其它状态信息</li>
-<li><code>/Library/Caches</code>:缓存文件。iTunes不备份，程序退出后不删除</li>
-<li><code>/tmp</code>:创建临时文件的地方，重启时会丢弃</li>
-</ul>
+<p>该类别的实现部分如下</p>
 
-<h3 id="toc_2">APP Bundle</h3>
+<pre><code> #import &quot;NSNumber+code.h&quot;
 
-<p>bundle是一个目录,其中包含了程序会使用到的资源.这些资源包含了如图像,声音,编译好的代码,nib文件(用户也会把bundle称为plug-in).对应bundle,<br/>
-cocoa提供了类NSBundle。<br/>
-<code>[NSBundle mainBundle]</code></p>
-
-<h3 id="toc_3">NSFileManager</h3>
-
-<p>iOS的文件操作类，可以使用它来创建、删除文件。<br/>
-常用操作请参考：<a href="http://nshipster.cn/nsfilemanager/">NSFileManager</a></p>
-
-<h2 id="toc_4">数据库SQLite</h2>
-
-<p>文件少说一些。在iOS中，我们同样可以使用数据库技术来自己创建各种表，来存储数据。在iOS中，我们使用嵌入式的SQLite作为数据库管理系统，创建用户数据。</p>
-
-<h3 id="toc_5">什么是SQLite</h3>
-
-<p>SQLite，是一款轻型的数据库，是遵守ACID的关系型数据库管理系统，它包含在一个相对小的C库中。同样比起Mysql、PostgreSQL这两款开源的世界著名数据库管理系统来讲，它的处理速度比他们都快。目前我们使用SQLite 3.X版本。</p>
-
-<h3 id="toc_6">使用SQLite</h3>
-
-<p>在iOS开发过程中，我们使用纯C语言的API来对其进行访问。主要步骤包括以下几点。</p>
-
-<ol>
-<li>链接libSQLite3.dylib</li>
-<li>使用SQLite3函数用于创建、打开数据库、执行SQL语句或关闭数据库</li>
-</ol>
-
-<p>纯C语言API</p>
-
-<pre><code>//打开 SQLite
-sqlite3* db = NULL
-int result = sqlite3_open([path UTF8String],&amp;db);
-
-//执行SQL语句
-int result = sqlite_exec(db,sql,NULL,NULL,&amp;errorMsg);
-
-//预定义SQL语句,可以有效防止SQL注入
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    sqlite3_bind_text(stmt,1,&quot;string&quot;,-1.NULL);
-    sqlite3_bind_int(stmt,2,27);
+ @implementation NSNumber (code)
+ -(NSNumber *) add:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue] +num)];
 }
-sqlite3_finalize(stmt);
+-(NSNumber *) mult:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
+}
+@end
+</code></pre>
 
+<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
 
-//结果集遍历
-sqlite3_stmt *stmt;
-if(sqlite3_prepare_v2(db,sql,-1,&amp;stmt,NULL)== SQLITE_OK){
-    while(sqlite3_step(stmt)==SQLITE_ROW){
-        int _id = sqlite3_column_int(stmt,0);
-        char* _name = sqlite3_column_text(stmt,1);
-        NSString* name = [NSString stringWithUTF8String:_name];
-        ...
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
+
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
+
+<hr/>
+
+<h2 id="toc_0">扩展（extension）</h2>
+
+<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
+
+<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
+
+<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
+
+<pre><code>//&quot;Vehicle.m&quot;
+#import &quot;Vehicle.h&quot;
+@interface Vehicle ()
+@property(nonatomic, strong) NSString *color;
+-(void) drive:(NSString *)name;
+@end
+@implementation Vehicle
+-(void) drive:(NSString *)name
+{
+    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
+}
+@end
+</code></pre>
+
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
+
+<hr/>
+
+<h2 id="toc_1">协议（protocol）</h2>
+
+<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
+
+<p>正式协议使用@protocol关键字定义</p>
+
+<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
+    {
+          //.....方法声明
     }
-}
-sqlite3_finalize(stmt);
-
-//关闭SQLite
-sqlite3_close(db);
+    @end
 </code></pre>
 
-<h3 id="toc_7">FMDB</h3>
+<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
+遵守协议的语法如下：</p>
 
-<p>使用原生的API对SQLite访问效率挺高，但是在我们面向对象的开发过程中加入这样的代码，总是不太舒服。而且写起来也比较坑。于是伟大的第三方访问工具诞生啦。就是FMDB：<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a><br/>
-使用方法如下：</p>
-
-<pre><code>//打开
-FMDatabase *db = [FMDatabase databaseWithPath:(NSString *)path];
-[db open];
-
-//更新语句，executeUpdate这个方法后面必须是对象比如NSString，NSInteger，否则会崩溃
-[db executeUpdate:@&quot;insert into contacters(name,etc,telephone,email) values(?,?,?,?)&quot;,contacter.name,contacter.etc,contacter.telephone,contacter.email];
-//取插入的id
-contacter.contacterId = (int)[db lastInsertRowId];
-
-//查询
-FMResultSet* result = [db executeQuery:@&quot;select * from contacters where id=?&quot;,contacterId];
-while ([result next]) {
-    contacter.contacterId = [result intForColumn:@&quot;id&quot;];
-    contacter.name = [result stringForColumn:@&quot;name&quot;];
-    contacter.telephone = [result stringForColumn:@&quot;telephone&quot;];
-    contacter.email = [result stringForColumn:@&quot;email&quot;];
-    contacter.etc = [result stringForColumn:@&quot;etc&quot;];
- }
-
-//关闭
-[db close];
+<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
 </code></pre>
 
-<h2 id="toc_8">CoreData简介</h2>
+<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
+协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
 
-<p>虽然使用了SQLite之后，可以实现所有的数据存储。但是，这并不是苹果最推荐的方法。官方最推荐的解决方案就是Core Data。</p>
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
 
-<h3 id="toc_9">什么是CoreData</h3>
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-<p>Apple提供的对象持久化框架，并不是数据库，但通常使用数据库作为底层存储。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-06-14624672730006.jpg" alt="基本概念"/></p>
-
-<h4 id="toc_10">开始使用CoreData</h4>
-
-<ol>
-<li>在新建项目时勾选<code>Use CoreData</code></li>
-<li>在项目中<code>*.xcdatamodel</code>中构建模型</li>
-</ol>
-
-<h4 id="toc_11">简单使用</h4>
-
-<pre><code>//创建一个Entity对象
-NSManagedObject* entity = [NSEntityDescription insertNewObjectForEntityForName:@&quot;Entity&quot; inManagedObjectContext:context];
-
-//填充属性
-[entity setValue:value forKey:@&quot;key&quot;];
-
-//保存
-NSError* error = nil;
-[context save:&amp;error];
-
-//查询
-NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:@&quot;Entity&quot;];
-
-//排序过滤
-request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@&quot;key&quot; ascending:YES]];
-request.predicate = [NSPredicate predicateWithFormat:@&quot;name like %@&quot;,@&quot;j&quot;];
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
 
 
-//执行
-NSError* error = nil;
-NSArray* objs =[context executeFetchRequest:request error:&amp;error];
-
-//遍历，正常遍历数组即可。
-for(NSManagedObject *obj in objs){
-    NSLog(@&quot;%@&quot;,[obj valueForKey:@&quot;key&quot;]);
-}
-
-//删除
-[context deleteObject:managedObject];
-
-</code></pre>
-
-<h4 id="toc_12">参考资料</h4>
-
-<p>本部分只简要介绍CoreData。大坑慢慢填。送一些参考资料。<br/>
-<a href="http://blog.csdn.net/q199109106q/article/details/8563438/">CoreData入门</a><br/>
-<a href="http://www.jianshu.com/p/337872d95727">CoreData入门知识</a></p>
-
-      </div>
-
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="14626379454584.html" 
-          title="Previous Post: GeekBand.Swift-第一周作业">&laquo; GeekBand.Swift-第一周作业</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="14614801701186.html" 
-          title="Next Post: GeekBand.iOS-多线程编程">GeekBand.iOS-多线程编程 &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
-
-          
-
-          
-              <div class="ds-thread" data-thread-key="14623728039466.html" data-url="http://swuzjb.github.io/14623728039466.html" data-title="GeekBand.iOS-数据持久化"></div>
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
-
-
-
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="all_13.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

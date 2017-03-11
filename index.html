@@ -107,6 +107,151 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14892373699810.html">
+                
+                  <h1>设计模式-简单工厂模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>简单工厂模式(Simple Factory Pattern)：定义一个工厂类，它可以根据参数的不同返回不同类的实例，被创建的实例通常都具有共同的父类。因为在简单工厂模式中用于创建实例的方法是静态(static)方法，因此简单工厂模式又被称为静态工厂方法(Static Factory Method)模式，它属于类创建型模式。</p>
+</blockquote>
+
+<p>简单工厂模式的要点在于：当你需要什么，只需要传入一个正确的参数，就可以获取你所需要的对象，而无须知道其创建细节。简单工厂模式结构比较简单，其核心是工厂类的设计，其结构如图所示：<br/>
+<img src="media/14892373699810/14892374346473.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_0">简单工厂模式中的角色</h2>
+
+<p>在简单工厂模式结构图中包含如下几个角色：</p>
+
+<ol>
+<li>Factory（工厂角色）：工厂角色即工厂类，它是简单工厂模式的核心，负责实现创建所有产品实例的内部逻辑；工厂类可以被外界直接调用，创建所需的产品对象；在工厂类中提供了静态的工厂方法factoryMethod()，它的返回类型为抽象产品类型Product。</li>
+<li>Product（抽象产品角色）：它是工厂类所创建的所有对象的父类，封装了各种产品对象的公有方法，它的引入将提高系统的灵活性，使得在工厂类中只需定义一个通用的工厂方法，因为所有创建的具体产品对象都是其子类对象。</li>
+<li>ConcreteProduct（具体产品角色）：它是简单工厂模式的创建目标，所有被创建的对象都充当这个角色的某个具体类的实例。每一个具体产品角色都继承了抽象产品角色，需要实现在抽象产品中声明的抽象方法</li>
+</ol>
+
+<h2 id="toc_1">实现</h2>
+
+<p>在简单工厂模式中，客户端通过工厂类来创建一个产品类的实例，而无须直接使用new关键字来创建对象，它是工厂模式家族中最简单的一员。<br/>
+在使用简单工厂模式时，首先需要对产品类进行重构，不能设计一个包罗万象的产品类，而需根据实际情况设计一个产品层次结构，将所有产品类公共的代码移至抽象产品类，并在抽象产品类中声明一些抽象方法，以供不同的具体产品类来实现，典型的抽象产品类代码如下所示：</p>
+
+<pre><code class="language-java">public abstract class Product {
+    //公共方法的实现
+    public void methodSame() {
+    }
+
+    // 声明抽象业务方法
+    public abstract void methodDiff();
+}
+</code></pre>
+
+<p>在具体产品类中实现了抽象产品类中声明的抽象业务方法，不同的具体产品类可以提供不同的实现，典型的具体产品类代码如下所示：</p>
+
+<pre><code class="language-java">public class ConcreteProductA extends Product {
+    @Override
+    public void methodDiff() {
+        System.out.println(&quot;具体产品A的特性实现&quot;);
+    }
+}
+</code></pre>
+
+<p>简单工厂模式的核心是工厂类，在没有工厂类之前，客户端一般会使用new关键字来直接创建产品对象，而在引入工厂类之后，客户端可以通过工厂类来创建产品，在简单工厂模式中，工厂类提供了一个静态工厂方法供客户端使用，根据所传入的参数不同可以创建不同的产品对象，典型的工厂类代码如下所示：</p>
+
+<pre><code class="language-java">public class SimpleFactory {
+    public static Product getProduct(String arg) {
+        Product product = null;
+        if (arg.equalsIgnoreCase(&quot;A&quot;)) {
+            product = new ConcreteProductA();
+            // 初始化设置product
+        } else if (arg.equalsIgnoreCase(&quot;B&quot;)) {
+            product = new ConcreteProductB();
+            // 初始化设置product
+        }
+        return product;
+    }
+}
+</code></pre>
+
+<p>客户端调用，如果追求进一步解耦，可以引入配置文件，每次根据配置文件的值，对产品进行实例化：</p>
+
+<pre><code class="language-java">    public static void main(String[] args) {
+        Product product;
+        product = SimpleFactory.getProduct(&quot;A&quot;); // 通过工厂类创建产品对象
+        product.methodSame();
+        product.methodDiff();
+    }
+</code></pre>
+
+<h2 id="toc_2">总结</h2>
+
+<p>简单工厂模式提供了专门的工厂类用于创建对象，将对象的创建和对象的使用分离开，它作为一种最简单的工厂模式在软件开发中得到了较为广泛的应用。</p>
+
+<h3 id="toc_3">主要优点</h3>
+
+<p>简单工厂模式的主要优点如下：</p>
+
+<ol>
+<li>工厂类包含必要的判断逻辑，可以决定在什么时候创建哪一个产品类的实例，客户端可以免除直接创建产品对象的职责，而仅仅“消费”产品，简单工厂模式实现了对象创建和使用的分离。</li>
+<li>客户端无须知道所创建的具体产品类的类名，只需要知道具体产品类所对应的参数即可，对于一些复杂的类名，通过简单工厂模式可以在一定程度减少使用者的记忆量。</li>
+<li>通过引入配置文件，可以在不修改任何客户端代码的情况下更换和增加新的具体产品类，在一定程度上提高了系统的灵活性。</li>
+</ol>
+
+<h3 id="toc_4">主要缺点</h3>
+
+<p>简单工厂模式的主要缺点如下：</p>
+
+<ol>
+<li>由于工厂类集中了所有产品的创建逻辑，职责过重，一旦不能正常工作，整个系统都要受到影响。</li>
+<li>使用简单工厂模式势必会增加系统中类的个数（引入了新的工厂类），增加了系统的复杂度和理解难度。</li>
+<li>系统扩展困难，一旦添加新产品就不得不修改工厂逻辑，在产品类型较多时，有可能造成工厂逻辑过于复杂，不利于系统的扩展和维护。</li>
+<li>简单工厂模式由于使用了静态工厂方法，造成工厂角色无法形成基于继承的等级结构。</li>
+</ol>
+
+<h3 id="toc_5">适用场景</h3>
+
+<p>在以下情况下可以考虑使用简单工厂模式：</p>
+
+<ol>
+<li>工厂类负责创建的对象比较少，由于创建的对象较少，不会造成工厂方法中的业务逻辑太过复杂。</li>
+<li>客户端只知道传入工厂类的参数，对于如何创建对象并不关心。</li>
+</ol>
+
+<h2 id="toc_6">练习</h2>
+
+<p>使用简单工厂模式设计一个可以创建不同几何形状（如圆形、方形和三角形等）的绘图工具，每个几何图形都具有绘制draw()和擦除erase()两个方法，要求在绘制不支持的几何图形时，提示一个UnSupportedShapeException。</p>
+
+<h2 id="toc_7">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14892373699810.html" data-count-type="comments" href="14892373699810.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14892189846734.html">
                 
                   <h1>设计模式-装饰模式</h1>
@@ -676,123 +821,6 @@ public class Context {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14891123573052.html">
-                
-                  <h1>剑指offer-旋转数组的最小数字</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。<br/>
-输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。<br/>
-例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。<br/>
-NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
-</blockquote>
-
-<h2 id="toc_0">解题思路</h2>
-
-<h3 id="toc_1">O(n)算法</h3>
-
-<p>数组遍历，如果a[i]&lt;a[i-1]，这该位置为旋转位置，即最小元素。</p>
-
-<h3 id="toc_2">O(logn)算法</h3>
-
-<p>我们可以通过二分的思路，对上述问题进行优化。<br/>
-我们发现，旋转之后的数组实际上可以划分为两个排序的子数组，而且后面的子数组的元素都小于等于前面的子数组的元素。而我们要找的这个最小元素，恰好是这两个数组的分界线。<br/>
-和二分查找一样，我们分别用两个指针指向数组的第一个(start)和最后一个元素(end)，在求一个中间指针指向数组的中间(<code>mid = (start+end)/2</code>)：</p>
-
-<ul>
-<li>如果array[mid] &gt;= array[end],说明分界值应该在数组的后半段，此时将start赋值为mid；</li>
-<li>如果array[mid] &lt;= array[start],说明分界值应该在数组的前半段，此时将end赋值为mid；</li>
-<li>如果<code>end-start == 1</code>，说明array[end]为我们要找的分界值。</li>
-<li>PS.如果 array[mid] == array[start] == array[end]，此时只能通过遍历来实现。</li>
-</ul>
-
-<h2 id="toc_3">代码示例</h2>
-
-<h3 id="toc_4">O(n)</h3>
-
-<pre><code class="language-java">public class Solution {
-    public int minNumberInRotateArray(int [] array) {
-        if(array.length == 0){
-            return 0;
-        }
-        for(int i=1;i&lt;array.length;i++){
-            if(array[i]&lt;array[i-1]){
-                return array[i];
-            }
-        }
-        return array[0];
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">O(logn)</h3>
-
-<pre><code class="language-java">public class Solution {
-    public int minNumberInRotateArray(int [] array) {
-        if (array.length == 0) {
-            return 0;
-        }
-        int start = 0;
-        int end = array.length - 1;
-        while (end - start &gt; 1) {
-            int mid = (start + end) / 2;
-            
-            if(array[start] == array [mid] &amp;&amp; array[mid] == array[end]){
-                return order(array, start, end);
-            }
-            
-            if( array[mid] &gt;= array[end]){
-                start = mid;
-                continue;
-            }
-            if(array[mid] &lt;= array[start]){
-                end = mid;
-                continue;
-            }
-        }
-        return array[end];
-    }
-        
-    public int order(int[] array,int start,int end){
-        for(int i = start+1;i&lt;=end;i++){
-            if(array[i]&lt;array[i-1]){
-                return  array[i];
-            }
-        }
-        return array[start];
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/10</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891123573052.html" data-count-type="comments" href="14891123573052.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -881,6 +909,12 @@ NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -900,12 +934,6 @@ NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  

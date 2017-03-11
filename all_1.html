@@ -107,6 +107,123 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14891123573052.html">
+                
+                  <h1>剑指offer-旋转数组的最小数字</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。<br/>
+输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。<br/>
+例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。<br/>
+NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
+</blockquote>
+
+<h2 id="toc_0">解题思路</h2>
+
+<h3 id="toc_1">O(n)算法</h3>
+
+<p>数组遍历，如果a[i]&lt;a[i-1]，这该位置为旋转位置，即最小元素。</p>
+
+<h3 id="toc_2">O(logn)算法</h3>
+
+<p>我们可以通过二分的思路，对上述问题进行优化。<br/>
+我们发现，旋转之后的数组实际上可以划分为两个排序的子数组，而且后面的子数组的元素都小于等于前面的子数组的元素。而我们要找的这个最小元素，恰好是这两个数组的分界线。<br/>
+和二分查找一样，我们分别用两个指针指向数组的第一个(start)和最后一个元素(end)，在求一个中间指针指向数组的中间(<code>mid = (start+end)/2</code>)：</p>
+
+<ul>
+<li>如果array[mid] &gt;= array[end],说明分界值应该在数组的后半段，此时将start赋值为mid；</li>
+<li>如果array[mid] &lt;= array[start],说明分界值应该在数组的前半段，此时将end赋值为mid；</li>
+<li>如果<code>end-start == 1</code>，说明array[end]为我们要找的分界值。</li>
+<li>PS.如果 array[mid] == array[start] == array[end]，此时只能通过遍历来实现。</li>
+</ul>
+
+<h2 id="toc_3">代码示例</h2>
+
+<h3 id="toc_4">O(n)</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if(array.length == 0){
+            return 0;
+        }
+        for(int i=1;i&lt;array.length;i++){
+            if(array[i]&lt;array[i-1]){
+                return array[i];
+            }
+        }
+        return array[0];
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">O(logn)</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if (array.length == 0) {
+            return 0;
+        }
+        int start = 0;
+        int end = array.length - 1;
+        while (end - start &gt; 1) {
+            int mid = (start + end) / 2;
+            
+            if(array[start] == array [mid] &amp;&amp; array[mid] == array[end]){
+                return order(array, start, end);
+            }
+            
+            if( array[mid] &gt;= array[end]){
+                start = mid;
+                continue;
+            }
+            if(array[mid] &lt;= array[start]){
+                end = mid;
+                continue;
+            }
+        }
+        return array[end];
+    }
+        
+    public int order(int[] array,int start,int end){
+        for(int i = start+1;i&lt;=end;i++){
+            if(array[i]&lt;array[i-1]){
+                return  array[i];
+            }
+        }
+        return array[start];
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891123573052.html" data-count-type="comments" href="14891123573052.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14891114918366.html">
                 
                   <h1>剑指Offer-用两个栈实现队列</h1>
@@ -464,83 +581,6 @@ public class Solution {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14889364537323.html">
-                
-                  <h1>剑指Offer-二维数组中的查找</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
-</blockquote>
-
-<h2 id="toc_0">解题思路</h2>
-
-<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
-
-<ul>
-<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
-<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
-<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
-<li>若遍历到<code>i==n，j==0</code>,依旧没有找到匹配数据，则返回false；</li>
-</ul>
-
-<h2 id="toc_1">实现代码</h2>
-
-<pre><code class="language-java">public class Solution {
-    public boolean Find(int target, int [][] array) {
-        if(array.length == 0){
-            return false;
-        }
-        int i = 0;
-        int j = array[0].length - 1;
-        
-        while(i &lt; array.length &amp;&amp; j &gt;=0){
-            if(array[i][j] == target){
-                return true;
-            }
-            if(target &gt; array[i][j]){
-                i++;
-                continue;
-            }
-            if(target &lt; array[i][j]){
-                j--;
-                continue;
-            }
-        }
-        return false;
-
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889364537323.html" data-count-type="comments" href="14889364537323.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -629,6 +669,12 @@ public class Solution {
 	      
 		      
 			      <li class="post">
+			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
@@ -648,12 +694,6 @@ public class Solution {
 		      
 			      <li class="post">
 			        <a href="14891427018088.html">设计模式-策略模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891123573052.html">剑指offer-旋转数组的最小数字</a>
 			      </li>
 		     
 		  
