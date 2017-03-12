@@ -107,6 +107,503 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14879958366746.html">
+                
+                  <h1>Java容器框架分析(八)——PriorityQueue</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
+
+<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
+
+<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
+
+<ul>
+<li><code>leftNo = parentNo*2+1</code></li>
+<li><code>rightNo = parentNo*2+2</code></li>
+<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
+</ul>
+
+<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
+
+<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">add()&amp;offer()</h3>
+
+<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
+
+<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
+
+<pre><code class="language-java">public boolean offer(E e) {
+    if (e == null)//不允许放入null元素
+        throw new NullPointerException();
+    modCount++;
+    int i = size;
+    if (i &gt;= queue.length)
+        grow(i + 1);//自动扩容
+    size = i + 1;
+    if (i == 0)//队列原来为空，这是插入的第一个元素
+        queue[0] = e;
+    else
+        siftUp(i, e);//调整
+    return true;
+}
+</code></pre>
+
+<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
+
+<pre><code class="language-java">private void siftUp(int k, E x) {
+    while (k &gt; 0) {
+        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
+        Object e = queue[parent];
+        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
+            break;
+        queue[k] = e;
+        k = parent;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
+
+<h3 id="toc_2">element()&amp;peek()</h3>
+
+<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
+
+<pre><code class="language-java">//peek()
+public E peek() {
+    if (size == 0)
+        return null;
+    return (E) queue[0];//0下标处的那个元素就是最小的那个
+}
+</code></pre>
+
+<h3 id="toc_3">remove()&amp;poll()</h3>
+
+<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
+代码如下：</p>
+
+<pre><code class="language-java">public E poll() {
+    if (size == 0)
+        return null;
+    int s = --size;
+    modCount++;
+    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
+    E x = (E) queue[s];
+    queue[s] = null;
+    if (s != 0)
+        siftDown(0, x);//调整
+    return result;
+}
+</code></pre>
+
+<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
+
+<pre><code class="language-java">//siftDown()
+private void siftDown(int k, E x) {
+    int half = size &gt;&gt;&gt; 1;
+    while (k &lt; half) {
+        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
+        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
+        Object c = queue[child];
+        int right = child + 1;
+        if (right &lt; size &amp;&amp;
+            comparator.compare((E) c, (E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (comparator.compare(x, (E) c) &lt;= 0)
+            break;
+        queue[k] = c;//然后用c取代原来的值
+        k = child;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<h3 id="toc_4">remove(Object o)</h3>
+
+<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
+
+<pre><code class="language-java">//remove(Object o)
+public boolean remove(Object o) {
+    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
+    int i = indexOf(o);
+    if (i == -1)
+        return false;
+    int s = --size;
+    if (s == i) //情况1
+        queue[i] = null;
+    else {
+        E moved = (E) queue[s];
+        queue[s] = null;
+        siftDown(i, moved);//情况2
+        ......
+    }
+    return true;
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14879892493054.html">
+                
+                  <h1>Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>如果你已经看过前面关于HashSet和HashMap，以及TreeSet和TreeMap的讲解，一定能够想到本文要讲解的LinkedSet和LinkedHashMap在Java中也有着相同的实现，前者仅仅是对后者做了一层包装，也就是说<strong>LinkedHashSet里面有一个LinkedHashMap(适配器模式)</strong>。因此本文将重点介绍LinkedHashMap。</p>
+
+<p>LinkedHashMap实现了Map接口，即允许放入key为null的元素，也允许插入value为null的元素。从名字上可以看出该容器是LinkedList和HashMap的混合体，也就是说它同时满足HashMap和LinkedList的某些特性。可以将LinkedHashMap看作采用LinkedList增强的HashMap。</p>
+
+<p>事实上LinkedHashMap是HashMap的直接子类，二者的唯一区别是LinkedHashMap在HashMap的基础上，采用双向链表的形式将所有entry连接起来，这样是为保证元素的迭代顺序和插入顺序相同。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879901525374.png" alt=""/></p>
+
+<p>上图给出了LinkedHashMap的结构图，主体部分跟HashMap完全一样，多了header指向双向链表的头部，该双向链表的迭代顺序就是entry的插入顺序。<br/>
+除了可以保证迭代顺序，这种结构还有一个好处：迭代LinkedHashMap时不需要像HashMap那样遍历整个table，而是只需要直接遍历header指向的双向链表即可。也就说LinkedHashMap的迭代时间就只跟entry的个数有关，和table的大小无关。</p>
+
+<p>有两个参数可以影响 LinkedHashMap 的性能：初始容量（inital capacity）和负载系数（load factor）。初始容量指定了初始table的大小，负载系数用来指定自动扩容的临界值。当entry的数量超过<code>capacity*load_factor</code>时，容器将自动扩容并重新哈希。对于插入元素较多的场景，将初始容量设大可以减少重新哈希的次数。<br/>
+将对象放入到 LinkedHashMap 或 LinkedHashSet 中时，有两个方法需要特别关心：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>方法决定了对象会被放到哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是 “同一个对象”。所以，如果要将自定义的对象放入到LinkedHashMap或LinkedHashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
+
+<p>通过如下方式可以得到一个跟源Map迭代顺序一样的LinkedHashMap：</p>
+
+<pre><code class="language-java">void foo(Map m) {
+    Map copy = new LinkedHashMap(m);
+    ...
+}
+</code></pre>
+
+<p>出于性能原因，LinkedHashMap是非线程安全的，如果需要在多线程环境使用，需要程序呀手动进行同步；或者通过如下方式将LinkedHashMap包装成同步的：</p>
+
+<pre><code class="language-java">Map m = Collections.synchronizedMap(new LinkedHashMap(...));
+</code></pre>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">get()</h3>
+
+<p>get(Object key)方法根据指定的key值返回对应的value.该方法的流程和HashMap的实现方式基本一样，可参考前文。</p>
+
+<h3 id="toc_2">put()</h3>
+
+<p><code>put(K key,V value)</code>方法是将指定的<code>key,value</code>对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>get()</code>方法；如没有找到则会通过<code>addEntry(int hash,K key,V value,int bucketIndex)</code>方法插入新的entry。<br/>
+PS.这里的插入有两重含义：</p>
+
+<ol>
+<li>从table的角度来看，新的entry需要插入到对应的bucket里，当有哈希冲突时，采用头插法将新的entry插入到冲突链表的头部。</li>
+<li>从header的角度，新的entry需要插入到双向链表的尾部。</li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879912929279.png" alt=""/></p>
+
+<p>addEntry()代码如下：</p>
+
+<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);// 自动扩容，并重新哈希
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = hash &amp; (table.length-1);// hash%table.length
+    }
+    // 1.在冲突链表头部插入新的entry
+    HashMap.Entry&lt;K,V&gt; old = table[bucketIndex];
+    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(hash, key, value, old);
+    table[bucketIndex] = e;
+    // 2.在双向链表的尾部插入新的entry
+    e.addBefore(header);
+    size++;
+}
+</code></pre>
+
+<p>上述代码中用到了<code>addBefore()</code>方法将新<code>entry e</code>插入到双向链表引用<code>header</code>的前面，这样e就成为了双向链表中的最后一个元素。<code>addBefore()</code>的代码如下：</p>
+
+<pre><code class="language-java">// LinkedHashMap.Entry.addBefor()，将this插入到existingEntry的前面
+private void addBefore(Entry&lt;K,V&gt; existingEntry) {
+    after  = existingEntry;
+    before = existingEntry.before;
+    before.after = this;
+    after.before = this;
+}
+</code></pre>
+
+<p>仅需要简单修改相关entry的引用而已。</p>
+
+<h3 id="toc_3">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里实现的。<code>removeEntryForKey()</code>方法会首先找到key值对应的entry，然后删除entry(修改链表的引用)。查找过程和get()方法类似。<br/>
+注意，这里的删除也有两层含义：</p>
+
+<ol>
+<li>从table的角度看，需要将该entry从对应的bucket里删除，如果对应的冲突链表不空，需要修改冲突链表的相应引用。</li>
+<li>从header的角度来看，需要将该entry从双向链表中删除，同时修改链表中前面以及后面元素的相应引用。</li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879925343738.png" alt=""/></p>
+
+<p><code>removeEntryForKey()</code>对应的代码如下：</p>
+
+<pre><code class="language-java">// LinkedHashMap.removeEntryForKey()，删除key值对应的entry
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    int i = indexFor(hash, table.length);// hash&amp;(table.length-1)
+    Entry&lt;K,V&gt; prev = table[i];// 得到冲突链表
+    Entry&lt;K,V&gt; e = prev;
+    while (e != null) {// 遍历冲突链表
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {// 找到要删除的entry
+            modCount++; size--;
+            // 1. 将e从对应bucket的冲突链表中删除
+            if (prev == e) table[i] = next;
+            else prev.next = next;
+            // 2. 将e从双向链表中删除
+            e.before.after = e.after;
+            e.after.before = e.before;
+            return e;
+        }
+        prev = e; e = next;
+    }
+    return e;
+}
+</code></pre>
+
+<h2 id="toc_4">LinkedHashSet</h2>
+
+<p>前面已经说过 LinkedHashSet 是对 LinkedHashMap 的简单包装，对 LinkedHashSet 的函数调用都会转换成合适的 LinkedHashMap 方法，因此 LinkedHashSet 的实现非常简单，这里不再赘述。</p>
+
+<pre><code class="language-java">public class LinkedHashSet&lt;E&gt;
+    extends HashSet&lt;E&gt;
+    implements Set&lt;E&gt;, Cloneable, java.io.Serializable {
+    ......
+    // LinkedHashSet里面有一个LinkedHashMap
+    public LinkedHashSet(int initialCapacity, float loadFactor) {
+        map = new LinkedHashMap&lt;&gt;(initialCapacity, loadFactor);
+    }
+    ......
+    public boolean add(E e) {//简单的方法转换
+        return map.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879892493054.html" data-count-type="comments" href="14879892493054.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14879172287548.html">
+                
+                  <h1>Java容器框架分析(六)——HashSet与HashMap</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
+
+<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
+
+<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
+
+<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
+
+<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
+当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
+
+<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">get()</h3>
+
+<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
+算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
+上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
+
+<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
+         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
+        Object k;
+        //依据equals()方法判断是否相等
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+            return e;
+    }
+    return null;
+}
+</code></pre>
+
+<h3 id="toc_2">put()</h3>
+
+<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
+
+<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);//自动扩容，并重新哈希
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = hash &amp; (table.length-1);//hash%table.length
+    }
+    //在冲突链表头部插入新的entry
+    Entry&lt;K,V&gt; e = table[bucketIndex];
+    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
+    size++;
+}
+</code></pre>
+
+<h3 id="toc_3">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
+
+<pre><code class="language-java">//removeEntryForKey()
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
+    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
+    Entry&lt;K,V&gt; e = prev;
+    while (e != null) {//遍历冲突链表
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
+            modCount++; size--;
+            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
+            else prev.next = next;
+            return e;
+        }
+        prev = e; e = next;
+    }
+    return e;
+}
+</code></pre>
+
+<h2 id="toc_4">HashSet</h2>
+
+<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
+
+<pre><code class="language-java">public class HashSet&lt;E&gt;
+{
+    ......
+    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+    public HashSet() {
+        map = new HashMap&lt;&gt;();
+    }
+    ......
+    public boolean add(E e) {//简单的方法转换
+        return map.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879172287548.html" data-count-type="comments" href="14879172287548.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14879027517066.html">
                 
                   <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
@@ -744,403 +1241,6 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14878187570598.html">
-                
-                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">LinkedList简介</h2>
-
-<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
-LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
-双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
-
-<pre><code class="language-java">//Node内部类
-private static class Node&lt;E&gt; {
-    E item;
-    Node&lt;E&gt; next;
-    Node&lt;E&gt; prev;
-    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
-        this.item = element;
-        this.next = next;
-        this.prev = prev;
-    }
-}
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
-
-<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">add()</h3>
-
-<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
-
-<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
-
-<pre><code class="language-java">public boolean add(E e) {
-    final Node&lt;E&gt; l = last;
-    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
-    last = newNode;
-    if (l == null)
-        first = newNode;//原来链表为空，这是插入的第一个元素
-    else
-        l.next = newNode;
-    size++;
-    return true;
-}
-</code></pre>
-
-<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
-
-<pre><code class="language-java">public void add(int index, E element) {
-     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
-    checkPositionIndex(index);
-    if (index == size)//插入位置是末尾，包括列表为空的情况
-        add(element);
-    else{
-        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
-        //2.修改引用，完成插入操作。
-        final Node&lt;E&gt; pred = succ.prev;
-        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
-        succ.prev = newNode;
-        if (pred == null)//插入位置为0
-            first = newNode;
-        else
-            pred.next = newNode;
-        size++;
-    }
-}
-</code></pre>
-
-<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
-两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
-
-<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
-    final E element = x.item;
-    final Node&lt;E&gt; next = x.next;
-    final Node&lt;E&gt; prev = x.prev;
-    if (prev == null) {//删除的是第一个元素
-        first = next;
-    } else {
-        prev.next = next;
-        x.prev = null;
-    }
-    if (next == null) {//删除的是最后一个元素
-        last = prev;
-    } else {
-        next.prev = prev;
-        x.next = null;
-    }
-    x.item = null;//let GC work
-    size--;
-    return element;
-}
-</code></pre>
-
-<h3 id="toc_4">get()</h3>
-
-<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    //检测index是否越界
-    checkElementIndex(index);
-    return node(index).item;
-}
-</code></pre>
-
-<h3 id="toc_5">set()</h3>
-
-<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    checkElementIndex(index);
-    Node&lt;E&gt; x = node(index);
-    E oldVal = x.item;
-    x.item = element;//替换新值
-    return oldVal;
-}
-</code></pre>
-
-<h2 id="toc_6">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/23</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14876660718478.html">
-                
-                  <h1>Java容器框架分析（二）——ArrayList源码解析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">ArrayList简介</h2>
-
-<p>ArrayList实现了List接口，是顺序容器（即元素存放的顺序和加入列表的顺序相同），允许放入<code>null</code>元素，底层通过数组实现。该实现除了没有实现多线程同步之外，其余跟Vector大致相同，即ArrayList是线程不安全的。<br/>
-每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
-size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
-为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">set(int index, E element)</h3>
-
-<p>set()方法可以直接设定某个下标对应的元素。既然ArrayList的底层是数组实现的，set()方法的实现也就变得极为简单，直接赋值即可，复杂度为<em>O(1)</em>。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    rangeCheck(index);//下标越界检查
-    E oldValue = elementData(index);
-    elementData[index] = element;//赋值到指定位置，复制的仅仅是引用
-    return oldValue;
-}
-</code></pre>
-
-<h3 id="toc_3">get(int index)</h3>
-
-<p>get()方法可以获取指定下标对应的对象，唯一需要注意的是由于底层数组是Object[]，得到元素后需要进行类型转换，复杂度为<em>O(1)</em>。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    rangeCheck(index);
-    return (E) elementData[index];//注意类型转换
-}
-</code></pre>
-
-<h3 id="toc_4">add(E element)和add（int index,E element）</h3>
-
-<p>跟C++的vector不同，ArrayList没有push_back()方法，对应的方法是add(E e)，ArrayList也没有insert()方法，对应的方法是add(int index, E e)。这两个方法都是向容器中添加新元素，这可能会导致 capacity 不足，因此在添加元素之前，都需要进行剩余空间检查，如果需要则自动扩容。扩容操作最终是通过grow()方法完成的。</p>
-
-<pre><code class="language-java">private void grow(int minCapacity) {
-    int oldCapacity = elementData.length;
-    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);//原来的1.5倍
-    if (newCapacity - minCapacity &lt; 0)
-        newCapacity = minCapacity;
-    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
-        newCapacity = hugeCapacity(minCapacity);
-    elementData = Arrays.copyOf(elementData, newCapacity);//扩展空间并复制
-}
-</code></pre>
-
-<p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
-空间的问题解决之后，插入就变得非常简单了。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
-<code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
-
-<h3 id="toc_5">addAll()</h3>
-
-<p>addAll()方法可以一次添加多个元素，根据插入的起始位置不同也用两个版本：一个是在末尾添加<code>addAll(Collection&lt;? extends E&gt; c)</code>;一个是从指定位置开始插入的<code>addAll(int index, Collection&lt;? extends E&gt; c)</code>方法。对应的实现方式和上述的add方法类似，在插入之前，需要对容量进行判断，如果需要则自动扩容，如果从指定位置插入，还需要先对数组元素进行移动。</p>
-
-<h3 id="toc_6">remove()</h3>
-
-<p>remove方法可以删除列表中的元素，其也有两个版本：一个是<code>remove(int index)</code>删除指定位置的元素；一个是<code>remove(Object o)</code>删除第一个满足<code>o.equals(elementData[index])</code>的元素。删除操作是<code>add()</code>的逆过程，需要将删除点之后的元素向前移动一个位置。需要注意的是为了让GC起作用，必选显示的为最后一个位置赋<code>null</code>值。</p>
-
-<pre><code class="language-java">public E remove(int index) {
-    rangeCheck(index);
-    modCount++;
-    E oldValue = elementData(index);
-    int numMoved = size - index - 1;
-    if (numMoved &gt; 0)
-        System.arraycopy(elementData, index+1, elementData, index, numMoved);
-    elementData[--size] = null; //清除该位置的引用，让GC起作用
-    return oldValue;
-}
-</code></pre>
-
-<p>关于Java GC 这里需要特别说明一下，<strong>有了垃圾收集器并不意味着一定不会有内存泄漏</strong>。对象能否被 GC 的依据是是否还有引用指向它，上面代码中如果不手动赋null值，除非对应的位置被其他元素覆盖，否则原来的对象就一直不会被回收。</p>
-
-<h2 id="toc_7">使用技巧</h2>
-
-<p>关于List的容量，可以在一开始就给定一个比较合理的值，避免内存复制所带来的不必要的时间开销。</p>
-
-<h2 id="toc_8">转载声明</h2>
-
-<p>本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876660718478.html" data-count-type="comments" href="14876660718478.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14876629153312.html">
-                
-                  <h1>Java容器框架分析（一）——相关概念综述</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">概述</h2>
-
-<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
-
-<ul>
-<li>降低编程难度<br/></li>
-<li>提高程序性能</li>
-<li>提高API之间的互操作性</li>
-<li>降低学习难度</li>
-<li>降低设计和实现相关API的难度</li>
-<li>增强程序的重用性</li>
-</ul>
-
-<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
-
-<h2 id="toc_1">泛型</h2>
-
-<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
-事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
-
-<pre><code class="language-java">//JDK 1.4 or before
-ArrayList list = new ArrayList();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = (String)list.get(i);//显式类型转换
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5 or latter
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = list.get(i);//隐式类型转换，编译器自动完成
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_2">内存管理</h2>
-
-<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
-
-<h2 id="toc_3">接口与实现</h2>
-
-<h3 id="toc_4">接口</h3>
-
-<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
-Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
-
-<h3 id="toc_5">实现</h3>
-
-<p>上述接口的通用实现类见下表：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
-
-<h2 id="toc_6">迭代器（Iterator）</h2>
-
-<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
-实例代码：</p>
-
-<pre><code class="language-java">//通过迭代器来访问容器元素
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-//得到迭代器
-Iterator&lt;String&gt; it = list.iterator();
-while(it.hasNext()){
-    String weekday = it.next();//访问元素
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
-//使用foreach迭代
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(String weekday : list){
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_7">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876629153312.html" data-count-type="comments" href="14876629153312.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1229,6 +1329,24 @@ for(String weekday : list){
 	      
 		      
 			      <li class="post">
+			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
 			      </li>
 		     
@@ -1236,24 +1354,6 @@ for(String weekday : list){
 		      
 			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892030475974.html">设计模式-观察者模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
 		  

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  GeekBand.iOS-AutoLayout - Zhan's Blog
+  设计模式-工厂方法模式 - Zhan's Blog
   
   </title>
   
@@ -107,21 +107,21 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>GeekBand.iOS-AutoLayout</h1>
+          <h1>设计模式-工厂方法模式</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2016/4/3</span>
+          <span class="date">2017/3/12</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
            
          
           <span class="comments">
             
 
             
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14596904523529.html" data-count-type="comments" href="14596904523529.html#ds-thread"></a>
+              &nbsp;<a  class="ds-thread-count" data-thread-key="14893023180281.html" data-count-type="comments" href="14893023180281.html#ds-thread"></a>
             
           </span>
 
@@ -129,102 +129,94 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>为了让iOS程序猿更简单更好地让自己的程序适应不同的屏幕分辨率，苹果推出了AutoLayout布局的方式。<br/>
-在本文中引用了<a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a>的一部分内容，希望可以对学习AutoLayout的同学们有所帮助。</p>
+      <blockquote>
+<p>工厂方法模式(Factory Method Pattern)：定义一个用于创建对象的接口，让子类决定将哪一个类实例化。工厂方法模式让一个类的实例化延迟到其子类。工厂方法模式又简称为工厂模式(Factory Pattern)，又可称作虚拟构造器模式(Virtual Constructor Pattern)或多态工厂模式(Polymorphic Factory Pattern)。工厂方法模式是一种类创建型模式。</p>
+</blockquote>
 
-<h2 id="toc_0">什么是AutoLayout</h2>
+<p>在简单工厂模式中只提供一个工厂类，该工厂类处于对产品类进行实例化的中心位置，它需要知道每一个产品对象的创建细节，并决定何时实例化哪一个产品类。简单工厂模式最大的缺点是当有新产品要加入到系统中时，必须修改工厂类，需要在其中加入必要的业务逻辑，这违背了“开闭原则”。此外，在简单工厂模式中，所有的产品都由同一个工厂创建，工厂类职责较重，业务逻辑较为复杂，具体产品与工厂类之间的耦合度高，严重影响了系统的灵活性和扩展性，而工厂方法模式则可以很好地解决这一问题。<br/>
+在工厂方法模式中，<strong>我们不再提供一个统一的工厂类来创建所有的产品对象，而是针对不同的产品提供不同的工厂，系统提供一个与产品等级结构对应的工厂等级结构</strong>。</p>
 
-<ul>
-<li>AutoLayout是一种布局技术，专门用于布局UI界面。用来取代Frame布局无法适应屏幕分辨率多重多样的不足。</li>
-<li>AutoLayout自iOS6开始引入，由于Xcode4的不给力，当时并没有获得大的推广</li>
-<li>在iOS7（Xcode5）开始，Autolayout的开发效率得到很大的提升</li>
-</ul>
+<h2 id="toc_0">工厂方法模式中的角色</h2>
 
-<p>ps.苹果官方也推荐开发者尽量使用Autolayout来布局UI界面<br/>
-Autolayout能轻松的解决屏幕适配的问题</p>
-
-<h2 id="toc_1">开始使用AutoLayout</h2>
-
-<p>自从Xcode6之后，你会看到我们新建一个Single Application，会发现一个ViewController的View非常大，跟任何一个iPhone/iPad的尺寸都不一样，这些都是假象、假象、假象。Apple 把尺寸抽象为了一个正方形，到真正的设备上才是真正的布局。</p>
-
-<h3 id="toc_2">AutoLayout概念</h3>
-
-<ul>
-<li>Pin(相对处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325788323184.png" alt="Pin"/>
+<p>工厂方法模式提供一个抽象工厂接口来声明抽象工厂方法，而由其子类来具体实现工厂方法，创建具体的产品对象。<br/>
+在工厂方法模式结构图中包含如下几个角色：</p>
 
 <ol>
-<li>边缘距离。最上面的四个虚线表示某个View的距离上、下、左、右多少像素。参考位置一般为对应方向离得最近的View。</li>
-<li>限制View的宽高属性值，或者在宽高中加入一次计算关系。</li>
-<li>那个蓝色的Constrain To Margin 是iPhone6出现之后新增的。Apple 觉得更大的分辨率有点间距好看，默认为8，如果这个勾上了，这个View距离四周的值就变成了你输入的值+8。可以根据实际需求确定是否勾选。</li>
-</ol></li>
-<li>Align(对齐处理)
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445325765517581.png" alt="Align"/>
+<li>Product（抽象产品）：它是定义产品的接口，是工厂方法模式所创建对象的超类型，也就是产品对象的公共父类。</li>
+<li>ConcreteProduct（具体产品）：它实现了抽象产品接口，某种类型的具体产品由专门的具体工厂创建，具体工厂和具体产品之间一一对应。</li>
+<li>Factory（抽象工厂）：在抽象工厂类中，声明了工厂方法(Factory Method)，用于返回一个产品。抽象工厂是工厂方法模式的核心，所有创建对象的工厂类都必须实现该接口。</li>
+<li>ConcreteFactory（具体工厂）：它是抽象工厂类的子类，实现了抽象工厂中定义的工厂方法，并可由客户端调用，返回一个具体产品类的实例。</li>
+</ol>
 
-<ol>
-<li>Leading Edges：左对齐</li>
-<li>Trailing Edges：右对齐</li>
-<li>Top Edges：上对齐</li>
-<li>Bottom Edges：下对齐</li>
-<li>Horizontal Centers：水平中心对齐</li>
-<li>Vertical Centers：竖向中心对齐</li>
-<li>Baselines：基线对齐</li>
-<li>Horizontal Center in Container：对齐容器中的水平中心</li>
-<li>Vertical Center in Container：对齐容器中的竖向中心</li>
-</ol></li>
-</ul>
+<p>工厂方法模式结构如图2所示：<br/>
+<img src="media/14893023180281/14893025237716.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
 
-<h3 id="toc_3">Autolayout使用</h3>
+<h2 id="toc_1">实现</h2>
 
-<p>本单元中使用Demo对AutoLayout的各种约束进行讲解，讲解Demo主要来自文章开头提到的来源。AutoLayout的核心是参照，也就是基本上任何一个View都可以参照另一个View。</p>
+<p>与简单工厂模式相比，工厂方法模式最重要的区别是引入了抽象工厂角色，抽象工厂可以是接口，也可以是抽象类或者具体类，其典型代码如下所示：</p>
 
-<h4 id="toc_4">Demo0-准备</h4>
-
-<p>我们开始Demo前先想想我们在Frame时代，布局需要什么：</p>
-
-<pre><code>{
-    original：{x,y}
-    size:{width,height}
+<pre><code class="language-java">public interface AbstarctFactory {
+    public Product createProduct();
 }
 </code></pre>
 
-<p>在iOS中布局是绝对定位的（大致这么理解吧）。所以我们需要某个View的X，Y，W，H。我们从基本的入门 ，我们无论添加多少约束，都是需要定位好某个View的X，Y，W，H。少了不行，多了更不行。</p>
+<p>在抽象工厂中声明了工厂方法但并未实现工厂方法，具体产品对象的创建由其子类负责，客户端针对抽象工厂编程，可在运行时再指定具体工厂类，具体工厂类实现了工厂方法，不同的具体工厂可以创建不同的具体产品，其典型代码如下所示：</p>
 
-<h4 id="toc_5">Demo1-某个View距离父View上下左右间距全部为20。</h4>
+<pre><code class="language-java">public class ConcreteFactoryA implements AbstarctFactory {
+    @Override
+    public Product createProduct() {
+        return new ConcreteProductA();
+    }
+}
+</code></pre>
 
-<p>对该View添加如下约束：<br/>
-    <img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324481117197.png" alt=""/><br/>
-这里有几条注意事项：<br/>
-    1.请注意我这里把距离下面的，也就是BottomLayoutGuide的约束改成了距离控制器的View，为什么？因为BottomLayoutGuide是晚于View加载的，如果参考这个，会造成进入页面会卡一下。尽量不要直接参考下面 TopLayoutGuide 则没事。<br/>
-    2.加完约束你会发现貌似并没有什么效果？不是的，屏幕中出现的黄色的线条 ，这是IB在提升我们你所添加的约束 。和真实的尺寸不一样，怎么修改？在Resolve Auto Layout Issue中选择Update Frame。参考动图。<br/>
-动图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324514982324.gif" alt="demo1"/></p>
+<p>在实际使用时，具体工厂类在实现工厂方法时除了创建具体产品对象之外，还可以负责产品对象的初始化工作以及一些资源和环境配置工作，例如连接数据库、创建文件等。<br/>
+在客户端代码中，只需关心工厂类即可，不同的具体工厂可以创建不同的产品，典型的客户端类代码片段如下所示：</p>
 
-<h4 id="toc_6">Demo2-某个View距离在父View的左侧20，白色View，上20，宽高为100。</h4>
+<pre><code class="language-java">AbstractFactory factory;  
+factory = new ConcreteFactoryA(); //可通过配置文件实现  
+Product product;  
+product = factory.createProduct();  
+</code></pre>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324604147373.gif" alt="Demo2"/></p>
+<p>可以通过配置文件来存储具体工厂类ConcreteFactory的类名，更换新的具体工厂时无须修改源代码，系统扩展更为方便。</p>
 
-<h4 id="toc_7">Demo3-添加一个白色View，距上20，左20，宽高和demo2中的一致</h4>
+<h2 id="toc_2">总结</h2>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo3"/></p>
+<p>工厂方法模式是简单工厂模式的延伸，它继承了简单工厂模式的优点，同时还弥补了简单工厂模式的不足。工厂方法模式是使用频率最高的设计模式之一，是很多开源框架和API类库的核心模式。</p>
 
-<h4 id="toc_8">Demo4-AspectRatio比例。假设某个假设某个View距离父View右上角20,20 宽高比2:1宽100。</h4>
+<h3 id="toc_3">主要优点</h3>
 
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324655544093.gif" alt="demo4"/><br/>
-AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*Multiplier+Constant</code>,注意比例是支持表达式的如2:3、relation是支持great than,less than.具体的值由系统自动计算。</p>
+<p>工厂方法模式的主要优点如下：</p>
 
-<h4 id="toc_9">Demo5-某个View距离在父View的右侧20，demo4中白色View上20，宽高和Demo4中的宽高一样，并且有对齐。</h4>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-04-03-1445324807851881.gif" alt="Demo5"/></p>
-
-<h2 id="toc_10">参考资料</h2>
-
-<blockquote>
 <ol>
-<li><a href="http://www.cocoachina.com/ios/20151021/13825.html">寒哥细谈之AutoLayout全解</a></li>
-<li><a href="http://www.jianshu.com/p/66e0b808d833">相关资料</a></li>
+<li>在工厂方法模式中，工厂方法用来创建客户所需要的产品，同时还向客户隐藏了哪种具体产品类将被实例化这一细节，用户只需要关心所需产品对应的工厂，无须关心创建细节，甚至无须知道具体产品类的类名。</li>
+<li>基于工厂角色和产品角色的多态性设计是工厂方法模式的关键。它能够让工厂可以自主确定创建何种产品对象，而如何创建这个对象的细节则完全封装在具体工厂内部。工厂方法模式之所以又被称为多态工厂模式，就正是因为所有的具体工厂类都具有同一抽象父类。</li>
+<li>使用工厂方法模式的另一个优点是在系统中加入新产品时，无须修改抽象工厂和抽象产品提供的接口，无须修改客户端，也无须修改其他的具体工厂和具体产品，而只要添加一个具体工厂和具体产品就可以了，这样，系统的可扩展性也就变得非常好，完全符合“开闭原则”。</li>
 </ol>
-</blockquote>
+
+<h3 id="toc_4">主要缺点</h3>
+
+<p>工厂方法模式的主要缺点如下：</p>
+
+<ol>
+<li>在添加新产品时，需要编写新的具体产品类，而且还要提供与之对应的具体工厂类，系统中类的个数将成对增加，在一定程度上增加了系统的复杂度，有更多的类需要编译和运行，会给系统带来一些额外的开销。</li>
+<li>由于考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度，且在实现时可能需要用到DOM、反射等技术，增加了系统的实现难度。</li>
+</ol>
+
+<h3 id="toc_5">适用场景</h3>
+
+<p>在以下情况下可以考虑使用工厂方法模式：</p>
+
+<ol>
+<li>客户端不知道它所需要的对象的类。在工厂方法模式中，客户端不需要知道具体产品类的类名，只需要知道所对应的工厂即可，具体的产品对象由具体工厂类创建，可将具体工厂类的类名存储在配置文件或数据库中。</li>
+<li>抽象工厂类通过其子类来指定创建哪个对象。在工厂方法模式中，对于抽象工厂类只需要提供一个创建产品的接口，而由其子类来确定具体要创建的对象，利用面向对象的多态性和里氏代换原则，在程序运行时，子类对象将覆盖父类对象，从而使得系统更容易扩展。</li>
+</ol>
+
+<h2 id="toc_6">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
 
       </div>
 
@@ -232,16 +224,16 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14603532939876.html" 
-          title="Previous Post: GeekBand.iOS-xcode的工程管理">&laquo; GeekBand.iOS-xcode的工程管理</a>
+          <a href="14893043668918.html" 
+          title="Previous Post: 设计模式-抽象工厂模式">&laquo; 设计模式-抽象工厂模式</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14595830611425.html" 
-          title="Next Post: GeekBand.iOS-Autoresizing">GeekBand.iOS-Autoresizing &raquo;</a>
+          <a  href="14892880856219.html" 
+          title="Next Post: 剑指Offer-二进制中1的个数">剑指Offer-二进制中1的个数 &raquo;</a>
       
       </p>
         </div>
@@ -253,7 +245,7 @@ AutoLayout的公式：<code>第一个Item的属性= (= )第二个Item的属性*M
           
 
           
-              <div class="ds-thread" data-thread-key="14596904523529.html" data-url="http://swuzjb.github.io/14596904523529.html" data-title="GeekBand.iOS-AutoLayout"></div>
+              <div class="ds-thread" data-thread-key="14893023180281.html" data-url="http://swuzjb.github.io/14893023180281.html" data-title="设计模式-工厂方法模式"></div>
           
         </div>
       </div>

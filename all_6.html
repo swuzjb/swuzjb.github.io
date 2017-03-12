@@ -107,6 +107,403 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14729975970385.html">
+                
+                  <h1>数据库连接池</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>建立数据库连接是一个非常耗时耗资源的行为，在大量并发的情况下，会降低服务器性能。同时，如果连接数超过最大的数据库允许连接值，数据库会直接抛出异常，非常不友好。为了解决上述的问题，我们引入了数据连接池的概念。<br/>
+数据库连接池类似于线程池，通过连接池预先同数据库建立一些连接，放在内存中，应用程序需要建立数据库连接时直接到连接池中申请一个就行，用完后再放回去，避免频繁的新建和关闭连接对象</p>
+
+<h2 id="toc_0">DBCP</h2>
+
+<p>DBCP（DataBase Connection Pool）数据库连接池，是java数据库连接池的一种，由Apache开发，通过数据库连接池，可以让程序自动管理数据库连接的释放和断开。同时DBCP也是tomcat所使用的连接池组价。</p>
+
+<h3 id="toc_1">DBCP的简单使用DEMO</h3>
+
+<pre><code class="language-java">package site.zhanjingbo.HelloDB;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.apache.commons.dbcp2.BasicDataSource;
+
+public class HelloDBCP {
+
+    static final String DRIVER_NAME = &quot;com.mysql.jdbc.Driver&quot;;
+    static final String DB_URL = &quot;jdbc:mysql://localhost:3307/cloud_study?characterEncoding=utf8&quot;;
+    static final String DB_USER = &quot;root&quot;;
+    static final String DB_PASSWORD = &quot;&quot;;
+
+    public static BasicDataSource ds = null;
+
+    public static void init() {
+        ds = new BasicDataSource();
+        ds.setDriverClassName(DRIVER_NAME);
+        ds.setUsername(DB_USER);
+        ds.setUrl(DB_URL);
+        ds.setPassword(DB_PASSWORD);
+    }
+
+    public static void search() {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = ds.getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(&quot;select username from user&quot;);
+            while (rs.next()) {
+                System.out.println(&quot;Hello &quot; + rs.getString(&quot;username&quot;));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        init();
+        search();
+    }
+}
+
+</code></pre>
+
+<p>通过上述的demo可见，使用DBCP对数据进行访问实际操作与JDBC并无不同。唯一的区别就是Connection对象的获取是通过BasicDataSource对象来获得而不是DriverManage对象。<br/>
+注：释放Connection对象同样是调用Connection的close()方法，不过这里的close()方法是被DBCP重写过的，是将连接对象重新放回连接池，而不是释放销毁。</p>
+
+<h3 id="toc_2">DBCP高级API</h3>
+
+<p>为了更好的设置和使用DBCP连接池，使数据库连接池效率更高，DBCP还提供了多个API接口供我们使用。</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">接口</th>
+<th style="text-align: center">作用</th>
+<th style="text-align: center">建议</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">.setInitialSize()</td>
+<td style="text-align: center">设置初始化连接数</td>
+<td style="text-align: center">设置为项目预期访问量</td>
+</tr>
+<tr>
+<td style="text-align: center">.setMaxTotal()</td>
+<td style="text-align: center">最大连接数</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">ds.setMaxWaitMillis()</td>
+<td style="text-align: center">线程最大等待时间</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">.setMaxIdle()</td>
+<td style="text-align: center">最大空闲连接数</td>
+<td style="text-align: center">与MinIdle相同</td>
+</tr>
+<tr>
+<td style="text-align: center">.setMinIdle()</td>
+<td style="text-align: center">最小空闲连接数</td>
+<td style="text-align: center">与MaxIdle相同</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="toc_3">DBCP定期检查</h4>
+
+<p>为了保证连接池中的连接都是有效的，我们需要定期的对连接池中的连接进行检查，对失效的连接及时进行关闭。相关API如下：</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">API</th>
+<th style="text-align: center">作用</th>
+<th style="text-align: center">建议</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">.setTestWhileIdle(true)</td>
+<td style="text-align: center">是否开启定期检查</td>
+<td style="text-align: center"></td>
+</tr>
+<tr>
+<td style="text-align: center">.setMinEvictableIdle</td>
+<td style="text-align: center">最小空闲时间，超过该值被销毁</td>
+<td style="text-align: center">小于服务器连接失效时间(一般为8小时)</td>
+</tr>
+<tr>
+<td style="text-align: center">.setTimeBetweenEvictionRunsMillis</td>
+<td style="text-align: center">检查时间间隔</td>
+<td style="text-align: center"></td>
+</tr>
+</tbody>
+</table>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/9/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14729975970385.html" data-count-type="comments" href="14729975970385.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14728168486763.html">
+                
+                  <h1>Cookie与Session</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在开发过程中我们经常需要保存一些状态信息如用户登录状态等，但是由于HTTP协议的无状态特性，这些功能无法直接实现。所以我们引入了Cookie与Session这两个概念用于保存一些信息。</p>
+
+<h2 id="toc_0">Cookie</h2>
+
+<p>Cookie的作用通俗地说就是当一个用户通过HTTP协议访问一个服务器的时候，这个服务器会将一些Key/Value键值对返回给客户端浏览器，并给这些数据加上一些限制条件，在条件符合时这个用户下次访问这个服务器的时候，数据又被完整地带回给服务器。</p>
+
+<h3 id="toc_1">Cookie如何工作</h3>
+
+<ol>
+<li>用户通过浏览器请求某个Servlet，在请求过程中如果本地有该站点的Cookie信息，浏览器会将这些信息放入request请求的请求头中；</li>
+<li>在Servlet中可以通过<code>request.getCookies();</code>获取当前的Cookie数组；</li>
+<li>根据自己的业务需求，新建Cookie对象实例，分别设置key和value的值；</li>
+<li>将需要添加的Cookie实例通过<code>response.addCookie();</code>方法添加到响应当中返回客户端，客户端根据Cookie的生命周期（MaxAge属性）来选择是否将此Cookie写入硬盘当中。</li>
+</ol>
+
+<h3 id="toc_2">DemoCode</h3>
+
+<pre><code class="language-java">    String getCookie(Cookie[] cookies, String key) { 
+        if (cookies != null) { 
+            for (Cookie cookie : cookies) { 
+                if (cookie.getName().equals(key)) { 
+                    return cookie.getValue(); 
+                } 
+            } 
+        } 
+        return null; 
+    } 
+
+    @Override 
+    public void doGet(HttpServletRequest request, 
+                      HttpServletResponse response) 
+            throws IOException, ServletException { 
+        Cookie[] cookies = request.getCookies(); 
+        String userName = getCookie(cookies, &quot;userName&quot;); 
+        String userAge = getCookie(cookies, &quot;userAge&quot;); 
+        if (userName == null) { 
+            response.addCookie(new Cookie(&quot;userName&quot;, &quot;user&quot;)); 
+        } 
+        if (userAge == null) { 
+            response.addCookie(new Cookie(&quot;userAge&quot;, &quot;28&quot;)); 
+        } 
+         
+ }
+</code></pre>
+
+<h3 id="toc_3">使用Cookie的限制</h3>
+
+<p>Cookie是 HTTP 协议头中的一个字段，虽然HTTP协议本身对这个字段并没有多少限制，但是 Cookie 最终还是存储在浏览器里，所以不同的浏览器对Cookie的存储都有一些限制，下表是一些通常的浏览器对 Cookie的大小和数量的限制。</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">浏览器版本</th>
+<th style="text-align: center">Cookie数限制（个/域名）</th>
+<th style="text-align: center">总大小限制</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">IE6</td>
+<td style="text-align: center">20</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">IE7、8、9</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4095B</td>
+</tr>
+<tr>
+<td style="text-align: center">Chrome</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">&gt;8000</td>
+</tr>
+<tr>
+<td style="text-align: center">FireFox</td>
+<td style="text-align: center">50</td>
+<td style="text-align: center">4097B</td>
+</tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h2 id="toc_4">Session</h2>
+
+<p>前面已经介绍了 Cookie 可以让服务端程序跟踪每个客户端的访问，但是每次客户端的访问都必须传回这些 Cookie，如果 Cookie 很多，这无形地增加了客户端与服务端的数据传输量，而 Session 的出现正是为了解决这个问题。</p>
+
+<h3 id="toc_5">Session如何工作</h3>
+
+<ol>
+<li>session是基于Cookie的，同一个客户端每次和服务端交互时，不需要每次都传回所有的 Cookie 值，而是只要传回一个 ID，这个 ID 是客户端第一次访问服务器的时候生成的，而且每个客户端是唯一的。这样每个客户端就有了一个唯一的 ID，客户端只要传回这个 ID 就行了，这个 ID 通常是 NANE 为 JSESIONID 的一个 Cookie；</li>
+<li>有了Session ID服务端就可以创建HttpSession对象了，第一次触发通过<code>request.getSession()</code>方法。如果当前的Session ID 还没有对应的HttpSession对象，那么就创建一个新的，并将这个对象加到org.apache.catalina.Manager的sessions容器中保存。Manager类将管理所有Session的生命周期，如果该session存在则直接返回；</li>
+<li>直接操作session对象对key/value键值对进行存储，数据保存在服务器端，可以通过api手工操作其声明周期</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/9/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14728168486763.html" data-count-type="comments" href="14728168486763.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14720186733605.html">
+                
+                  <h1>简述HTTP请求过程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>HTTP请求是web程序服务的基础，要想写好web程序，必然要对http请求的过程进行掌握。</p>
+</blockquote>
+
+<h2 id="toc_0">HTTP请求步骤</h2>
+
+<ol>
+<li>如果是以域名形式进行web访问，则浏览器会先通过DNS服务将域名转化为对应的IP地址，为下一步访问做准备。</li>
+<li>通过IP地址与服务器建立TCP连接</li>
+<li>客户端向服务器端发送Request请求</li>
+<li>服务器端向客户端发送Response响应</li>
+<li>服务器端关闭TCP连接。一般情况下，一旦Web服务器向浏览器发送了请求数据，它就要关闭TCP连接，然后如果浏览器或者服务器在其头信息加入了这行代码：<code>Connection:keep-alive</code>。TCP连接在发送后将仍然保持打开状态，于是，浏览器可以继续通过相同的连接发送请求。保持连接节省了为每个请求建立新连接所需的时间，还节约了网络带宽。 </li>
+</ol>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-08-24-14720197735370.jpg" alt=""/></p>
+
+<h2 id="toc_1">HTTP请求头,响应头字段</h2>
+
+<h3 id="toc_2">请求头</h3>
+
+<ul>
+<li>Accept: text/html, image/* ：客户机支持的数据类型</li>
+<li>Accept-Charset: UTF-8 ：客户机采用的编码</li>
+<li>Accept-Encoding: gzip,compress:客户机支持的数据压缩格式</li>
+<li>Accept-Language: en-us,zh-cn:客户机的语言环境</li>
+<li>Host: localhost:8080 :访问的主机名</li>
+<li>If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT : 资源的缓存时间,用以判断服务器上的资源是否发生变化</li>
+<li>Referer: <a href="http://www.zhanjingbo.site">http://www.zhanjingbo.site</a> : 从哪个页面跳转来访问资源的,用以实现防盗链</li>
+<li>User-Agent: Mozilla/4.0 (compatible;MSIE 5.5;Windows NT 5.0):客户机的软件环境</li>
+<li>Connection: close/Keep-Alive:请求结束后,是关闭连接还是保持连接</li>
+<li>Date: Tue, 11 Jul 2000 18:23:51 GMT当前请求时间</li>
+<li>Range:指示服务器只传输一部分web资源.可以用来实现断点续传功能
+
+<ul>
+<li>Range字段可以通过3种格式设置要传输的字节范围:</li>
+<li>Range: bytes=1000-2000:传输范围从1000到2000字节</li>
+<li>Range: bytes=1000-:传输第1000个字节以后的所有内容</li>
+<li>Range: bytes=10000:传输最后1000个字节</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_3">响应头</h3>
+
+<ul>
+<li>Location：这个头配合302状态码使用，重定向地址</li>
+<li>Server:Apache-Coyote/1.1:服务器类的类型</li>
+<li>Content-Encoding：服务器通过这个头，数据压缩的格式</li>
+<li>Content-Type：服务器通过这个头告诉浏览器送回数据的类型</li>
+<li>Refresh：服务器通过这个头，告诉浏览器隔多长时间刷新一次</li>
+<li>Connection:keep-alive\close:访问完后的状态</li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/8/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14720186733605.html" data-count-type="comments" href="14720186733605.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14693288315265.html">
                 
                   <h1>Java康复性训练——SpringMVC</h1>
@@ -430,618 +827,6 @@ public class UserServiceAspect {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14690817459253.html">
-                
-                  <h1>Java康复性训练——Spring（1）</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>Spring是一个开源框架，Spring是于2003 年兴起的一个轻量级的Java 开发框架，由Rod Johnson创建。简单来说，Spring是一个分层的JavaSE/EE full-stack(一站式) 轻量级开源框架。</p>
-</blockquote>
-
-<h2 id="toc_0">Spring IOC</h2>
-
-<p>IOC(Inverse of Control)控制反转,又称作依赖注入。是一种重要的面向对象编程的法则，用于削减计算机程序的耦合问题，是轻量级Spring框架的核心。<br/>
-Spring的IOC的核心就是为各类依赖进行注入，Spring将注入的单例实例称之为bean。依赖注入也就是将Bean注入实例。</p>
-
-<h3 id="toc_1">依赖注入</h3>
-
-<ol>
-<li><p>装配一个Bean</p>
-
-<ol>
-<li><p>在Spring的bean.xml文件中填写如下配置：</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user1&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;&lt;/bean&gt; 
-</code></pre></li>
-<li><p>在需要对实例进行初始化的时候使用如下代码：</p>
-
-<pre><code class="language-java">public static void main(String[] args) {
-
-    //加载Spring-bean配置信息
-    ApplicationContext ac = new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
-
-    //获取id为user1的bean的实例
-    User user1 = (User)ac.getBean(&quot;user1&quot;);
-    System.out.println(user1);
-}
-</code></pre></li>
-</ol></li>
-<li><p>属性注入：为注入的实例设置属性值。通过配置beans.xml实现，实现代码如下:</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user2&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;property name=&quot;id&quot; value=&quot;2&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;username&quot; value=&quot;administrator&quot;&gt;&lt;/property&gt;
-    &lt;property name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/property&gt;
-&lt;/bean&gt;
-</code></pre></li>
-<li><p>构造函数注入：在实例化bean时调用指定的构造方法。通过配置beans.xml文件实现。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user3&quot; class=&quot;site.zhanjingbo.model.User&quot;&gt;
-    &lt;!-- 通过索引来设置参数值 --&gt;
-    &lt;constructor-arg index=&quot;0&quot; value=&quot;3&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过类型来设置参数值 --&gt;
-    &lt;constructor-arg type=&quot;String&quot; value=&quot;username&quot;&gt;&lt;/constructor-arg&gt;
-    &lt;!-- 通过参数名来设置参数值 --&gt;
-    &lt;constructor-arg name=&quot;password&quot; value=&quot;password&quot;&gt;&lt;/constructor-arg&gt;
-&lt;/bean&gt;
-</code></pre></li>
-<li><p>工厂方法注入：通过自己定义的工厂方法对bean进行实例化注入。</p>
-
-<ol>
-<li><p>静态工厂方法，在beans.xml中调用。</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;user4&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-<li><p>非静态工厂方法,先声明工厂类的Bean，再对其进行调用</p>
-
-<pre><code class="language-xml">&lt;bean id=&quot;userFactory&quot; class=&quot;site.zhanjingbo.factory.UserFactory&quot;&gt;&lt;/bean&gt;
-&lt;bean id=&quot;user5&quot; factory-bean=&quot;userFactory&quot; factory-method=&quot;createUser&quot;&gt;&lt;/bean&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h3 id="toc_2">注入参数</h3>
-
-<ol>
-<li>基本类型值：参考上一节属性注入。</li>
-<li>注入Bean：<code>&lt;property name=&quot;role&quot; ref=&quot;role1&quot;&gt;&lt;/property&gt;</code>。</li>
-<li>内部Bean，为了防止bean被其他部分引用，可以将bean声明在<code>&lt;property&gt;&lt;/property&gt;</code>之间，仅供自己引用。</li>
-<li><code>null</code>值，在<code>&lt;property&gt;&lt;/property&gt;</code>之间添加<code>&lt;null&gt;&lt;/null&gt;</code>表示空值。</li>
-<li>级联属性，直接对属性对象的属性进行赋值。要确保该属性对象不为null。<code>&lt;property name=&quot;role.name&quot; value=&quot;admin&quot;&gt;&lt;/property&gt;</code></li>
-<li><p>集合类型属性，可以用下列配置来实现。</p>
-
-<pre><code class="language-xml">&lt;!-- list--&gt;
-&lt;property name=&quot;list&quot;&gt;
-    &lt;list&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/list&gt;
-&lt;/property&gt;
-&lt;!--set--&gt;
-&lt;property name=&quot;set&quot;&gt;
-    &lt;set&gt;
-        &lt;value&gt;&lt;/value&gt;
-    &lt;/set&gt;
-&lt;/property&gt;
-&lt;!--map--&gt;
-&lt;property name=&quot;map&quot;&gt;
-    &lt;map&gt;
-        &lt;entry&gt;
-            &lt;key&gt;&lt;value&gt;key&lt;/value&gt;&lt;/key&gt;
-            &lt;value&gt;value&lt;/value&gt;
-        &lt;/entry&gt;
-    &lt;/map&gt;
-&lt;/property&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_3">自动装配</h3>
-
-<p>通过配置default-autowrite属性，Spring IOC容器可以自动为程序注入bean；默认是no，不启用自动装配。default-autowrite的类型有byName，byType,constructor。<br/>
-- byName:通过名称进行自动匹配<br/>
-- byType:根据类型进行自动匹配<br/>
-- constructor:和byType类似，只不过它是根据构造方法注入而言的，根据类型，自动注入。<br/>
-<em>建议：自动装配机制由于屏蔽了装配的细节，容易产生潜在的错误，慎用</em></p>
-
-<h3 id="toc_4">方法注入</h3>
-
-<p>Spring bean默认的作用域是单例的，每次获取的都是同一个对象。我们可以通过设置bean的scope属性为prototype实现多例。<br/>
-在关联的Bean中我们通过设置<lookup-method>来实现多例注入。</p>
-
-<h3 id="toc_5">bean之间关系</h3>
-
-<ol>
-<li>继承：可以通过设置Abstract类型的Bean来设置某一类Bean的共用参数，继承bean设置parent属性即可。</li>
-<li>依赖：通过设置bean的depends-on属性来设置依赖</li>
-<li>引用：见上部</li>
-</ol>
-
-<h3 id="toc_6">bean的作用范围</h3>
-
-<ol>
-<li>singleton:Spring Ioc容器中仅有一个bean实例，以单例的方式存在</li>
-<li>prototype:每次容器调用Bean时，都返回一个新的实例</li>
-<li>request:每次Http请求时都会创建一个新的实例</li>
-<li>session:同一个Http Session共享一个Bean</li>
-<li>global session：同一个全局Session共享一个bean，一般用于portlet应用环境</li>
-<li>application:同一个Application共享一个bean</li>
-</ol>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14690817459253.html" data-count-type="comments" href="14690817459253.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14689923975384.html">
-                
-                  <h1>Java康复性训练——MyBatis3(3)</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
-</blockquote>
-
-<h2 id="toc_0">动态SQL</h2>
-
-<p>在实际开发过程中，静态的SQL写法并没有什么灵活性。当我们对User进行检索时，可能是依据id，role，username等等参数，如果使用静态SQL语句，我们就需要重复写大量的代码。为了解决这类问题，我们引入动态SQL。</p>
-
-<p>Mybatis对动态SQL有很不错的支持，增加了很多扩展。</p>
-
-<h3 id="toc_1">IF标签</h3>
-
-<p>当我们开发过程中，遇到上述的多条件或指定条件查询时，我们可以使用IF标签来扩展。<br/>
-以实现一个用户检索为例：</p>
-
-<ol>
-<li>在UserMapper接口中定义查询方法：<code>public List&lt;User&gt; searchUser(Map&lt;String, Object&gt; searchMap);</code></li>
-<li><p>在UserMapper.xml中对接口进行实现：</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-    select * from user where 1=1
-    &lt;if test=&quot;username!=null&quot;&gt;
-        and username like #{username}
-    &lt;/if&gt;
-    &lt;if test=&quot;id!=null&quot;&gt;
-        and id=#{id}
-    &lt;/if&gt;
-    &lt;if test=&quot;role!=null&quot;&gt;
-        and roleId=#{role.id}
-    &lt;/if&gt;
-&lt;/select&gt;
-</code></pre></li>
-<li><p>调用查询，传入查询条件的Map即可。</p>
-
-<pre><code class="language-java">public void testSearch(){
-    Role role = new Role();
-    role.setId(1);
-    Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
-    map.put(&quot;role&quot;, role);  
-    List&lt;User&gt; userList = userMapper.searchUser(map);
-    for(User user:userList){
-        System.out.println(user);
-    }   
-}
-</code></pre></li>
-</ol>
-
-<h3 id="toc_2">Choose、when和otherwise标签</h3>
-
-<p>上面的IF标签类似于我们结构控制的IF语句，那么现在介绍的这个标签就类似于我们的结构控制中的Switch-Case语句。<br/>
-当我们需要对条件进行限制的时候，我们就可以使用这个标签。标签的结构如下：</p>
-
-<pre><code class="language-xml">&lt;choose&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;when test=&quot;&quot;&gt;&lt;/when&gt;
-    &lt;otherwise&gt;&lt;/otherwise&gt;
-&lt;/choose&gt;
-</code></pre>
-
-<h3 id="toc_3">where标签</h3>
-
-<p>where条件是对Where语句的一个优化，可以自动给SQL语句加上Where。如果Where子句以and或者or开头时，则自动删除第一个and或or。</p>
-
-<pre><code class="language-xml">    &lt;select id=&quot;searchUser&quot; parameterType=&quot;Map&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user 
-        &lt;where&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                and username like #{username}
-            &lt;/if&gt;
-            &lt;if test=&quot;id!=null&quot;&gt;
-                and id=#{id}
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                and roleId=#{role.id}
-            &lt;/if&gt;
-        &lt;/where&gt;
-    &lt;/select&gt;
-</code></pre>
-
-<h3 id="toc_4">trim标签</h3>
-
-<p>与where语句类似，给语句增加前后缀。</p>
-
-<h3 id="toc_5">Foreach标签</h3>
-
-<p>用于拼接SQL语句的in语句，对传入的集合进行遍历。集合名称collectionName，元素名称itemName，拼接时以<code>(</code>开始，以<code>）</code>结束，用<code>，</code>分割。</p>
-
-<pre><code class="language-xml">&lt;foreach collection=&quot;collectionName&quot; item=&quot;itemName&quot; open=&quot;(&quot; close=&quot;)&quot; separator=&quot;,&quot;&gt;
-#{itemName}
-&lt;/foreach&gt;
-</code></pre>
-
-<h3 id="toc_6">set标签</h3>
-
-<p>和where子句类似，用于update语句。可以自动加上set，并自动删除最后一个<code>，</code>。</p>
-
-<pre><code class="language-xml">&lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user 
-        &lt;set&gt;
-            &lt;if test=&quot;username!=null&quot;&gt;
-                username=#{username},
-            &lt;/if&gt;
-            &lt;if test=&quot;password!=null&quot;&gt;
-                password=#{password},
-            &lt;/if&gt;
-            &lt;if test=&quot;role!=null&quot;&gt;
-                roleId=#{role.id},
-            &lt;/if&gt;
-        &lt;/set&gt;
-        where id=#{id}
-&lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_7">处理CLOB、BLOB类型数据</h3>
-
-<ul>
-<li>BLOB映射为<code>byte[]</code>,CLOB映射为<code>String</code>。</li>
-<li>数据插入和读取时，参照对应的映射类型进行处理即可。</li>
-</ul>
-
-<h3 id="toc_8">传入多个输入参数</h3>
-
-<ul>
-<li>使用<code>&lt;key,value&gt;</code>键值对的Map进行传递</li>
-<li>在SQL拼接时，直接使用#{param1}、#{param2}...来获取</li>
-</ul>
-
-<h3 id="toc_9">MyBatis分页</h3>
-
-<ul>
-<li>逻辑分页，即把所有的数据加入内存，每次取出若干条。通过<code>RowBounds</code>对象即可实现（需要指定offset,limit两个值）</li>
-<li>物理分页，使用limit子句来实现分页</li>
-</ul>
-
-<h3 id="toc_10">MyBatis缓存</h3>
-
-<p>MyBatis默认情况下，启用一级缓存，即同一个SqlSession接口对象调用了相同的select语句，则直接会从缓存中返回结果，而不再查询一次数据库。<br/>
-开发者可以自己配置二级缓存，二级缓存是全局的。默认情况下，select使用缓存，insert、update、delete不使用缓存。</p>
-
-<h3 id="toc_11">使用注解配置SQL映射器</h3>
-
-<h4 id="toc_12">基本映射语句</h4>
-
-<ol>
-<li>@Insert：声明在插入的接口上方，参数为sql语句，和XML配置时相同；</li>
-<li>@Update：同上；</li>
-<li>@delete：同上；</li>
-<li>@select：简单的返回单个对象时，和在查询方法上配置sql语句即可。</li>
-<li><p>@select：当需要返回集合时：</p>
-
-<pre><code class="language-java">@Select(&quot;select * from user where id=#{id}&quot;)
-@Results({
-    @Result(id=true,column=&quot;id&quot;,property=&quot;id&quot;),
-    @Result(column=&quot;username&quot;,property=&quot;username&quot;),
-    @Result(column=&quot;password&quot;,property=&quot;password&quot;),
-})
-public User getUserById(Integer id);
-</code></pre></li>
-</ol>
-
-<h4 id="toc_13">关系映射</h4>
-
-<ol>
-<li><p>一对一映射：<code>@Result(column=&quot;roleId&quot;,property=&quot;role&quot; one=@One(select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;))</code>;</p></li>
-<li><p>一对多： <code>@Result(column=&quot;id&quot;,property=&quot;userList&quot; many=@Many(select=&quot;site.zhanjingbo.mapper.StudentMapper.getUserbyRole&quot;))</code></p></li>
-</ol>
-
-<h4 id="toc_14">动态SQL</h4>
-
-<p>实现比较复杂，建议使用XML实现。使用注解效果不是很好。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/20</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689923975384.html" data-count-type="comments" href="14689923975384.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14689148951216.html">
-                
-                  <h1>Java康复性训练——MyBatis3(2)</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
-
-<blockquote>
-<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
-</blockquote>
-
-<h2 id="toc_0">Mapper的XML配置</h2>
-
-<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
-
-<pre><code class="language-java">package site.zhanjingbo.mapper;
-
-import java.util.List;
-
-import site.zhanjingbo.model.User;
-
-public interface UserMapper {
-    public int addUser(User user);
-    public int updateUser(User user);
-    public int deleteUser(Integer id);
-    
-    public User getUserById(Integer id);
-    public List&lt;User&gt; getAllUser();
-    
-}
-</code></pre>
-
-<h3 id="toc_1">添加XML配置</h3>
-
-<p>配置文件如下：</p>
-
-<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-</code></pre>
-
-<h3 id="toc_2">修改XML配置</h3>
-
-<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-</code></pre>
-
-<h3 id="toc_3">删除XML配置</h3>
-
-<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-</code></pre>
-
-<h3 id="toc_4">查询XML配置</h3>
-
-<ol>
-<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
-
-<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
-    select * from user where id=#{id}
-&lt;/select&gt;
-</code></pre></li>
-<li><p>返回结构List。</p>
-
-<ol>
-<li><p>先声明一个返回类型</p>
-
-<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-&lt;/resultMap&gt;
-</code></pre></li>
-<li><p>声明SQL语句映射</p>
-
-<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
-    select * from user
-&lt;/select&gt;
-</code></pre></li>
-</ol></li>
-</ol>
-
-<h2 id="toc_5">关系映射</h2>
-
-<h3 id="toc_6">一对一关系</h3>
-
-<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
-
-<ol>
-<li><p>建立Role的POJO对象</p>
-
-<pre><code class="language-java">package site.zhanjingbo.model;
-public class Role {
-    private Integer id;
-    private String roleName;
-
-    public Role(){
-        super();
-    }
-    public Role(Integer id, String roleName) {
-        super();
-        this.id = id;
-        this.roleName = roleName;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-    public String getRoleName() {
-        return roleName;
-    }
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    @Override
-    public String toString() {
-        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
-    }
-}
-</code></pre></li>
-<li><p>建立Role的Mapper接口</p>
-
-<pre><code class="language-java">package site.zhanjingbo.mapper;
-
-import site.zhanjingbo.model.Role;
-
-public interface RoleMapper {
-    public Role getRoleById(Integer id);
-}
-</code></pre></li>
-<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
-        select * from role where id=#{id}
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
-
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
-    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
-        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
-        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
-        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
-    &lt;/resultMap&gt;
-
-    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
-        insert into user(username,password) values(#{username},#{password}) 
-    &lt;/insert&gt;
-    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
-        update user set username=#{username},password=#{password} where id=#{id}
-    &lt;/update&gt;
-    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
-        delete from user where id=#{id}
-    &lt;/delete&gt;
-    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user where id=#{id}
-    &lt;/select&gt;
-    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
-        select * from user
-    &lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_7">一对多关系</h3>
-
-<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
-为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
-
-<ol>
-<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
-<li>在UserMapper.xml中完善这个方法的SQL语句</li>
-<li>在Role中增加UserList属性，并添加getter和setter方法</li>
-<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
-
-<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;!DOCTYPE mapper
-PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
-&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
-&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
-&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
-    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
-    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
-    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
-&lt;/resultMap&gt;
-&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
-    select * from role where id=#{id}
-&lt;/select&gt;
-&lt;/mapper&gt;
-</code></pre></li>
-</ol>
-
-<h3 id="toc_8">多对多关系</h3>
-
-<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/7/19</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689148951216.html" data-count-type="comments" href="14689148951216.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1130,6 +915,24 @@ PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
 	      
 		      
 			      <li class="post">
+			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
 			      </li>
 		     
@@ -1137,24 +940,6 @@ PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
 		      
 			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892030475974.html">设计模式-观察者模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
 		  

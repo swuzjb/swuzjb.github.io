@@ -107,6 +107,291 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14890277021887.html">
+                
+                  <h1>剑指Offer-重建二叉树</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
+
+<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
+
+<h2 id="toc_1">代码</h2>
+
+<pre><code class="language-java">/**
+ * Definition for binary tree
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
+        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
+    }
+    
+    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
+        if(pStart &gt; pEnd || iStart &gt; iEnd ){
+            return null;
+        }
+        
+        TreeNode node = new TreeNode(pre[pStart]);
+        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
+        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
+        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
+        return node;
+        
+    }
+    
+    public int find(int[] array,int target,int start,int end){
+        for(int i = start;i&lt;=end;i++){
+            if(array[i] == target){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890277021887.html" data-count-type="comments" href="14890277021887.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14890230803105.html">
+                
+                  <h1>剑指Offer-从尾到头打印链表</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>输入一个链表，从尾到头打印链表每个节点的值。</p>
+</blockquote>
+
+<h2 id="toc_0">问题解答</h2>
+
+<p>要解决这个问题肯定要遍历链表。遍历的顺序是从头到尾的顺序，可是输出的要求顺序却是从尾到头。也就是说第一个遍历到的节点，最后一个输出，而最后一个遍历到的节点第一个输出。这就是典型的后进先出，我们可以用栈实现这个顺序。每经过一个节点的时候，把该节点放入到一个栈中。当遍历完整个链表后，再从栈顶开始逐个输出节点的值，此时，输出的节点顺序已经反转过来了。<br/>
+既然可以使用栈实现这个需求，那么我们就可以考虑使用递归，递归本质上就是一个栈结构。这样要实现反过来输出链表，我们每访问到一个结点的时候，先递归输出它后面的节点，在输出该节点自身，这样链表的输出就反过来了。</p>
+
+<h2 id="toc_1">递归实现</h2>
+
+<pre><code class="language-java">/**
+*    public class ListNode {
+*        int val;
+*        ListNode next = null;
+*
+*        ListNode(int val) {
+*            this.val = val;
+*        }
+*    }
+*
+*/
+import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        search(listNode);
+        return array;
+    }
+    public void  search(ListNode listNode){
+        if(listNode != null){
+            search(listNode.next);
+            array.add(listNode.val);
+        }
+        
+    }
+}
+</code></pre>
+
+<p>本题基于递归实现看起来很简洁，但是有个问题，当链表非常长的时候，就会导致函数调用层级很深，从而有可能导致函数调用栈溢出。</p>
+
+<h2 id="toc_2">显示栈实现</h2>
+
+<pre><code class="language-java">import java.util.*;
+
+public class Solution {
+    
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayDeque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
+        while(listNode != null){
+            stack.offerFirst(listNode.val);
+            listNode = listNode.next;
+        }
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;(stack.size());
+        while (stack.size()&gt;0) {
+            array.add(stack.pollFirst());
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+<h2 id="toc_3">翻转链表</h2>
+
+<p>如果可以改变原链表的结构，就可以对链表进行翻转。</p>
+
+<pre><code class="language-java">import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+        ListNode head = null;
+        ListNode next = null;
+        while (listNode != null) {
+            next = listNode.next;
+            listNode.next = head;
+            head = listNode;
+            listNode = next;
+        }
+        while (head != null) {
+            array.add(head.val);
+            head = head.next;
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890230803105.html" data-count-type="comments" href="14890230803105.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14889379059302.html">
+                
+                  <h1>剑指Offer-替换空格</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>请实现一个函数，将一个字符串中的空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>这个题目Java开发者可能一下就笑了，so easy啊，一个库函数就解决了。但是，我们还是要尝试去造一下轮子，追求原理。<br/>
+由于要将空格替换为%20，字符串前后的长度肯定不一样，那么就肯定涉及到了重新申请内存地址。</p>
+
+<p>最简单的思路，我们遍历字符串，发现空格，就将空格后面的字符进行移动，然后继续遍历。这样的做法时间复杂度为O(n<sup>2)，因为每次都移动了大量的字符。</sup></p>
+
+<p>所以我们提出一个简要的方法，重新申请一个字符串（C/C++中准确的成为字符数组），这个新字符串的长度为原字符串长度+空格个数*2（空格的个数，可以通过一次遍历获得），然后用两个指针变量分别指向两个字符串的首位，然后进行复制，当原字符串指针指向空格时，新字符串插入“%20”，直到末尾。</p>
+
+<h2 id="toc_1">实现代码</h2>
+
+<p>库函数解决：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        return str.toString().replaceAll(&quot; &quot;, &quot;%20&quot;);
+    }
+}
+</code></pre>
+
+<p>自己过不去版：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        StringBuffer newStr = new StringBuffer();
+        
+        int i = 0;
+        
+        while(i&lt;str.length()){
+            if(str.charAt(i) != &#39; &#39;){
+                newStr.append(str.charAt(i));
+            }else{
+                newStr.append(&quot;%20&quot;);
+            }
+            i++;
+        }
+        return newStr.toString();
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889379059302.html" data-count-type="comments" href="14889379059302.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14889364537323.html">
                 
                   <h1>剑指Offer-二维数组中的查找</h1>
@@ -288,503 +573,6 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879958366746.html">
-                
-                  <h1>Java容器框架分析(八)——PriorityQueue</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
-
-<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
-
-<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
-
-<ul>
-<li><code>leftNo = parentNo*2+1</code></li>
-<li><code>rightNo = parentNo*2+2</code></li>
-<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
-</ul>
-
-<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
-
-<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">add()&amp;offer()</h3>
-
-<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
-
-<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
-
-<pre><code class="language-java">public boolean offer(E e) {
-    if (e == null)//不允许放入null元素
-        throw new NullPointerException();
-    modCount++;
-    int i = size;
-    if (i &gt;= queue.length)
-        grow(i + 1);//自动扩容
-    size = i + 1;
-    if (i == 0)//队列原来为空，这是插入的第一个元素
-        queue[0] = e;
-    else
-        siftUp(i, e);//调整
-    return true;
-}
-</code></pre>
-
-<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
-
-<pre><code class="language-java">private void siftUp(int k, E x) {
-    while (k &gt; 0) {
-        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
-        Object e = queue[parent];
-        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
-            break;
-        queue[k] = e;
-        k = parent;
-    }
-    queue[k] = x;
-}
-</code></pre>
-
-<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
-
-<h3 id="toc_2">element()&amp;peek()</h3>
-
-<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
-
-<pre><code class="language-java">//peek()
-public E peek() {
-    if (size == 0)
-        return null;
-    return (E) queue[0];//0下标处的那个元素就是最小的那个
-}
-</code></pre>
-
-<h3 id="toc_3">remove()&amp;poll()</h3>
-
-<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
-代码如下：</p>
-
-<pre><code class="language-java">public E poll() {
-    if (size == 0)
-        return null;
-    int s = --size;
-    modCount++;
-    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
-    E x = (E) queue[s];
-    queue[s] = null;
-    if (s != 0)
-        siftDown(0, x);//调整
-    return result;
-}
-</code></pre>
-
-<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
-
-<pre><code class="language-java">//siftDown()
-private void siftDown(int k, E x) {
-    int half = size &gt;&gt;&gt; 1;
-    while (k &lt; half) {
-        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
-        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
-        Object c = queue[child];
-        int right = child + 1;
-        if (right &lt; size &amp;&amp;
-            comparator.compare((E) c, (E) queue[right]) &gt; 0)
-            c = queue[child = right];
-        if (comparator.compare(x, (E) c) &lt;= 0)
-            break;
-        queue[k] = c;//然后用c取代原来的值
-        k = child;
-    }
-    queue[k] = x;
-}
-</code></pre>
-
-<h3 id="toc_4">remove(Object o)</h3>
-
-<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
-
-<pre><code class="language-java">//remove(Object o)
-public boolean remove(Object o) {
-    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
-    int i = indexOf(o);
-    if (i == -1)
-        return false;
-    int s = --size;
-    if (s == i) //情况1
-        queue[i] = null;
-    else {
-        E moved = (E) queue[s];
-        queue[s] = null;
-        siftDown(i, moved);//情况2
-        ......
-    }
-    return true;
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14879892493054.html">
-                
-                  <h1>Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>如果你已经看过前面关于HashSet和HashMap，以及TreeSet和TreeMap的讲解，一定能够想到本文要讲解的LinkedSet和LinkedHashMap在Java中也有着相同的实现，前者仅仅是对后者做了一层包装，也就是说<strong>LinkedHashSet里面有一个LinkedHashMap(适配器模式)</strong>。因此本文将重点介绍LinkedHashMap。</p>
-
-<p>LinkedHashMap实现了Map接口，即允许放入key为null的元素，也允许插入value为null的元素。从名字上可以看出该容器是LinkedList和HashMap的混合体，也就是说它同时满足HashMap和LinkedList的某些特性。可以将LinkedHashMap看作采用LinkedList增强的HashMap。</p>
-
-<p>事实上LinkedHashMap是HashMap的直接子类，二者的唯一区别是LinkedHashMap在HashMap的基础上，采用双向链表的形式将所有entry连接起来，这样是为保证元素的迭代顺序和插入顺序相同。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879901525374.png" alt=""/></p>
-
-<p>上图给出了LinkedHashMap的结构图，主体部分跟HashMap完全一样，多了header指向双向链表的头部，该双向链表的迭代顺序就是entry的插入顺序。<br/>
-除了可以保证迭代顺序，这种结构还有一个好处：迭代LinkedHashMap时不需要像HashMap那样遍历整个table，而是只需要直接遍历header指向的双向链表即可。也就说LinkedHashMap的迭代时间就只跟entry的个数有关，和table的大小无关。</p>
-
-<p>有两个参数可以影响 LinkedHashMap 的性能：初始容量（inital capacity）和负载系数（load factor）。初始容量指定了初始table的大小，负载系数用来指定自动扩容的临界值。当entry的数量超过<code>capacity*load_factor</code>时，容器将自动扩容并重新哈希。对于插入元素较多的场景，将初始容量设大可以减少重新哈希的次数。<br/>
-将对象放入到 LinkedHashMap 或 LinkedHashSet 中时，有两个方法需要特别关心：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>方法决定了对象会被放到哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是 “同一个对象”。所以，如果要将自定义的对象放入到LinkedHashMap或LinkedHashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
-
-<p>通过如下方式可以得到一个跟源Map迭代顺序一样的LinkedHashMap：</p>
-
-<pre><code class="language-java">void foo(Map m) {
-    Map copy = new LinkedHashMap(m);
-    ...
-}
-</code></pre>
-
-<p>出于性能原因，LinkedHashMap是非线程安全的，如果需要在多线程环境使用，需要程序呀手动进行同步；或者通过如下方式将LinkedHashMap包装成同步的：</p>
-
-<pre><code class="language-java">Map m = Collections.synchronizedMap(new LinkedHashMap(...));
-</code></pre>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">get()</h3>
-
-<p>get(Object key)方法根据指定的key值返回对应的value.该方法的流程和HashMap的实现方式基本一样，可参考前文。</p>
-
-<h3 id="toc_2">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key,value</code>对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>get()</code>方法；如没有找到则会通过<code>addEntry(int hash,K key,V value,int bucketIndex)</code>方法插入新的entry。<br/>
-PS.这里的插入有两重含义：</p>
-
-<ol>
-<li>从table的角度来看，新的entry需要插入到对应的bucket里，当有哈希冲突时，采用头插法将新的entry插入到冲突链表的头部。</li>
-<li>从header的角度，新的entry需要插入到双向链表的尾部。</li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879912929279.png" alt=""/></p>
-
-<p>addEntry()代码如下：</p>
-
-<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
-        resize(2 * table.length);// 自动扩容，并重新哈希
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = hash &amp; (table.length-1);// hash%table.length
-    }
-    // 1.在冲突链表头部插入新的entry
-    HashMap.Entry&lt;K,V&gt; old = table[bucketIndex];
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(hash, key, value, old);
-    table[bucketIndex] = e;
-    // 2.在双向链表的尾部插入新的entry
-    e.addBefore(header);
-    size++;
-}
-</code></pre>
-
-<p>上述代码中用到了<code>addBefore()</code>方法将新<code>entry e</code>插入到双向链表引用<code>header</code>的前面，这样e就成为了双向链表中的最后一个元素。<code>addBefore()</code>的代码如下：</p>
-
-<pre><code class="language-java">// LinkedHashMap.Entry.addBefor()，将this插入到existingEntry的前面
-private void addBefore(Entry&lt;K,V&gt; existingEntry) {
-    after  = existingEntry;
-    before = existingEntry.before;
-    before.after = this;
-    after.before = this;
-}
-</code></pre>
-
-<p>仅需要简单修改相关entry的引用而已。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里实现的。<code>removeEntryForKey()</code>方法会首先找到key值对应的entry，然后删除entry(修改链表的引用)。查找过程和get()方法类似。<br/>
-注意，这里的删除也有两层含义：</p>
-
-<ol>
-<li>从table的角度看，需要将该entry从对应的bucket里删除，如果对应的冲突链表不空，需要修改冲突链表的相应引用。</li>
-<li>从header的角度来看，需要将该entry从双向链表中删除，同时修改链表中前面以及后面元素的相应引用。</li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879925343738.png" alt=""/></p>
-
-<p><code>removeEntryForKey()</code>对应的代码如下：</p>
-
-<pre><code class="language-java">// LinkedHashMap.removeEntryForKey()，删除key值对应的entry
-final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    int i = indexFor(hash, table.length);// hash&amp;(table.length-1)
-    Entry&lt;K,V&gt; prev = table[i];// 得到冲突链表
-    Entry&lt;K,V&gt; e = prev;
-    while (e != null) {// 遍历冲突链表
-        Entry&lt;K,V&gt; next = e.next;
-        Object k;
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {// 找到要删除的entry
-            modCount++; size--;
-            // 1. 将e从对应bucket的冲突链表中删除
-            if (prev == e) table[i] = next;
-            else prev.next = next;
-            // 2. 将e从双向链表中删除
-            e.before.after = e.after;
-            e.after.before = e.before;
-            return e;
-        }
-        prev = e; e = next;
-    }
-    return e;
-}
-</code></pre>
-
-<h2 id="toc_4">LinkedHashSet</h2>
-
-<p>前面已经说过 LinkedHashSet 是对 LinkedHashMap 的简单包装，对 LinkedHashSet 的函数调用都会转换成合适的 LinkedHashMap 方法，因此 LinkedHashSet 的实现非常简单，这里不再赘述。</p>
-
-<pre><code class="language-java">public class LinkedHashSet&lt;E&gt;
-    extends HashSet&lt;E&gt;
-    implements Set&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    // LinkedHashSet里面有一个LinkedHashMap
-    public LinkedHashSet(int initialCapacity, float loadFactor) {
-        map = new LinkedHashMap&lt;&gt;(initialCapacity, loadFactor);
-    }
-    ......
-    public boolean add(E e) {//简单的方法转换
-        return map.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879892493054.html" data-count-type="comments" href="14879892493054.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14879172287548.html">
-                
-                  <h1>Java容器框架分析(六)——HashSet与HashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
-
-<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
-
-<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
-
-<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
-
-<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
-当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
-
-<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
-算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
-上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
-         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
-        Object k;
-        //依据equals()方法判断是否相等
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
-            return e;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_2">put()</h3>
-
-<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
-
-<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
-        resize(2 * table.length);//自动扩容，并重新哈希
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = hash &amp; (table.length-1);//hash%table.length
-    }
-    //在冲突链表头部插入新的entry
-    Entry&lt;K,V&gt; e = table[bucketIndex];
-    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
-    size++;
-}
-</code></pre>
-
-<h3 id="toc_3">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
-
-<pre><code class="language-java">//removeEntryForKey()
-final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
-    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
-    Entry&lt;K,V&gt; e = prev;
-    while (e != null) {//遍历冲突链表
-        Entry&lt;K,V&gt; next = e.next;
-        Object k;
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
-            modCount++; size--;
-            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
-            else prev.next = next;
-            return e;
-        }
-        prev = e; e = next;
-    }
-    return e;
-}
-</code></pre>
-
-<h2 id="toc_4">HashSet</h2>
-
-<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
-
-<pre><code class="language-java">public class HashSet&lt;E&gt;
-{
-    ......
-    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public HashSet() {
-        map = new HashMap&lt;&gt;();
-    }
-    ......
-    public boolean add(E e) {//简单的方法转换
-        return map.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879172287548.html" data-count-type="comments" href="14879172287548.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -873,6 +661,24 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 	      
 		      
 			      <li class="post">
+			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
 			      </li>
 		     
@@ -880,24 +686,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 		      
 			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892030475974.html">设计模式-观察者模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
 		  

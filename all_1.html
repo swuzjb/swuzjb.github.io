@@ -107,6 +107,480 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14892030475974.html">
+                
+                  <h1>设计模式-观察者模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>定义对象之间的一种一对多依赖关系，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。观察者模式的别名包括发布-订阅（Publish/Subscribe）模式、模型-视图（Model/View）模式、源-监听器（Source/Listener）模式或从属者（Dependents）模式。观察者模式是一种对象行为型模式。</p>
+</blockquote>
+
+<p>观察者模式是使用频率最高的设计模式之一，它用于建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应作出反应。在观察者模式中，发生改变的对象称为观察目标，而被通知的对象称为观察者，一个观察目标可以对应多个观察者，而且这些观察者之间可以没有任何相互联系，可以根据需要增加和删除观察者，使得系统更易于扩展。</p>
+
+<h2 id="toc_0">观察者模式中的角色</h2>
+
+<p>在观察者模式中包含如下几个角色：</p>
+
+<ol>
+<li>Subject（目标）：目标又称为主题，它是指被观察的对象。在目标中定义了一个观察者集合，一个观察目标可以接受任意数量的观察者来观察，它提供一系列方法来增加和删除观察者对象，同时它定义了通知方法notify()。目标类可以是接口，也可以是抽象类或具体类。</li>
+<li>ConcreteSubject（具体目标）：具体目标是目标类的子类，通常它包含有经常发生改变的数据，当它的状态发生改变时，向它的各个观察者发出通知；同时它还实现了在目标类中定义的抽象业务逻辑方法（如果有的话）。如果无须扩展目标类，则具体目标类可以省略。</li>
+<li>Observer（观察者）：观察者将对观察目标的改变做出反应，观察者一般定义为接口，该接口声明了更新数据的方法update()，因此又称为抽象观察者。</li>
+<li>ConcreteObserver（具体观察者）：在具体观察者中维护一个指向具体目标对象的引用，它存储具体观察者的有关状态，这些状态需要和具体目标的状态保持一致；它实现了在抽象观察者Observer中定义的update()方法。通常在实现时，可以调用具体目标类的attach()方法将自己添加到目标类的集合中或通过detach()方法将自己从目标类的集合中删除。</li>
+</ol>
+
+<p><img src="media/14892030475974/14892033599821.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+观察者模式描述了如何建立对象与对象之间的依赖关系，以及如何构造满足这种需求的系统。观察者模式包含观察目标和观察者两类对象，一个目标可以有任意数目的与之相依赖的观察者，一旦观察目标的状态发生改变，所有的观察者都将得到通知。作为对这个通知的响应，每个观察者都将监视观察目标的状态以使其状态与目标状态同步，这种交互也称为发布-订阅(Publish-Subscribe)。观察目标是通知的发布者，它发出通知时并不需要知道谁是它的观察者，可以有任意数目的观察者订阅它并接收通知。</p>
+
+<h2 id="toc_1">通用代码实现</h2>
+
+<p>目标类的实现：</p>
+
+<pre><code class="language-java">package com.swu.ObserverPattern;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 主题的实现类，如有需要可以进一步将此类抽象
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Subject {
+    /**
+     * 维护所有观察者的队列
+     */
+    private List&lt;Observer&gt; observers = new ArrayList&lt;Observer&gt;();
+
+    /**
+     * 将观察者添加入通知队列
+     * 
+     * @param obs
+     */
+    public void attach(Observer obs) {
+        this.observers.add(obs);
+    }
+
+    /**
+     * 将观察者移除出通知队列
+     * 
+     * @param obs
+     */
+    public void detach(Observer obs) {
+        this.observers.remove(obs);
+    }
+
+    /**
+     * 通知所有观察者
+     */
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
+}
+</code></pre>
+
+<p>观察者抽象的接口：</p>
+
+<pre><code class="language-java">public interface Observer {
+    void update();
+}
+</code></pre>
+
+<p>观察者的具体实现：</p>
+
+<pre><code class="language-java">public class ConcerteObserversA implements Observer {
+    public void update() {
+        System.out.println(&quot;A类观察者收到消息&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">JDK对观察者模式的支持</h2>
+
+<p>观察者模式在Java语言中的地位非常重要。在JDK的java.util包中，提供了Observable类以及Observer接口，它们构成了JDK对观察者模式的支持。如图所示：<br/>
+<img src="media/14892030475974/14892071855093.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h3 id="toc_3">Observer接口</h3>
+
+<p>在java.util.Observer接口中只声明一个方法，它充当抽象观察者，其方法声明代码如下所示：<code>void  update(Observable o, Object arg);</code>当观察目标的状态发生变化时，该方法将会被调用，在Observer的子类中将实现update()方法，即具体观察者可以根据需要具有不同的更新行为。当调用观察目标类Observable的notifyObservers()方法时，将执行观察者类中的update()方法。</p>
+
+<h3 id="toc_4">Observable类</h3>
+
+<p>java.util.Observable类充当观察目标类，在Observable中定义了一个向量Vector来存储观察者对象，它所包含的方法及说明见表：<br/>
+<img src="media/14892030475974/14892075822399.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
+我们可以直接使用Observer接口和Observable类来作为观察者模式的抽象层，再自定义具体观察者类和具体观察目标类，通过使用JDK中的Observer接口和Observable类，可以更加方便地在Java语言中应用观察者模式。</p>
+
+<h2 id="toc_5">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14892030475974.html" data-count-type="comments" href="14892030475974.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14891973906960.html">
+                
+                  <h1>剑指Offer-递归和循环</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">求斐波那契额</h2>
+
+<p>这个题目非常简单，2分钟就可以解决。直接上代码！</p>
+
+<pre><code class="language-java">public class Solution {
+    public int Fibonacci(int n) {
+        if(n &lt;= 0){
+            return 0;
+        }
+        if(n == 1){
+            return 1;
+        }
+        return Fibonacci(n-1)+Fibonacci(n-2);
+    }
+}
+</code></pre>
+
+<p>但是，这个解法有很多的问题。当n的值比较大的时候，就会出现栈调用溢出。所以，我们一般在条件允许的情况下，使用循环来替代递归的实现。</p>
+
+<pre><code class="language-java">public class Solution {
+    public int Fibonacci(int n) {
+        if(n &lt;= 1){
+            return n;
+        }
+        int number1 = 0;
+        int number2 = 1;
+        int ans = 0;
+        for(int i = 2;i&lt;=n;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        } 
+        return ans;
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">跳台阶</h2>
+
+<p>一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法。</p>
+
+<h3 id="toc_2">思路</h3>
+
+<p>首先我们考虑最简单的情况。如果只有1级台阶，那显然只有一种跳法。如果有2级台阶，那就有两种跳的方法了：一种是分2次跳，每次跳1级；另外一种就是一次跳2级。<br/>
+接着我们再来讨论一般情况，我们把n级台阶时的跳法看成是n的函数，记为f(n)。当n&gt;2时，第一次跳的时候就有两种不同的选择：一是一次跳1级，此时跳法数目等于后面剩下的n-1级台阶的跳法数目，即为f(n-1)；另一种跳法是一次跳2级，这是跳法数目就是后面剩下n-2级台阶的跳法数目，即f(n-2)。因此n级台阶的跳法数目f(n) = f(n-1) + f(n - 2);</p>
+
+<h3 id="toc_3">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int JumpFloor(int target) {
+        if(target &lt;= 2){
+            return target;
+        }
+        int number1 = 1;
+        int number2 = 2;
+        int ans = 0;
+        for(int i = 3;i&lt;=target;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        }
+        return ans;
+    }
+}
+</code></pre>
+
+<h2 id="toc_4">变态跳台阶</h2>
+
+<p>一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。</p>
+
+<h3 id="toc_5">思路</h3>
+
+<p>借鉴上面的思路，我们把n级台阶时的跳法看成是n的函数，记为f(n)。此时<code>f(n) = f(n-1) + f(n-2) + ...+ f(1) + 1</code>;经过数学推导可得：f(n) = 2<sup>n-1</sup>;</p>
+
+<h3 id="toc_6">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int JumpFloorII(int target) {
+        return 1 &lt;&lt; target-1;
+    }
+}
+</code></pre>
+
+<h2 id="toc_7">矩形覆盖</h2>
+
+<p>我们可以用<code>2*1</code>的小矩形横着或者竖着去覆盖更大的矩形。请问用n个2*1的小矩形无重叠地覆盖一个<code>2*n</code>的大矩形，总共有多少种方法？</p>
+
+<h3 id="toc_8">思路</h3>
+
+<p>既然放在这个章节，自然是递推解决。当我们使用一个<code>1*2</code>的矩形去覆盖大矩形（<code>2*n</code>）的左侧时，我们有两个选择，横着放或者竖着放。当竖着放时，右边剩下的区域长度就为<code>n-1</code>；当横着放时，左边剩下的区域长度就为<code>n-2</code>。所以可以发现<code>f(n) = f(n-1) + f(n-2)</code>。</p>
+
+<h3 id="toc_9">代码</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int RectCover(int target) {
+        if(target &lt;=2){
+            return target;
+        }
+        int number1 = 1;
+        int number2 = 2;
+        int ans = 0;
+        for(int i = 3;i &lt;= target;i++){
+            ans = number1 + number2;
+            number1 = number2;
+            number2 = ans;
+        }
+        return ans;
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891973906960.html" data-count-type="comments" href="14891973906960.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14891427018088.html">
+                
+                  <h1>设计模式-策略模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>策略模式是指：定义一系列算法类，将每一个算法封装起来，并让他们可以互相替换，策略模式让算法独立于使用它的客户而变化，也被称之为政策模式(Policy)。是一种对象行为型模式。</p>
+</blockquote>
+
+<h2 id="toc_0">详细说明</h2>
+
+<p>在策略模式中，我们可以定义一些独立的类来封装不同的算法，每一个类封装一种具体的算法，在这里，每一个封装算法的类我们都可以称之为一种策略(Strategy)，为了保证这些策略在使用时具有一致性，一般会提供一个抽象的策略类来做规则的定义，而每种算法则对应于一个具体策略类。<br/>
+策略模式的主要目的是将算法的定义与使用分开，也就是将算法的行为和环境分开，将算法的定义放在专门的策略类中，每一个策略类封装了一种实现算法，使用算法的环境类针对抽象策略类进行编程，符合“依赖倒转原则”。在出现新的算法时，只需要增加一个新的实现了抽象策略类的具体策略类即可。</p>
+
+<h3 id="toc_1">策略模式中的角色</h3>
+
+<p>在策略模式结构图中包含如下几个角色：</p>
+
+<ul>
+<li>Context（环境类）：环境类是使用算法的角色，它在解决某个问题（即实现某个方法）时可以采用多种策略。在环境类中维持一个对抽象策略类的引用实例，用于定义所采用的策略。</li>
+<li>Strategy（抽象策略类）：它为所支持的算法声明了抽象方法，是所有策略类的父类，它可以是抽象类或具体类，也可以是接口。环境类通过抽象策略类中声明的方法在运行时调用具体策略类中实现的算法。</li>
+<li><p>ConcreteStrategy（具体策略类）：它实现了在抽象策略类中声明的算法，在运行时，具体策略类将覆盖在环境类中定义的抽象策略类对象，使用一种具体的算法实现某个业务处理。</p>
+
+<p>策略模式结构图如下：<br/>
+<img src="media/14891427018088/14891431124940.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p></li>
+</ul>
+
+<h3 id="toc_2">通用实现</h3>
+
+<p>在使用策略模式时，我们需要将算法从Context类中提取出来，首先应该创建一个策略接口，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public interface Strategy {
+    void algorithm();
+}
+</code></pre>
+
+<p>然后再将封装每一种具体算法的类作为该策略类的实现类，如下代码所示：</p>
+
+<pre><code class="language-java">public class ConcreteStrategyA implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略A&quot;);
+    }
+}
+public class ConcreteStrategyB implements Strategy {
+    public void algorithm() {
+        System.out.println(&quot;这是策略B&quot;);
+    }
+}
+</code></pre>
+
+<p>于Context类而言，在它与抽象策略类之间建立一个关联关系，其典型代码如下所示：</p>
+
+<pre><code class="language-java">/**
+ * 环境类，调用策略的实例
+ * 
+ * @author zhanjingbo
+ *
+ */
+public class Context {
+    private Strategy strategy;
+    public Context(Strategy strategy) {
+        this.strategy = strategy;
+    }
+    /**
+     * 策略调用
+     */
+    public void algorihm() {
+        this.strategy.algorithm();
+    }
+    /**
+     * 动态设置策略
+     * 
+     * @param strategy
+     */
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+}
+</code></pre>
+
+<p>在客户端代码中只需注入一个具体策略对象，可以将具体策略类类名存储在配置文件中，通过反射来动态创建具体策略对象，从而使得用户可以灵活地更换具体策略类，增加新的具体策略类也很方便。策略模式提供了一种可插入式(Pluggable)算法的实现方案。</p>
+
+<h3 id="toc_3">总结</h3>
+
+<p>策略模式用于算法的自由切换和扩展，它是应用较为广泛的设计模式之一。策略模式对应于解决某一问题的一个算法族，允许用户从该算法族中任选一个算法来解决某一问题，同时可以方便地更换算法或者增加新的算法。只要涉及到算法的封装、复用和切换都可以考虑使用策略模式。</p>
+
+<h4 id="toc_4">主要优点</h4>
+
+<p>策略模式的主要优点如下：</p>
+
+<ol>
+<li>策略模式提供了对“开闭原则”的完美支持，用户可以在不修改原有系统的基础上选择算法或行为，也可以灵活地增加新的算法或行为。</li>
+<li>策略模式提供了管理相关的算法族的办法。策略类的等级结构定义了一个算法或行为族，恰当使用继承可以把公共的代码移到抽象策略类中，从而避免重复的代码。</li>
+<li>策略模式提供了一种可以替换继承关系的办法。如果不使用策略模式，那么使用算法的环境类就可能会有一些子类，每一个子类提供一种不同的算法。但是，这样一来算法的使用就和算法本身混在一起，不符合“单一职责原则”，决定使用哪一种算法的逻辑和该算法本身混合在一起，从而不可能再独立演化；而且使用继承无法实现算法或行为在程序运行时的动态切换。</li>
+<li>使用策略模式可以避免多重条件选择语句。多重条件选择语句不易维护，它把采取哪一种算法或行为的逻辑与算法或行为本身的实现逻辑混合在一起，将它们全部硬编码(Hard Coding)在一个庞大的多重条件选择语句中，比直接继承环境类的办法还要原始和落后。</li>
+<li>策略模式提供了一种算法的复用机制，由于将算法单独提取出来封装在策略类中，因此不同的环境类可以方便地复用这些策略类。</li>
+</ol>
+
+<h4 id="toc_5">主要缺点</h4>
+
+<p>策略模式的主要缺点如下：</p>
+
+<ol>
+<li>客户端必须知道所有的策略类，并自行决定使用哪一个策略类。这就意味着客户端必须理解这些算法的区别，以便适时选择恰当的算法。换言之，策略模式只适用于客户端知道所有的算法或行为的情况。</li>
+<li>策略模式将造成系统产生很多具体策略类，任何细小的变化都将导致系统要增加一个新的具体策略类。</li>
+<li>无法同时在客户端使用多个策略类，也就是说，在使用策略模式时，客户端每次只能使用一个策略类，不支持使用一个策略类完成部分功能后再使用另一个策略类来完成剩余功能的情况。</li>
+</ol>
+
+<h4 id="toc_6">适用场景</h4>
+
+<p>在以下情况下可以考虑使用策略模式：</p>
+
+<ol>
+<li>一个系统需要动态地在几种算法中选择一种，那么可以将这些算法封装到一个个的具体算法类中，而这些具体算法类都是一个抽象算法类的子类。换言之，这些具体算法类均有统一的接口，根据“里氏代换原则”和面向对象的多态性，客户端可以选择使用任何一个具体算法类，并只需要维持一个数据类型是抽象算法类的对象。</li>
+<li>一个对象有很多的行为，如果不用恰当的模式，这些行为就只好使用多重条件选择语句来实现。此时，使用策略模式，把这些行为转移到相应的具体策略类里面，就可以避免使用难以维护的多重条件选择语句。</li>
+<li> 不希望客户端知道复杂的、与算法相关的数据结构，在具体策略类中封装算法与相关的数据结构，可以提高算法的保密性与安全性。</li>
+</ol>
+
+<h2 id="toc_7">练习</h2>
+
+<p>某软件公司欲开发一款飞机模拟系统，该系统主要模拟不同种类飞机的飞行特征与起飞特征，需要模拟的飞机种类及其特征如下表所示：</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: center">飞机种类</th>
+<th style="text-align: center">起飞特征</th>
+<th style="text-align: center">飞行特征</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: center">直升机(Helicopter)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">客机(AirPlane)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">亚音速飞行(SubSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">歼击机(Fighter)</td>
+<td style="text-align: center">长距离起飞(LongDistanceTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+<tr>
+<td style="text-align: center">鹞式战斗机(Harrier)</td>
+<td style="text-align: center">垂直起飞(VerticalTakeOff)</td>
+<td style="text-align: center">超音速飞行(SuperSonicFly)</td>
+</tr>
+</tbody>
+</table>
+
+<p>请使用策略模式完成上述问题的设计。</p>
+
+<h3 id="toc_8">实现</h3>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891427018088.html" data-count-type="comments" href="14891427018088.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14891123573052.html">
                 
                   <h1>剑指offer-旋转数组的最小数字</h1>
@@ -296,291 +770,6 @@ public class Solution {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14890277021887.html">
-                
-                  <h1>剑指Offer-重建二叉树</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
-</blockquote>
-
-<h2 id="toc_0">结题思路</h2>
-
-<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
-
-<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
-
-<h2 id="toc_1">代码</h2>
-
-<pre><code class="language-java">/**
- * Definition for binary tree
- * public class TreeNode {
- *     int val;
- *     TreeNode left;
- *     TreeNode right;
- *     TreeNode(int x) { val = x; }
- * }
- */
-public class Solution {
-    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
-        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
-    }
-    
-    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
-        if(pStart &gt; pEnd || iStart &gt; iEnd ){
-            return null;
-        }
-        
-        TreeNode node = new TreeNode(pre[pStart]);
-        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
-        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
-        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
-        return node;
-        
-    }
-    
-    public int find(int[] array,int target,int start,int end){
-        for(int i = start;i&lt;=end;i++){
-            if(array[i] == target){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/9</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890277021887.html" data-count-type="comments" href="14890277021887.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14890230803105.html">
-                
-                  <h1>剑指Offer-从尾到头打印链表</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>输入一个链表，从尾到头打印链表每个节点的值。</p>
-</blockquote>
-
-<h2 id="toc_0">问题解答</h2>
-
-<p>要解决这个问题肯定要遍历链表。遍历的顺序是从头到尾的顺序，可是输出的要求顺序却是从尾到头。也就是说第一个遍历到的节点，最后一个输出，而最后一个遍历到的节点第一个输出。这就是典型的后进先出，我们可以用栈实现这个顺序。每经过一个节点的时候，把该节点放入到一个栈中。当遍历完整个链表后，再从栈顶开始逐个输出节点的值，此时，输出的节点顺序已经反转过来了。<br/>
-既然可以使用栈实现这个需求，那么我们就可以考虑使用递归，递归本质上就是一个栈结构。这样要实现反过来输出链表，我们每访问到一个结点的时候，先递归输出它后面的节点，在输出该节点自身，这样链表的输出就反过来了。</p>
-
-<h2 id="toc_1">递归实现</h2>
-
-<pre><code class="language-java">/**
-*    public class ListNode {
-*        int val;
-*        ListNode next = null;
-*
-*        ListNode(int val) {
-*            this.val = val;
-*        }
-*    }
-*
-*/
-import java.util.ArrayList;
-public class Solution {
-    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        search(listNode);
-        return array;
-    }
-    public void  search(ListNode listNode){
-        if(listNode != null){
-            search(listNode.next);
-            array.add(listNode.val);
-        }
-        
-    }
-}
-</code></pre>
-
-<p>本题基于递归实现看起来很简洁，但是有个问题，当链表非常长的时候，就会导致函数调用层级很深，从而有可能导致函数调用栈溢出。</p>
-
-<h2 id="toc_2">显示栈实现</h2>
-
-<pre><code class="language-java">import java.util.*;
-
-public class Solution {
-    
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        ArrayDeque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
-        while(listNode != null){
-            stack.offerFirst(listNode.val);
-            listNode = listNode.next;
-        }
-        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;(stack.size());
-        while (stack.size()&gt;0) {
-            array.add(stack.pollFirst());
-        }
-        return array;
-    }
-    
-}
-</code></pre>
-
-<h2 id="toc_3">翻转链表</h2>
-
-<p>如果可以改变原链表的结构，就可以对链表进行翻转。</p>
-
-<pre><code class="language-java">import java.util.ArrayList;
-public class Solution {
-    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
-        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
-        ListNode head = null;
-        ListNode next = null;
-        while (listNode != null) {
-            next = listNode.next;
-            listNode.next = head;
-            head = listNode;
-            listNode = next;
-        }
-        while (head != null) {
-            array.add(head.val);
-            head = head.next;
-        }
-        return array;
-    }
-    
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/9</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890230803105.html" data-count-type="comments" href="14890230803105.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14889379059302.html">
-                
-                  <h1>剑指Offer-替换空格</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>请实现一个函数，将一个字符串中的空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。</p>
-</blockquote>
-
-<h2 id="toc_0">结题思路</h2>
-
-<p>这个题目Java开发者可能一下就笑了，so easy啊，一个库函数就解决了。但是，我们还是要尝试去造一下轮子，追求原理。<br/>
-由于要将空格替换为%20，字符串前后的长度肯定不一样，那么就肯定涉及到了重新申请内存地址。</p>
-
-<p>最简单的思路，我们遍历字符串，发现空格，就将空格后面的字符进行移动，然后继续遍历。这样的做法时间复杂度为O(n<sup>2)，因为每次都移动了大量的字符。</sup></p>
-
-<p>所以我们提出一个简要的方法，重新申请一个字符串（C/C++中准确的成为字符数组），这个新字符串的长度为原字符串长度+空格个数*2（空格的个数，可以通过一次遍历获得），然后用两个指针变量分别指向两个字符串的首位，然后进行复制，当原字符串指针指向空格时，新字符串插入“%20”，直到末尾。</p>
-
-<h2 id="toc_1">实现代码</h2>
-
-<p>库函数解决：</p>
-
-<pre><code class="language-java">public class Solution {
-    public String replaceSpace(StringBuffer str) {
-        return str.toString().replaceAll(&quot; &quot;, &quot;%20&quot;);
-    }
-}
-</code></pre>
-
-<p>自己过不去版：</p>
-
-<pre><code class="language-java">public class Solution {
-    public String replaceSpace(StringBuffer str) {
-        StringBuffer newStr = new StringBuffer();
-        
-        int i = 0;
-        
-        while(i&lt;str.length()){
-            if(str.charAt(i) != &#39; &#39;){
-                newStr.append(str.charAt(i));
-            }else{
-                newStr.append(&quot;%20&quot;);
-            }
-            i++;
-        }
-        return newStr.toString();
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889379059302.html" data-count-type="comments" href="14889379059302.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -669,6 +858,24 @@ public class Solution {
 	      
 		      
 			      <li class="post">
+			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
 			      </li>
 		     
@@ -676,24 +883,6 @@ public class Solution {
 		      
 			      <li class="post">
 			        <a href="14892189846734.html">设计模式-装饰模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892030475974.html">设计模式-观察者模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891973906960.html">剑指Offer-递归和循环</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14891427018088.html">设计模式-策略模式</a>
 			      </li>
 		     
 		  

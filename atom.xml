@@ -4,13 +4,281 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-03-11T16:40:18+08:00</updated>
+  <updated>2017-03-12T16:08:49+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[设计模式-抽象工厂模式]]></title>
+    <link href="http://swuzjb.github.io/14893043668918.html"/>
+    <updated>2017-03-12T15:39:26+08:00</updated>
+    <id>http://swuzjb.github.io/14893043668918.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>提供一个创建一系列相关或相互依赖对象的接口，而无须指定它们具体的类。抽象工厂模式又称为Kit模式，它是一种对象创建型模式。</p>
+</blockquote>
+
+<p>抽象工厂模式为创建一组对象提供了一种解决方案。与工厂方法模式相比，抽象工厂模式中的具体工厂不只是创建一种产品，它负责创建一族产品。<br/>
+在抽象工厂模式中，每一个具体工厂都提供了多个工厂方法用于产生多种不同类型的产品，这些产品构成了一个产品族。</p>
+
+<h2 id="toc_0">角色</h2>
+
+<p>在抽象工厂模式结构图中包含如下几个角色：</p>
+
+<ol>
+<li>AbstractFactory（抽象工厂）：它声明了一组用于创建一族产品的方法，每一个方法对应一种产品。</li>
+<li>ConcreteFactory（具体工厂）：它实现了在抽象工厂中声明的创建产品的方法，生成一组具体产品，这些产品构成了一个产品族，每一个产品都位于某个产品等级结构中。</li>
+<li>AbstractProduct（抽象产品）：它为每种产品声明接口，在抽象产品中声明了产品所具有的业务方法。</li>
+<li>ConcreteProduct（具体产品）：它定义具体工厂生产的具体产品对象，实现抽象产品接口中声明的业务方法。</li>
+</ol>
+
+<p>抽象工厂模式结构如图所示：<br/>
+<img src="media/14893043668918/14893046728402.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">实现</h2>
+
+<p>在抽象工厂中声明了多个工厂方法，用于创建不同类型的产品，抽象工厂可以是接口，也可以是抽象类或者具体类，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public abstract class AbstractFactory {
+    /**
+     * 生产A产品的具体实例
+     * 
+     * @return
+     */
+    public abstract ProductA createProductA();
+
+    /**
+     * 生产B产品的具体实例
+     * 
+     * @return
+     */
+    public abstract ProductB createProductB();
+}
+</code></pre>
+
+<p>具体工厂实现了抽象工厂，每一个具体的工厂方法可以返回一个特定的产品对象，而同一个具体工厂所创建的产品对象构成了一个产品族。对于每一个具体工厂类，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public class ConcreteFactoryOne extends AbstractFactory {
+    @Override
+    public ProductA createProductA() {
+        return new ConcreteProductA();
+    }
+
+    @Override
+    public ProductB createProductB() {
+        return new ConcreteProductB();
+    }
+}
+
+public class ConcreteFactoryTwo extends AbstractFactory {
+    @Override
+    public ProductA createProductA() {
+        return new ConcreteProductA2();
+    }
+
+    @Override
+    public ProductB createProductB() {
+        return new ConcreteProductB2();
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">总结</h2>
+
+<p>抽象工厂模式是工厂方法模式的进一步延伸，由于它提供了功能更为强大的工厂类并且具备较好的可扩展性，在软件开发中得以广泛应用，尤其是在一些框架和API类库的设计中，例如在Java语言的AWT（抽象窗口工具包）中就使用了抽象工厂模式，它使用抽象工厂模式来实现在不同的操作系统中应用程序呈现与所在操作系统一致的外观界面。抽象工厂模式也是在软件开发中最常用的设计模式之一。</p>
+
+<h3 id="toc_3">主要优点</h3>
+
+<p>抽象工厂模式的主要优点如下：</p>
+
+<ol>
+<li>抽象工厂模式隔离了具体类的生成，使得客户并不需要知道什么被创建。由于这种隔离，更换一个具体工厂就变得相对容易，所有的具体工厂都实现了抽象工厂中定义的那些公共接口，因此只需改变具体工厂的实例，就可以在某种程度上改变整个软件系统的行为。</li>
+<li>当一个产品族中的多个对象被设计成一起工作时，它能够保证客户端始终只使用同一个产品族中的对象。</li>
+<li>增加新的产品族很方便，无须修改已有系统，符合“开闭原则”。</li>
+</ol>
+
+<h3 id="toc_4">主要缺点</h3>
+
+<p>增加新的产品等级结构麻烦，需要对原有系统进行较大的修改，甚至需要修改抽象层代码，这显然会带来较大的不便，违背了“开闭原则”。</p>
+
+<h3 id="toc_5">适用场景</h3>
+
+<p>在以下情况下可以考虑使用抽象工厂模式：</p>
+
+<ol>
+<li>一个系统不应当依赖于产品类实例如何被创建、组合和表达的细节，这对于所有类型的工厂模式都是很重要的，用户无须关心对象的创建过程，将对象的创建和使用解耦。</li>
+<li>系统中有多于一个的产品族，而每次只使用其中某一产品族。可以通过配置文件等方式来使得用户可以动态改变产品族，也可以很方便地增加新的产品族。</li>
+<li>属于同一个产品族的产品将在一起使用，这一约束必须在系统的设计中体现出来。同一个产品族中的产品可以是没有任何关系的对象，但是它们都具有一些共同的约束，如同一操作系统下的按钮和文本框，按钮与文本框之间没有直接关系，但它们都是属于某一操作系统的，此时具有一个共同的约束条件：操作系统的类型。</li>
+<li>产品等级结构稳定，设计完成之后，不会向系统中增加新的产品等级结构或者删除已有的产品等级结构。</li>
+</ol>
+
+<h2 id="toc_6">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[设计模式-工厂方法模式]]></title>
+    <link href="http://swuzjb.github.io/14893023180281.html"/>
+    <updated>2017-03-12T15:05:18+08:00</updated>
+    <id>http://swuzjb.github.io/14893023180281.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>工厂方法模式(Factory Method Pattern)：定义一个用于创建对象的接口，让子类决定将哪一个类实例化。工厂方法模式让一个类的实例化延迟到其子类。工厂方法模式又简称为工厂模式(Factory Pattern)，又可称作虚拟构造器模式(Virtual Constructor Pattern)或多态工厂模式(Polymorphic Factory Pattern)。工厂方法模式是一种类创建型模式。</p>
+</blockquote>
+
+<p>在简单工厂模式中只提供一个工厂类，该工厂类处于对产品类进行实例化的中心位置，它需要知道每一个产品对象的创建细节，并决定何时实例化哪一个产品类。简单工厂模式最大的缺点是当有新产品要加入到系统中时，必须修改工厂类，需要在其中加入必要的业务逻辑，这违背了“开闭原则”。此外，在简单工厂模式中，所有的产品都由同一个工厂创建，工厂类职责较重，业务逻辑较为复杂，具体产品与工厂类之间的耦合度高，严重影响了系统的灵活性和扩展性，而工厂方法模式则可以很好地解决这一问题。<br/>
+在工厂方法模式中，<strong>我们不再提供一个统一的工厂类来创建所有的产品对象，而是针对不同的产品提供不同的工厂，系统提供一个与产品等级结构对应的工厂等级结构</strong>。</p>
+
+<h2 id="toc_0">工厂方法模式中的角色</h2>
+
+<p>工厂方法模式提供一个抽象工厂接口来声明抽象工厂方法，而由其子类来具体实现工厂方法，创建具体的产品对象。<br/>
+在工厂方法模式结构图中包含如下几个角色：</p>
+
+<ol>
+<li>Product（抽象产品）：它是定义产品的接口，是工厂方法模式所创建对象的超类型，也就是产品对象的公共父类。</li>
+<li>ConcreteProduct（具体产品）：它实现了抽象产品接口，某种类型的具体产品由专门的具体工厂创建，具体工厂和具体产品之间一一对应。</li>
+<li>Factory（抽象工厂）：在抽象工厂类中，声明了工厂方法(Factory Method)，用于返回一个产品。抽象工厂是工厂方法模式的核心，所有创建对象的工厂类都必须实现该接口。</li>
+<li>ConcreteFactory（具体工厂）：它是抽象工厂类的子类，实现了抽象工厂中定义的工厂方法，并可由客户端调用，返回一个具体产品类的实例。</li>
+</ol>
+
+<p>工厂方法模式结构如图2所示：<br/>
+<img src="media/14893023180281/14893025237716.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">实现</h2>
+
+<p>与简单工厂模式相比，工厂方法模式最重要的区别是引入了抽象工厂角色，抽象工厂可以是接口，也可以是抽象类或者具体类，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public interface AbstarctFactory {
+    public Product createProduct();
+}
+</code></pre>
+
+<p>在抽象工厂中声明了工厂方法但并未实现工厂方法，具体产品对象的创建由其子类负责，客户端针对抽象工厂编程，可在运行时再指定具体工厂类，具体工厂类实现了工厂方法，不同的具体工厂可以创建不同的具体产品，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public class ConcreteFactoryA implements AbstarctFactory {
+    @Override
+    public Product createProduct() {
+        return new ConcreteProductA();
+    }
+}
+</code></pre>
+
+<p>在实际使用时，具体工厂类在实现工厂方法时除了创建具体产品对象之外，还可以负责产品对象的初始化工作以及一些资源和环境配置工作，例如连接数据库、创建文件等。<br/>
+在客户端代码中，只需关心工厂类即可，不同的具体工厂可以创建不同的产品，典型的客户端类代码片段如下所示：</p>
+
+<pre><code class="language-java">AbstractFactory factory;  
+factory = new ConcreteFactoryA(); //可通过配置文件实现  
+Product product;  
+product = factory.createProduct();  
+</code></pre>
+
+<p>可以通过配置文件来存储具体工厂类ConcreteFactory的类名，更换新的具体工厂时无须修改源代码，系统扩展更为方便。</p>
+
+<h2 id="toc_2">总结</h2>
+
+<p>工厂方法模式是简单工厂模式的延伸，它继承了简单工厂模式的优点，同时还弥补了简单工厂模式的不足。工厂方法模式是使用频率最高的设计模式之一，是很多开源框架和API类库的核心模式。</p>
+
+<h3 id="toc_3">主要优点</h3>
+
+<p>工厂方法模式的主要优点如下：</p>
+
+<ol>
+<li>在工厂方法模式中，工厂方法用来创建客户所需要的产品，同时还向客户隐藏了哪种具体产品类将被实例化这一细节，用户只需要关心所需产品对应的工厂，无须关心创建细节，甚至无须知道具体产品类的类名。</li>
+<li>基于工厂角色和产品角色的多态性设计是工厂方法模式的关键。它能够让工厂可以自主确定创建何种产品对象，而如何创建这个对象的细节则完全封装在具体工厂内部。工厂方法模式之所以又被称为多态工厂模式，就正是因为所有的具体工厂类都具有同一抽象父类。</li>
+<li>使用工厂方法模式的另一个优点是在系统中加入新产品时，无须修改抽象工厂和抽象产品提供的接口，无须修改客户端，也无须修改其他的具体工厂和具体产品，而只要添加一个具体工厂和具体产品就可以了，这样，系统的可扩展性也就变得非常好，完全符合“开闭原则”。</li>
+</ol>
+
+<h3 id="toc_4">主要缺点</h3>
+
+<p>工厂方法模式的主要缺点如下：</p>
+
+<ol>
+<li>在添加新产品时，需要编写新的具体产品类，而且还要提供与之对应的具体工厂类，系统中类的个数将成对增加，在一定程度上增加了系统的复杂度，有更多的类需要编译和运行，会给系统带来一些额外的开销。</li>
+<li>由于考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度，且在实现时可能需要用到DOM、反射等技术，增加了系统的实现难度。</li>
+</ol>
+
+<h3 id="toc_5">适用场景</h3>
+
+<p>在以下情况下可以考虑使用工厂方法模式：</p>
+
+<ol>
+<li>客户端不知道它所需要的对象的类。在工厂方法模式中，客户端不需要知道具体产品类的类名，只需要知道所对应的工厂即可，具体的产品对象由具体工厂类创建，可将具体工厂类的类名存储在配置文件或数据库中。</li>
+<li>抽象工厂类通过其子类来指定创建哪个对象。在工厂方法模式中，对于抽象工厂类只需要提供一个创建产品的接口，而由其子类来确定具体要创建的对象，利用面向对象的多态性和里氏代换原则，在程序运行时，子类对象将覆盖父类对象，从而使得系统更容易扩展。</li>
+</ol>
+
+<h2 id="toc_6">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-二进制中1的个数]]></title>
+    <link href="http://swuzjb.github.io/14892880856219.html"/>
+    <updated>2017-03-12T11:08:05+08:00</updated>
+    <id>http://swuzjb.github.io/14892880856219.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>输入一个整数n，输出该数二进制表示中1的个数。其中负数用补码表示。</p>
+</blockquote>
+
+<h2 id="toc_0">思路</h2>
+
+<ul>
+<li><p>方案一：</p>
+
+<p>将(n&amp;1)可以知道n的最后一位是不是1，然后依次将n不断向右移1位，直到n为0。</p></li>
+</ul>
+
+<pre><code class="language-java">public class Solution {
+    public int NumberOf1(int n) {
+        int count = 0;
+        while(n != 0){
+            if( (n &amp; 1) == 1){
+                count++;
+            }
+            /*
+            *注意，这里是&gt;&gt;&gt;
+            *&gt;&gt;为最高位填补符号位，负数会发生错误
+            *&gt;&gt;&gt;为最高位填写0
+            */
+            n = n &gt;&gt;&gt; 1;
+        }
+        return count;
+    }
+}
+</code></pre>
+
+<ul>
+<li><p>方案二：</p>
+
+<p>将一个整数减一，都是把最右边的1变成0，如果它的右边还有0的话，所有的0都变成1，而它的左边的所有位都保持不变。若我们将n和n-1做与运算，相当于把它最右边的1变成0。那么，一个整数的二进制表示中有多少个1，就可以进行多少次这样的操作。</p></li>
+</ul>
+
+<pre><code class="language-java">public class Solution {
+    public int NumberOf1(int n) {
+        int count = 0;
+        while(n != 0){
+            count++;
+            n = n &amp; (n-1);
+        }
+        return count;
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[设计模式-简单工厂模式]]></title>
@@ -2104,331 +2372,6 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
 </code></pre>
 
 <h2 id="toc_10">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java容器框架分析(三)——LinkedList源码分析]]></title>
-    <link href="http://swuzjb.github.io/14878187570598.html"/>
-    <updated>2017-02-23T10:59:17+08:00</updated>
-    <id>http://swuzjb.github.io/14878187570598.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">LinkedList简介</h2>
-
-<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
-LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
-双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
-
-<pre><code class="language-java">//Node内部类
-private static class Node&lt;E&gt; {
-    E item;
-    Node&lt;E&gt; next;
-    Node&lt;E&gt; prev;
-    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
-        this.item = element;
-        this.next = next;
-        this.prev = prev;
-    }
-}
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
-
-<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">add()</h3>
-
-<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
-
-<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
-
-<pre><code class="language-java">public boolean add(E e) {
-    final Node&lt;E&gt; l = last;
-    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
-    last = newNode;
-    if (l == null)
-        first = newNode;//原来链表为空，这是插入的第一个元素
-    else
-        l.next = newNode;
-    size++;
-    return true;
-}
-</code></pre>
-
-<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
-
-<pre><code class="language-java">public void add(int index, E element) {
-     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
-    checkPositionIndex(index);
-    if (index == size)//插入位置是末尾，包括列表为空的情况
-        add(element);
-    else{
-        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
-        //2.修改引用，完成插入操作。
-        final Node&lt;E&gt; pred = succ.prev;
-        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
-        succ.prev = newNode;
-        if (pred == null)//插入位置为0
-            first = newNode;
-        else
-            pred.next = newNode;
-        size++;
-    }
-}
-</code></pre>
-
-<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
-两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
-
-<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
-    final E element = x.item;
-    final Node&lt;E&gt; next = x.next;
-    final Node&lt;E&gt; prev = x.prev;
-    if (prev == null) {//删除的是第一个元素
-        first = next;
-    } else {
-        prev.next = next;
-        x.prev = null;
-    }
-    if (next == null) {//删除的是最后一个元素
-        last = prev;
-    } else {
-        next.prev = prev;
-        x.next = null;
-    }
-    x.item = null;//let GC work
-    size--;
-    return element;
-}
-</code></pre>
-
-<h3 id="toc_4">get()</h3>
-
-<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    //检测index是否越界
-    checkElementIndex(index);
-    return node(index).item;
-}
-</code></pre>
-
-<h3 id="toc_5">set()</h3>
-
-<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    checkElementIndex(index);
-    Node&lt;E&gt; x = node(index);
-    E oldVal = x.item;
-    x.item = element;//替换新值
-    return oldVal;
-}
-</code></pre>
-
-<h2 id="toc_6">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java容器框架分析（二）——ArrayList源码解析]]></title>
-    <link href="http://swuzjb.github.io/14876660718478.html"/>
-    <updated>2017-02-21T16:34:31+08:00</updated>
-    <id>http://swuzjb.github.io/14876660718478.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">ArrayList简介</h2>
-
-<p>ArrayList实现了List接口，是顺序容器（即元素存放的顺序和加入列表的顺序相同），允许放入<code>null</code>元素，底层通过数组实现。该实现除了没有实现多线程同步之外，其余跟Vector大致相同，即ArrayList是线程不安全的。<br/>
-每个ArrayList都一个容量（Capacity）属性，表示底层数组的实际大小，容器内存储元素的个数不大于当前的容量。当向容器中添加元素时，如果容量不足，容器会自动增大底层数组的大小。前面已经提过，Java 泛型只是编译器提供的语法糖，所以这里的数组是一个 Object 数组，以便能够容纳任何类型的对象。<br/>
-size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方法的时间开销跟插入位置有关，addAll() 方法的时间开销跟添加元素的个数成正比。其余方法大都是线性时间。<br/>
-为追求效率，ArrayList 没有实现同步（synchronized），如果需要多个线程并发访问，用户可以手动同步，也可使用 Vector 替代。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876663843643.png" alt=""/></p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">set(int index, E element)</h3>
-
-<p>set()方法可以直接设定某个下标对应的元素。既然ArrayList的底层是数组实现的，set()方法的实现也就变得极为简单，直接赋值即可，复杂度为<em>O(1)</em>。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    rangeCheck(index);//下标越界检查
-    E oldValue = elementData(index);
-    elementData[index] = element;//赋值到指定位置，复制的仅仅是引用
-    return oldValue;
-}
-</code></pre>
-
-<h3 id="toc_3">get(int index)</h3>
-
-<p>get()方法可以获取指定下标对应的对象，唯一需要注意的是由于底层数组是Object[]，得到元素后需要进行类型转换，复杂度为<em>O(1)</em>。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    rangeCheck(index);
-    return (E) elementData[index];//注意类型转换
-}
-</code></pre>
-
-<h3 id="toc_4">add(E element)和add（int index,E element）</h3>
-
-<p>跟C++的vector不同，ArrayList没有push_back()方法，对应的方法是add(E e)，ArrayList也没有insert()方法，对应的方法是add(int index, E e)。这两个方法都是向容器中添加新元素，这可能会导致 capacity 不足，因此在添加元素之前，都需要进行剩余空间检查，如果需要则自动扩容。扩容操作最终是通过grow()方法完成的。</p>
-
-<pre><code class="language-java">private void grow(int minCapacity) {
-    int oldCapacity = elementData.length;
-    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);//原来的1.5倍
-    if (newCapacity - minCapacity &lt; 0)
-        newCapacity = minCapacity;
-    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
-        newCapacity = hugeCapacity(minCapacity);
-    elementData = Arrays.copyOf(elementData, newCapacity);//扩展空间并复制
-}
-</code></pre>
-
-<p>由于Java GC自动管理了内存，这里也就不需要考虑源数组释放的问题。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876673586219.png" alt=""/><br/>
-空间的问题解决之后，插入就变得非常简单了。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14876674357716.png" alt=""/><br/>
-<code>add(int index,E e)</code>需要先对元素进行移动，然后完成插入，该方法时间复杂度为<em>O(n)</em>。</p>
-
-<h3 id="toc_5">addAll()</h3>
-
-<p>addAll()方法可以一次添加多个元素，根据插入的起始位置不同也用两个版本：一个是在末尾添加<code>addAll(Collection&lt;? extends E&gt; c)</code>;一个是从指定位置开始插入的<code>addAll(int index, Collection&lt;? extends E&gt; c)</code>方法。对应的实现方式和上述的add方法类似，在插入之前，需要对容量进行判断，如果需要则自动扩容，如果从指定位置插入，还需要先对数组元素进行移动。</p>
-
-<h3 id="toc_6">remove()</h3>
-
-<p>remove方法可以删除列表中的元素，其也有两个版本：一个是<code>remove(int index)</code>删除指定位置的元素；一个是<code>remove(Object o)</code>删除第一个满足<code>o.equals(elementData[index])</code>的元素。删除操作是<code>add()</code>的逆过程，需要将删除点之后的元素向前移动一个位置。需要注意的是为了让GC起作用，必选显示的为最后一个位置赋<code>null</code>值。</p>
-
-<pre><code class="language-java">public E remove(int index) {
-    rangeCheck(index);
-    modCount++;
-    E oldValue = elementData(index);
-    int numMoved = size - index - 1;
-    if (numMoved &gt; 0)
-        System.arraycopy(elementData, index+1, elementData, index, numMoved);
-    elementData[--size] = null; //清除该位置的引用，让GC起作用
-    return oldValue;
-}
-</code></pre>
-
-<p>关于Java GC 这里需要特别说明一下，<strong>有了垃圾收集器并不意味着一定不会有内存泄漏</strong>。对象能否被 GC 的依据是是否还有引用指向它，上面代码中如果不手动赋null值，除非对应的位置被其他元素覆盖，否则原来的对象就一直不会被回收。</p>
-
-<h2 id="toc_7">使用技巧</h2>
-
-<p>关于List的容量，可以在一开始就给定一个比较合理的值，避免内存复制所带来的不必要的时间开销。</p>
-
-<h2 id="toc_8">转载声明</h2>
-
-<p>本文转载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java容器框架分析（一）——相关概念综述]]></title>
-    <link href="http://swuzjb.github.io/14876629153312.html"/>
-    <updated>2017-02-21T15:41:55+08:00</updated>
-    <id>http://swuzjb.github.io/14876629153312.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">概述</h2>
-
-<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
-
-<ul>
-<li>降低编程难度<br/></li>
-<li>提高程序性能</li>
-<li>提高API之间的互操作性</li>
-<li>降低学习难度</li>
-<li>降低设计和实现相关API的难度</li>
-<li>增强程序的重用性</li>
-</ul>
-
-<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
-
-<h2 id="toc_1">泛型</h2>
-
-<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
-事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
-
-<pre><code class="language-java">//JDK 1.4 or before
-ArrayList list = new ArrayList();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = (String)list.get(i);//显式类型转换
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5 or latter
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = list.get(i);//隐式类型转换，编译器自动完成
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_2">内存管理</h2>
-
-<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
-
-<h2 id="toc_3">接口与实现</h2>
-
-<h3 id="toc_4">接口</h3>
-
-<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
-Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
-
-<h3 id="toc_5">实现</h3>
-
-<p>上述接口的通用实现类见下表：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
-
-<h2 id="toc_6">迭代器（Iterator）</h2>
-
-<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
-实例代码：</p>
-
-<pre><code class="language-java">//通过迭代器来访问容器元素
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-//得到迭代器
-Iterator&lt;String&gt; it = list.iterator();
-while(it.hasNext()){
-    String weekday = it.next();//访问元素
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
-//使用foreach迭代
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(String weekday : list){
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_7">声明</h2>
 
 <p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
 作者：CarpenterLee</p>
