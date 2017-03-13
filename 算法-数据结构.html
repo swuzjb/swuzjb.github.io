@@ -107,6 +107,98 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14893744942754.html">
+                
+                  <h1>剑指Offer-合并两个排序的链表</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。</p>
+</blockquote>
+
+<h2 id="toc_0">非递归实现</h2>
+
+<pre><code class="language-java">public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+        ListNode head = new ListNode(0);
+        ListNode p = head;
+        boolean isFirst = true;
+        while(list1 != null &amp;&amp; list2 != null){
+            if(list1.val &lt; list2.val){
+                p.next = list1;
+                list1 = list1.next;
+            }else{
+                p.next = list2;
+                list2 = list2.next;
+            }
+            p = p.next;
+        }
+        if(list1 != null){
+            p.next = list1;
+        }
+        if(list2 != null){
+            p.next = list2;
+        }
+        return head.next;
+    }
+    
+}
+</code></pre>
+
+<h2 id="toc_1">递归实现</h2>
+
+<pre><code class="language-java">public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+        if(list1 == null){
+            return list2;
+        }
+        if(list2 == null){
+            return list1;
+        }
+        
+        ListNode head = null;
+        
+        if(list1.val &lt; list2.val){
+            head = list1;
+            head.next = Merge(list1.next, list2);
+        }else{
+            head = list2;
+            head.next = Merge(list1, list2.next);
+        }
+        return head;
+    }
+    
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14893744942754.html" data-count-type="comments" href="14893744942754.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14892880856219.html">
                 
                   <h1>剑指Offer-二进制中1的个数</h1>
@@ -522,90 +614,6 @@ public class Solution {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14890277021887.html">
-                
-                  <h1>剑指Offer-重建二叉树</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。</p>
-</blockquote>
-
-<h2 id="toc_0">结题思路</h2>
-
-<p>在二叉树的前序遍历中，第一个数字总是数的根节点的值。但在中序遍历中，根节点的值在序列的中间，左子树的结点的值位于根节点的左边，而右子树的节点的值位于根节点的值的右边，因此，我们需要扫描中序遍历，才能找到根节点的值。实例如图：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-03-09-14890289045009.jpg" alt=" -c "/></p>
-
-<p>既然我们已经分别找到了左、右子树的前序遍历和中序遍历序列，我们可以用同样的方法去分别构建左右子树。也就是递归去实现。</p>
-
-<h2 id="toc_1">代码</h2>
-
-<pre><code class="language-java">/**
- * Definition for binary tree
- * public class TreeNode {
- *     int val;
- *     TreeNode left;
- *     TreeNode right;
- *     TreeNode(int x) { val = x; }
- * }
- */
-public class Solution {
-    public TreeNode reConstructBinaryTree(int [] pre,int [] in) {
-        return reConstructBinaryTree(pre,0,pre.length-1,in,0,in.length);
-    }
-    
-    public TreeNode reConstructBinaryTree(int[] pre,int pStart,int pEnd,int[] in,int iStart,int iEnd){
-        if(pStart &gt; pEnd || iStart &gt; iEnd ){
-            return null;
-        }
-        
-        TreeNode node = new TreeNode(pre[pStart]);
-        int k = find(in, pre[pStart], iStart, iEnd) - iStart;
-        node.left = reConstructBinaryTree(pre, pStart+1, pStart+k, in, iStart, iStart+k);
-        node.right = reConstructBinaryTree(pre, pStart+k+1, pEnd, in, iStart+k+1, iEnd);
-        return node;
-        
-    }
-    
-    public int find(int[] array,int target,int start,int end){
-        for(int i = start;i&lt;=end;i++){
-            if(array[i] == target){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/9</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890277021887.html" data-count-type="comments" href="14890277021887.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -694,6 +702,18 @@ public class Solution {
 	      
 		      
 			      <li class="post">
+			        <a href="14893892449120.html">设计模式-单例模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893744942754.html">剑指Offer-合并两个排序的链表</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
 			      </li>
 		     
@@ -707,18 +727,6 @@ public class Solution {
 		      
 			      <li class="post">
 			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
 		  

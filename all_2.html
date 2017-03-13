@@ -107,6 +107,196 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14891123573052.html">
+                
+                  <h1>剑指offer-旋转数组的最小数字</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。<br/>
+输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。<br/>
+例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。<br/>
+NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。</p>
+</blockquote>
+
+<h2 id="toc_0">解题思路</h2>
+
+<h3 id="toc_1">O(n)算法</h3>
+
+<p>数组遍历，如果a[i]&lt;a[i-1]，这该位置为旋转位置，即最小元素。</p>
+
+<h3 id="toc_2">O(logn)算法</h3>
+
+<p>我们可以通过二分的思路，对上述问题进行优化。<br/>
+我们发现，旋转之后的数组实际上可以划分为两个排序的子数组，而且后面的子数组的元素都小于等于前面的子数组的元素。而我们要找的这个最小元素，恰好是这两个数组的分界线。<br/>
+和二分查找一样，我们分别用两个指针指向数组的第一个(start)和最后一个元素(end)，在求一个中间指针指向数组的中间(<code>mid = (start+end)/2</code>)：</p>
+
+<ul>
+<li>如果array[mid] &gt;= array[end],说明分界值应该在数组的后半段，此时将start赋值为mid；</li>
+<li>如果array[mid] &lt;= array[start],说明分界值应该在数组的前半段，此时将end赋值为mid；</li>
+<li>如果<code>end-start == 1</code>，说明array[end]为我们要找的分界值。</li>
+<li>PS.如果 array[mid] == array[start] == array[end]，此时只能通过遍历来实现。</li>
+</ul>
+
+<h2 id="toc_3">代码示例</h2>
+
+<h3 id="toc_4">O(n)</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if(array.length == 0){
+            return 0;
+        }
+        for(int i=1;i&lt;array.length;i++){
+            if(array[i]&lt;array[i-1]){
+                return array[i];
+            }
+        }
+        return array[0];
+    }
+}
+</code></pre>
+
+<h3 id="toc_5">O(logn)</h3>
+
+<pre><code class="language-java">public class Solution {
+    public int minNumberInRotateArray(int [] array) {
+        if (array.length == 0) {
+            return 0;
+        }
+        int start = 0;
+        int end = array.length - 1;
+        while (end - start &gt; 1) {
+            int mid = (start + end) / 2;
+            
+            if(array[start] == array [mid] &amp;&amp; array[mid] == array[end]){
+                return order(array, start, end);
+            }
+            
+            if( array[mid] &gt;= array[end]){
+                start = mid;
+                continue;
+            }
+            if(array[mid] &lt;= array[start]){
+                end = mid;
+                continue;
+            }
+        }
+        return array[end];
+    }
+        
+    public int order(int[] array,int start,int end){
+        for(int i = start+1;i&lt;=end;i++){
+            if(array[i]&lt;array[i-1]){
+                return  array[i];
+            }
+        }
+        return array[start];
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891123573052.html" data-count-type="comments" href="14891123573052.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14891114918366.html">
+                
+                  <h1>剑指Offer-用两个栈实现队列</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。</p>
+</blockquote>
+
+<h2 id="toc_0">解决思路</h2>
+
+<p>栈是后进先出，而队列是先进先出，在pop的过程上是相反的。所以我们要解决的核心问题就是这样。<br/>
+Stack1用来push数据，这样，最先进入的元素就成为了Stack1的栈底元素。当我们需要出队时，需要找到第一个进入stack1的元素，于是，我们分别将stack1的元素出栈，压入stack2，这时，stack2中的栈顶元素，就是最开始我们插入栈中的元素，也就是我们要pop的元素。<br/>
+所以，就有了如下的规则:</p>
+
+<ul>
+<li>push操作：压入stack1中；</li>
+<li>pop操作：如果stack2中有元素，则返回stack2的栈顶元素；若stack2为空，则依次将stack1中的元素出栈，压入stack2中，返回stack2的栈顶元素。</li>
+</ul>
+
+<h2 id="toc_1">代码如下：</h2>
+
+<pre><code class="language-java">import java.util.Stack;
+
+public class Solution {
+    Stack&lt;Integer&gt; stack1 = new Stack&lt;Integer&gt;();
+    Stack&lt;Integer&gt; stack2 = new Stack&lt;Integer&gt;();
+    
+    public void push(int node) {
+        stack1.push(node);
+    }
+    
+    public int pop() {
+        if(stack2.size() &gt; 0 ){
+            return stack2.pop();
+        }
+        
+        while(stack1.size() &gt; 0 ){
+            stack2.push(stack1.pop());
+        }
+        return stack2.pop();
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14891114918366.html" data-count-type="comments" href="14891114918366.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14890277021887.html">
                 
                   <h1>剑指Offer-重建二叉树</h1>
@@ -391,188 +581,6 @@ public class Solution {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14889364537323.html">
-                
-                  <h1>剑指Offer-二维数组中的查找</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
-</blockquote>
-
-<h2 id="toc_0">解题思路</h2>
-
-<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
-
-<ul>
-<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
-<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
-<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
-<li>若遍历到<code>i==n，j==0</code>,依旧没有找到匹配数据，则返回false；</li>
-</ul>
-
-<h2 id="toc_1">实现代码</h2>
-
-<pre><code class="language-java">public class Solution {
-    public boolean Find(int target, int [][] array) {
-        if(array.length == 0){
-            return false;
-        }
-        int i = 0;
-        int j = array[0].length - 1;
-        
-        while(i &lt; array.length &amp;&amp; j &gt;=0){
-            if(array[i][j] == target){
-                return true;
-            }
-            if(target &gt; array[i][j]){
-                i++;
-                continue;
-            }
-            if(target &lt; array[i][j]){
-                j--;
-                continue;
-            }
-        }
-        return false;
-
-    }
-}
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/8</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889364537323.html" data-count-type="comments" href="14889364537323.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14880758779206.html">
-                
-                  <h1>Java容器框架分析(九)——WeakHashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>在Java容器框架系列文章的最后，笔者打算介绍一个特殊的成员：WeakHashMap，从名字可以看出它是某种Map。它的特殊之处在于WeakHashMap里的entry可能会被GC自动删除，即使程序员没有调用remove()或者clear()方法。</p>
-
-<p>更直观的说，当使用WeakHashMap时，即使没有显示的添加或者删除任何元素，也可能发生如下情况：</p>
-
-<ul>
-<li>调用两次<code>size()</code>方法返回不同的值</li>
-<li>两次调用<code>isEmpty()</code>方法，第一次返回<code>false</code>，第二次返回<code>true</code></li>
-<li>两次调用<code>containsKey()</code>方法，第一次返回<code>true</code>，第二次返回<code>false</code>，尽管是同一个<code>key</code></li>
-<li>两次调用<code>get()</code>方法，第一次返回一个<code>value</code>，第二次返回<code>null</code>，尽管两次使用的是同一个对象</li>
-</ul>
-
-<p>遇到这么奇葩的现象，你是不是觉得使用者一定疯掉？其实不然，<strong>WeekHashMap的这个特点特别适用于需要缓存的场景</strong>。在缓存场景下，由于内存是有限的，不能缓存所有对象；对象缓存命中可以提高效率，但缓存Miss也不会造成错误，因为可以通过计算重新得到。</p>
-
-<p>要明白WeakHashMap的工作原理，还需要引入一个概念：<strong>弱引用</strong>。我们知道Java中的内存是通过GC自动管理的，GC会在程序运行过程中自动判断哪些对象时可以被回收的，并在合适的时机进行内存释放。GC判断某个对象是否可以回收的依据是：<strong>是否有有效的引用指向该对象</strong>。如果没有有效引用指向该对象（意味着不存在访问该对象的方式），那么该对象就是可回收的。这里的<strong>有效引用并不包括弱引用</strong>。也就是说，虽然<strong>弱引用可以用来访问对象，但进行垃圾回收时弱引用并不会被考虑在内，仅有弱引用指向的对象仍然会被GC回收</strong>。</p>
-
-<p>WeakHashMap内部使用弱引用来管理entry，弱引用的特性对应到WeakHashMap上意味着什么呢？将一对key,value放入到WeakHashMap里并不能避免该key值被GC回收，除非在WeakHashMap之外还有对该key的强引用。</p>
-
-<h2 id="toc_0">具体实现</h2>
-
-<p>WeakHashMap的储存结构类似于HashMap，可参考前文。</p>
-
-<h3 id="toc_1">WeakHashSet？</h3>
-
-<p>如果你看过前几篇关于Map和Set的讲解，一定会问：既然有 WeekHashMap，是否有WeekHashSet呢？答案是没有！不过Java Collections工具类给出了解决方案，<code>Collections.newSetFromMap(Map&lt;E,Boolean&gt; map)</code>方法可以将任何Map包装成一个Set。通过如下方式可以快速得到一个 Weak HashSet：<br/>
-<code>java<br/>
-// 将WeakHashMap包装成一个Set<br/>
-Set&lt;Object&gt; weakHashSet = Collections.newSetFromMap(<br/>
-        new WeakHashMap&lt;Object, Boolean&gt;());<br/>
-</code><br/>
-其内部只是对传入的Map进行了简单的封装：</p>
-
-<pre><code class="language-java">// Collections.newSetFromMap()用于将任何Map包装成一个Set
-public static &lt;E&gt; Set&lt;E&gt; newSetFromMap(Map&lt;E, Boolean&gt; map) {
-    return new SetFromMap&lt;&gt;(map);
-}
-
-private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements Set&lt;E&gt;, Serializable
-{
-    private final Map&lt;E, Boolean&gt; m;  // The backing map
-    private transient Set&lt;E&gt; s;       // Its keySet
-    SetFromMap(Map&lt;E, Boolean&gt; map) {
-        if (!map.isEmpty())
-            throw new IllegalArgumentException(&quot;Map is non-empty&quot;);
-        m = map;
-        s = map.keySet();
-    }
-    public void clear()               {        m.clear(); }
-    public int size()                 { return m.size(); }
-    public boolean isEmpty()          { return m.isEmpty(); }
-    public boolean contains(Object o) { return m.containsKey(o); }
-    public boolean remove(Object o)   { return m.remove(o) != null; }
-    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
-    public Iterator&lt;E&gt; iterator()     { return s.iterator(); }
-    public Object[] toArray()         { return s.toArray(); }
-    public &lt;T&gt; T[] toArray(T[] a)     { return s.toArray(a); }
-    public String toString()          { return s.toString(); }
-    public int hashCode()             { return s.hashCode(); }
-    public boolean equals(Object o)   { return o == this || s.equals(o); }
-    public boolean containsAll(Collection&lt;?&gt; c) {return s.containsAll(c);}
-    public boolean removeAll(Collection&lt;?&gt; c)   {return s.removeAll(c);}
-    public boolean retainAll(Collection&lt;?&gt; c)   {return s.retainAll(c);}
-    // addAll is the only inherited implementation
-    ......
-}
-</code></pre>
-
-<h2 id="toc_2">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/26</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14880758779206.html" data-count-type="comments" href="14880758779206.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -661,6 +669,18 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
 	      
 		      
 			      <li class="post">
+			        <a href="14893892449120.html">设计模式-单例模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893744942754.html">剑指Offer-合并两个排序的链表</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
 			      </li>
 		     
@@ -674,18 +694,6 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
 		      
 			      <li class="post">
 			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
 		  

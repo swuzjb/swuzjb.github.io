@@ -4,13 +4,250 @@
   <title><![CDATA[Zhan's Blog]]></title>
   <link href="http://swuzjb.github.io/atom.xml" rel="self"/>
   <link href="http://swuzjb.github.io/"/>
-  <updated>2017-03-12T16:08:49+08:00</updated>
+  <updated>2017-03-12T16:08:55+08:00</updated>
   <id>http://swuzjb.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[设计模式-单例模式]]></title>
+    <link href="http://swuzjb.github.io/14893892449120.html"/>
+    <updated>2017-03-13T15:14:04+08:00</updated>
+    <id>http://swuzjb.github.io/14893892449120.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>单例模式(Singleton Pattern)：确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例，这个类称为单例类，它提供全局访问的方法。单例模式是一种对象创建型模式。</p>
+</blockquote>
+
+<p>单例模式有三个要点：一是某个类只能有一个实例；二是它必须自行创建这个实例；三是它必须自行向整个系统提供这个实例。<br/>
+单例模式是结构最简单的设计模式一，在它的核心结构中只包含一个被称为单例类的特殊类。单例模式结构如图所示：<br/>
+<img src="media/14893892449120/14893894908299.gif" alt=""/></p>
+
+<p>单例模式结构图中只包含一个单例角色：</p>
+
+<ul>
+<li>Singleton（单例）：在单例类的内部实现只生成一个实例，同时它提供一个静态的getInstance()工厂方法，让客户可以访问它的唯一实例；为了防止在外部对其实例化，将其构造函数设计为私有；在单例类内部定义了一个Singleton类型的静态对象，作为外部共享的唯一实例。</li>
+</ul>
+
+<h2 id="toc_0">实现</h2>
+
+<h3 id="toc_1">饿汉单例类</h3>
+
+<p>饿汉式单例类是实现起来最简单的单例类，饿汉式单例类结构图如图所示：<br/>
+<img src="media/14893892449120/14893897883680.gif" alt=""/><br/>
+从图中可以看出，由于在定义静态变量的时候实例化单例类，因此在类加载的时候就已经创建了单例对象，代码如下所示：</p>
+
+<pre><code class="language-java">public class EagerSingleton {
+    private static final EagerSingleton EAGER_SINGLETON = new EagerSingleton();
+
+    private EagerSingleton() {
+
+    }
+
+    public static EagerSingleton getInstance() {
+        return EAGER_SINGLETON;
+    }
+}
+</code></pre>
+
+<h3 id="toc_2">懒汉单例模式</h3>
+
+<p>除了饿汉式单例，还有一种经典的懒汉式单例。懒汉式单例类结构图如图所示：<br/>
+<img src="media/14893892449120/14893900184282.gif" alt=""/><br/>
+从图中可以看出，懒汉式单例在第一次调用getInstance()方法时实例化，在类加载时并不自行实例化，这种技术又称为延迟加载(Lazy Load)技术，即需要的时候再加载实例，为了避免多个线程同时调用getInstance()方法，我们可以使用关键字synchronized，代码如下所示：</p>
+
+<pre><code class="language-java">public class LazySingleton1 {
+    private static LazySingleton1 instance = null;
+
+    private LazySingleton1() {
+    }
+
+    synchronized public static LazySingleton1 getInstance() {
+        if (instance == null) {
+            instance = new LazySingleton1();
+        }
+        return instance;
+    }
+}
+</code></pre>
+
+<p>该懒汉式单例类在<code>getInstance()</code>方法前面增加了关键字<em>synchronized</em>进行线程锁，以处理多个线程同时访问的问题。但是，上述代码虽然解决了线程安全问题，但是每次调用<code>getInstance()</code>时都需要进行线程锁定判断，在多线程高并发访问环境中，将会导致系统性能大大降低。如何既解决线程安全问题又不影响系统性能呢？我们继续对懒汉式单例进行改进。事实上，我们无须对整个<code>getInstance()</code>方法进行锁定，只需对其中的代码<code>instance = new LazySingleton();</code>进行锁定即可。因此<code>getInstance()</code>方法可以进行如下改进：</p>
+
+<pre><code class="language-java">public static LazySingleton getInstance() {   
+    if (instance == null) {  
+        synchronized (LazySingleton.class) {  
+            instance = new LazySingleton();   
+        }  
+    }  
+    return instance;   
+} 
+</code></pre>
+
+<p>问题貌似得以解决，事实并非如此。如果使用以上代码来实现单例，还是会存在单例对象不唯一。原因如下：假如在某一瞬间线程A和线程B都在调用<code>getInstance()</code>方法，此时instance对象为null值，均能通过<code>instance == null</code>的判断。由于实现了<em>synchronized</em>加锁机制，线程A进入synchronized锁定的代码中执行实例创建代码，线程B处于排队等待状态，必须等待线程A执行完毕后才可以进入synchronized锁定代码。但当A执行完毕时，线程B并不知道实例已经创建，将继续创建新的实例，导致产生多个单例对象，违背单例模式的设计思想，因此需要进行进一步改进，在synchronized中再进行一次(instance == null)判断，这种方式称为<strong>双重检查锁定(Double-Check Locking)</strong>。使用双重检查锁定实现的懒汉式单例类完整代码如下所示：</p>
+
+<pre><code class="language-java">class LazySingleton {   
+    private volatile static LazySingleton instance = null;   
+  
+    private LazySingleton() { }   
+  
+    public static LazySingleton getInstance() {   
+        //第一重判断  
+        if (instance == null) {  
+            //锁定代码块  
+            synchronized (LazySingleton.class) {  
+                //第二重判断  
+                if (instance == null) {  
+                    instance = new LazySingleton(); //创建单例实例  
+                }  
+            }  
+        }  
+        return instance;   
+    }  
+}  
+</code></pre>
+
+<p>需要注意的是，如果使用双重检查锁定来实现懒汉式单例类，需要在静态成员变量instance之前增加修饰符volatile，被volatile修饰的成员变量可以确保多个线程都能够正确处理，且该代码只能在JDK 1.5及以上版本中才能正确执行。由于volatile关键字会屏蔽Java虚拟机所做的一些代码优化，可能会导致系统运行效率降低，因此即使使用双重检查锁定来实现单例模式也不是一种完美的实现方式。 </p>
+
+<h3 id="toc_3">懒汉和饿汉的比较</h3>
+
+<p>饿汉式单例类在类被加载时就将自己实例化，它的优点在于无须考虑多线程访问问题，可以确保实例的唯一性；从调用速度和反应时间角度来讲，由于单例对象一开始就得以创建，因此要优于懒汉式单例。但是无论系统在运行时是否需要使用该单例对象，由于在类加载时该对象就需要创建，因此从资源利用效率角度来讲，饿汉式单例不及懒汉式单例，而且在系统加载时由于需要创建饿汉式单例对象，加载时间可能会比较长。<br/>
+懒汉式单例类在第一次使用时创建，无须一直占用系统资源，实现了延迟加载，但是必须处理好多个线程同时访问的问题，特别是当单例类作为资源控制器，在实例化时必然涉及资源初始化，而资源初始化很有可能耗费大量时间，这意味着出现多线程同时首次引用此类的机率变得较大，需要通过双重检查锁定等机制进行控制，这将导致系统性能受到一定影响。</p>
+
+<h3 id="toc_4">静态内部类实现法</h3>
+
+<p>饿汉式单例类不能实现延迟加载，不管将来用不用始终占据内存；懒汉式单例类线程安全控制烦琐，而且性能受影响。可见，无论是饿汉式单例还是懒汉式单例都存在这样那样的问题，有没有一种方法，能够将两种单例的缺点都克服，而将两者的优点合二为一呢？答案是：Yes！下面我们来学习这种更好的被称之为Initialization Demand Holder (IoDH)的技术。<br/>
+在IoDH中，我们在单例类中增加一个静态(static)内部类，在该内部类中创建单例对象，再将该单例对象通过getInstance()方法返回给外部使用，实现代码如下所示：</p>
+
+<pre><code class="language-java">class Singleton {  
+    private Singleton() {  
+    }  
+      
+    private static class HolderClass {  
+            private final static Singleton instance = new Singleton();  
+    }  
+      
+    public static Singleton getInstance() {  
+        return HolderClass.instance;  
+    }  
+      
+    public static void main(String args[]) {  
+        Singleton s1, s2;   
+            s1 = Singleton.getInstance();  
+        s2 = Singleton.getInstance();  
+        System.out.println(s1==s2);  
+    }  
+}  
+</code></pre>
+
+<p>编译并运行上述代码，运行结果为：true，即创建的单例对象s1和s2为同一对象。由于静态单例对象没有作为Singleton的成员变量直接实例化，因此类加载时不会实例化Singleton，第一次调用getInstance()时将加载内部类HolderClass，在该内部类中定义了一个static类型的变量instance，此时会首先初始化这个成员变量，由Java虚拟机来保证其线程安全性，确保该成员变量只能初始化一次。由于getInstance()方法没有任何线程锁定，因此其性能不会造成任何影响。</p>
+
+<p>通过使用IoDH，我们既可以实现延迟加载，又可以保证线程安全，不影响系统性能，不失为一种最好的Java语言单例模式实现方式（其缺点是与编程语言本身的特性相关，很多面向对象语言不支持IoDH）。</p>
+
+<h2 id="toc_5">总结</h2>
+
+<p>单例模式作为一种目标明确、结构简单、理解容易的设计模式，在软件开发中使用频率相当高，在很多应用软件和框架中都得以广泛应用。</p>
+
+<h3 id="toc_6">主要优点</h3>
+
+<p>单例模式的主要优点如下：</p>
+
+<ol>
+<li>单例模式提供了对唯一实例的受控访问。因为单例类封装了它的唯一实例，所以它可以严格控制客户怎样以及何时访问它。</li>
+<li>由于在系统内存中只存在一个对象，因此可以节约系统资源，对于一些需要频繁创建和销毁的对象单例模式无疑可以提高系统的性能。</li>
+<li>允许可变数目的实例。基于单例模式我们可以进行扩展，使用与单例控制相似的方法来获得指定个数的对象实例，既节省系统资源，又解决了单例单例对象共享过多有损性能的问题。</li>
+</ol>
+
+<h3 id="toc_7">主要缺点</h3>
+
+<p>单例模式的主要缺点如下：</p>
+
+<ol>
+<li>由于单例模式中没有抽象层，因此单例类的扩展有很大的困难。</li>
+<li>单例类的职责过重，在一定程度上违背了“单一职责原则”。因为单例类既充当了工厂角色，提供了工厂方法，同时又充当了产品角色，包含一些业务方法，将产品的创建和产品的本身的功能融合到一起。</li>
+</ol>
+
+<h3 id="toc_8">适用场景</h3>
+
+<p>在以下情况下可以考虑使用单例模式：</p>
+
+<ol>
+<li>系统只需要一个实例对象，如系统要求提供一个唯一的序列号生成器或资源管理器，或者需要考虑资源消耗太大而只允许创建一个对象。</li>
+<li>客户调用类的单个实例只允许使用一个公共访问点，除了该公共访问点，不能通过其他途径访问该实例。</li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剑指Offer-合并两个排序的链表]]></title>
+    <link href="http://swuzjb.github.io/14893744942754.html"/>
+    <updated>2017-03-13T11:08:14+08:00</updated>
+    <id>http://swuzjb.github.io/14893744942754.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。</p>
+</blockquote>
+
+<h2 id="toc_0">非递归实现</h2>
+
+<pre><code class="language-java">public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+        ListNode head = new ListNode(0);
+        ListNode p = head;
+        boolean isFirst = true;
+        while(list1 != null &amp;&amp; list2 != null){
+            if(list1.val &lt; list2.val){
+                p.next = list1;
+                list1 = list1.next;
+            }else{
+                p.next = list2;
+                list2 = list2.next;
+            }
+            p = p.next;
+        }
+        if(list1 != null){
+            p.next = list1;
+        }
+        if(list2 != null){
+            p.next = list2;
+        }
+        return head.next;
+    }
+    
+}
+</code></pre>
+
+<h2 id="toc_1">递归实现</h2>
+
+<pre><code class="language-java">public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+        if(list1 == null){
+            return list2;
+        }
+        if(list2 == null){
+            return list1;
+        }
+        
+        ListNode head = null;
+        
+        if(list1.val &lt; list2.val){
+            head = list1;
+            head.next = Merge(list1.next, list2);
+        }else{
+            head = list2;
+            head.next = Merge(list1, list2.next);
+        }
+        return head;
+    }
+    
+}
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[设计模式-抽象工厂模式]]></title>
@@ -1782,596 +2019,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 </code></pre>
 
 <h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java容器框架分析(五)——TreeSet与TreeMap]]></title>
-    <link href="http://swuzjb.github.io/14879027517066.html"/>
-    <updated>2017-02-24T10:19:11+08:00</updated>
-    <id>http://swuzjb.github.io/14879027517066.html</id>
-    <content type="html"><![CDATA[
-<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
-
-<h2 id="toc_0">TreeMap简介</h2>
-
-<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
-
-<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
-
-<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
-
-<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
-</code></pre>
-
-<h2 id="toc_1">红黑树</h2>
-
-<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
-
-<ol>
-<li>每个节点要么是红色要么是黑色。</li>
-<li>根节点必须是黑色。</li>
-<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
-<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
-在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
-</ol>
-
-<h3 id="toc_2">预备知识</h3>
-
-<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
-
-<h4 id="toc_3">左旋</h4>
-
-<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
-
-<p>TreeMap中的左旋操作代码：</p>
-
-<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; r = p.right;
-        p.right = r.left;
-        if (r.left != null)
-            r.left.parent = p;
-        r.parent = p.parent;
-        if (p.parent == null)
-            root = r;
-        else if (p.parent.left == p)
-            p.parent.left = r;
-        else
-            p.parent.right = r;
-        r.left = p;
-        p.parent = r;
-    }
-}
-</code></pre>
-
-<h3 id="toc_4">右旋</h3>
-
-<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
-
-<p>TreeMap中的右旋代码：</p>
-
-<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; l = p.left;
-        p.left = l.right;
-        if (l.right != null) l.right.parent = p;
-        l.parent = p.parent;
-        if (p.parent == null)
-            root = l;
-        else if (p.parent.right == p)
-            p.parent.right = l;
-        else p.parent.left = l;
-        l.right = p;
-        p.parent = l;
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">寻找节点后继</h3>
-
-<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
-
-<ol>
-<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
-<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
-</ol>
-
-<p>TreeMap中寻找节点后继的代码如下：</p>
-
-<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
-    if (t == null)
-        return null;
-    else if (t.right != null) {
-            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
-        Entry&lt;K,V&gt; p = t.right;
-        while (p.left != null)
-            p = p.left;
-        return p;
-    } else {
-            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
-        Entry&lt;K,V&gt; p = t.parent;
-        Entry&lt;K,V&gt; ch = t;
-        while (p != null &amp;&amp; ch == p.right) {
-            ch = p;
-            p = p.parent;
-        }
-        return p;
-    }
-}
-</code></pre>
-
-<h2 id="toc_6">常用方法剖析</h2>
-
-<h3 id="toc_7">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    if (key == null)//不允许key值为null
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    Entry&lt;K,V&gt; p = root;
-    while (p != null) {
-        int cmp = k.compareTo(p.key);
-        if (cmp &lt; 0)//向左找
-            p = p.left;
-        else if (cmp &gt; 0)//向右找
-            p = p.right;
-        else
-            return p;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_8">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
-
-<pre><code class="language-java">public V put(K key, V value) {
-    ......
-    int cmp;
-    Entry&lt;K,V&gt; parent;
-    if (key == null)
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    do {
-        parent = t;
-        cmp = k.compareTo(t.key);
-        if (cmp &lt; 0) t = t.left;//向左找
-        else if (cmp &gt; 0) t = t.right;//向右找
-        else return t.setValue(value);
-    } while (t != null);
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
-    if (cmp &lt; 0) parent.left = e;
-    else parent.right = e;
-    fixAfterInsertion(e);//调整
-    size++;
-    return null;
-}
-</code></pre>
-
-<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
-
-<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
-private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
-    x.color = RED;
-    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
-        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
-            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况1
-                setColor(y, BLACK);                        // 情况1
-                setColor(parentOf(parentOf(x)), RED);      // 情况1
-                x = parentOf(parentOf(x));                 // 情况1
-            } else {
-                if (x == rightOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况2
-                    rotateLeft(x);                         // 情况2
-                }
-                setColor(parentOf(x), BLACK);              // 情况3
-                setColor(parentOf(parentOf(x)), RED);      // 情况3
-                rotateRight(parentOf(parentOf(x)));        // 情况3
-            }
-        } else {
-            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况4
-                setColor(y, BLACK);                        // 情况4
-                setColor(parentOf(parentOf(x)), RED);      // 情况4
-                x = parentOf(parentOf(x));                 // 情况4
-            } else {
-                if (x == leftOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况5
-                    rotateRight(x);                        // 情况5
-                }
-                setColor(parentOf(x), BLACK);              // 情况6
-                setColor(parentOf(parentOf(x)), RED);      // 情况6
-                rotateLeft(parentOf(parentOf(x)));         // 情况6
-            }
-        }
-    }
-    root.color = BLACK;
-}
-</code></pre>
-
-<h3 id="toc_9">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
-<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
-
-<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
-
-<ol>
-<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
-<li>删除点p的左右子树都非空。</li>
-</ol>
-
-<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
-基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
-
-<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
-    modCount++;
-    size--;
-    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
-        Entry&lt;K,V&gt; s = successor(p);// 后继
-        p.key = s.key;
-        p.value = s.value;
-        p = s;
-    }
-    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
-    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
-        replacement.parent = p.parent;
-        if (p.parent == null)
-            root = replacement;
-        else if (p == p.parent.left)
-            p.parent.left  = replacement;
-        else
-            p.parent.right = replacement;
-        p.left = p.right = p.parent = null;
-        if (p.color == BLACK)
-            fixAfterDeletion(replacement);// 调整
-    } else if (p.parent == null) {
-        root = null;
-    } else { // 1. 删除点p的左右子树都为空
-        if (p.color == BLACK)
-            fixAfterDeletion(p);// 调整
-        if (p.parent != null) {
-            if (p == p.parent.left)
-                p.parent.left = null;
-            else if (p == p.parent.right)
-                p.parent.right = null;
-            p.parent = null;
-        }
-    }
-}
-</code></pre>
-
-<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
-跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
-
-<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
-
-<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
-
-<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
-    while (x != root &amp;&amp; colorOf(x) == BLACK) {
-        if (x == leftOf(parentOf(x))) {
-            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况1
-                setColor(parentOf(x), RED);             // 情况1
-                rotateLeft(parentOf(x));                // 情况1
-                sib = rightOf(parentOf(x));             // 情况1
-            }
-            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
-                colorOf(rightOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况2
-                x = parentOf(x);                        // 情况2
-            } else {
-                if (colorOf(rightOf(sib)) == BLACK) {
-                    setColor(leftOf(sib), BLACK);       // 情况3
-                    setColor(sib, RED);                 // 情况3
-                    rotateRight(sib);                   // 情况3
-                    sib = rightOf(parentOf(x));         // 情况3
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况4
-                setColor(parentOf(x), BLACK);           // 情况4
-                setColor(rightOf(sib), BLACK);          // 情况4
-                rotateLeft(parentOf(x));                // 情况4
-                x = root;                               // 情况4
-            }
-        } else { // 跟前四种情况对称
-            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况5
-                setColor(parentOf(x), RED);             // 情况5
-                rotateRight(parentOf(x));               // 情况5
-                sib = leftOf(parentOf(x));              // 情况5
-            }
-            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
-                colorOf(leftOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况6
-                x = parentOf(x);                        // 情况6
-            } else {
-                if (colorOf(leftOf(sib)) == BLACK) {
-                    setColor(rightOf(sib), BLACK);      // 情况7
-                    setColor(sib, RED);                 // 情况7
-                    rotateLeft(sib);                    // 情况7
-                    sib = leftOf(parentOf(x));          // 情况7
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况8
-                setColor(parentOf(x), BLACK);           // 情况8
-                setColor(leftOf(sib), BLACK);           // 情况8
-                rotateRight(parentOf(x));               // 情况8
-                x = root;                               // 情况8
-            }
-        }
-    }
-    setColor(x, BLACK);
-}
-</code></pre>
-
-<h2 id="toc_10">TreeSet</h2>
-
-<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
-
-<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    private transient NavigableMap&lt;E,Object&gt; m;
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public TreeSet() {
-        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
-    }
-    ......
-    public boolean add(E e) {
-        return m.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_11">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java容器框架分析(四)——ArrayDeque源码分析]]></title>
-    <link href="http://swuzjb.github.io/14878305448928.html"/>
-    <updated>2017-02-23T14:15:44+08:00</updated>
-    <id>http://swuzjb.github.io/14878305448928.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">ArrayDeque简介</h2>
-
-<p>Java中有一个叫做Stack的实现类，却没有Queue的实现类（只有Queue接口）。当需要使用栈时，Java官方已经不推荐使用Stack而是推荐使用更高效的ArrayDeque；既然Queue只是一个接口，当需要使用队列是也就首选ArrayDeque了，其次就是LinkedList啦。</p>
-
-<h2 id="toc_1">Deque接口</h2>
-
-<p>要将栈和队列，首先需要介绍Deque接口，Deque全称Double Ended Queue，即双端队列。它既可以当做栈使用，也可以当做队列使用。<br/>
-下标展示Deque和Queue的接口对照表：</p>
-
-<table>
-<thead>
-<tr>
-<th>Queue方法</th>
-<th>Deque方法</th>
-<th>方法说明</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>add(e)</td>
-<td>addLast(e)</td>
-<td>向队尾插入元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>offer(e)</td>
-<td>offerLast(e)</td>
-<td>向队尾插入元素，失败则返回false</td>
-</tr>
-<tr>
-<td>remove()</td>
-<td>removeFirst()</td>
-<td>获取并删除队首元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>poll()</td>
-<td>pollFrist()</td>
-<td>获取并删除队首元素，失败则返回null</td>
-</tr>
-<tr>
-<td>element()</td>
-<td>getFirst()</td>
-<td>获取但不删除队首元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>peek()</td>
-<td>peekFirst()</td>
-<td>获取但不删除队首元素，失败则返回null</td>
-</tr>
-</tbody>
-</table>
-
-<p>下表列出了Deque和Stack的接口对应关系：</p>
-
-<table>
-<thead>
-<tr>
-<th>Stack方法</th>
-<th>Deque方法</th>
-<th>方法说明</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>push(e)</td>
-<td>addFirst(e)</td>
-<td>向栈顶插入元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>offerFirst(e)</td>
-<td>向栈顶插入元素，失败则返回false</td>
-</tr>
-<tr>
-<td>pop()</td>
-<td>removeFirst(e)</td>
-<td>获取并删除栈顶元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>pollFirst()</td>
-<td>获取并删除栈顶元素，失败则返回null</td>
-</tr>
-<tr>
-<td>peek()</td>
-<td>getFirst()</td>
-<td>获取但不删除栈顶元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>peekFirst()</td>
-<td>获取但不删除栈顶元素，失败则返回null</td>
-</tr>
-</tbody>
-</table>
-
-<p>上面两个表共定义了Deque的12个接口，添加、删除、查询都有2套接口，它们功能相同，区别就在于对于失败情况的处理方式是不同的。<strong>一套接口遇到失败就会抛出异常，另一套遇到失败会返回特殊值（false或者null）</strong>。除非某种实现对于容量有限制，大多数情况之下，添加操作是不会失败的。虽然上面列举了12个接口，但是无非就是对容器的两端进行添加、删除、查询操作。</p>
-
-<h2 id="toc_2">ArrayDeque简介</h2>
-
-<p>ArrayDeque和LinkedList是Deque的两个通用实现，由于官方更加推荐使用ArrayDeque用作栈和队列，加之上一篇已经对LinkedList进行了讲解，本文着重讲解ArrayDeque的具体实现。<br/>
-从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
-ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878324914756.png" alt=""/></p>
-
-<p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
-
-<h2 id="toc_3">常用方法剖析</h2>
-
-<h3 id="toc_4">addFirst()</h3>
-
-<p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878327863308.png" alt=""/></p>
-
-<p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
-
-<pre><code class="language-java">public void addFirst(E e) {
-    if (e == null)//不允许放入null
-        throw new NullPointerException();
-    elements[head = (head - 1) &amp; (elements.length - 1)] = e;//2.下标是否越界
-    if (head == tail)//1.空间是否够用
-        doubleCapacity();//扩容
-}
-</code></pre>
-
-<p>上述代码我们看到，<strong>空间问题是在插入之后解决的</strong>。因为tail总是指向下一个可插入的空位，也就意味着<code>elements</code>数组至少有一个空位，所以插入元素的时候不需要考虑空间问题。<br/>
-下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
-
-<p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878340364545.png" alt=""/></p>
-
-<pre><code class="language-java">private void doubleCapacity() {
-    assert head == tail;
-    int p = head;
-    int n = elements.length;
-    int r = n - p; // head右边元素的个数
-    int newCapacity = n &lt;&lt; 1;//原空间的2倍
-    if (newCapacity &lt; 0)
-        throw new IllegalStateException(&quot;Sorry, deque too big&quot;);
-    Object[] a = new Object[newCapacity];
-    System.arraycopy(elements, p, a, 0, r);//复制右半部分，对应上图中绿色部分
-    System.arraycopy(elements, 0, a, r, p);//复制左半部分，对应上图中灰色部分
-    elements = (E[])a;
-    head = 0;
-    tail = n;
-}
-</code></pre>
-
-<h3 id="toc_5">addLast()</h3>
-
-<p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878375459017.png" alt=""/></p>
-
-<pre><code class="language-java">public void addLast(E e) {
-    if (e == null)//不允许放入null
-        throw new NullPointerException();
-    elements[tail] = e;//赋值
-    if ( (tail = (tail + 1) &amp; (elements.length - 1)) == head)//下标越界处理
-        doubleCapacity();//扩容
-}
-</code></pre>
-
-<h3 id="toc_6">pollFirst()</h3>
-
-<p><code>pollFirst()</code>的作用是返回并删除Deque的首部元素，也就是head位置的元素。如果容器不空，只需要直接返回<code>elements[head]</code>即可，当然还需要处理下标的问题，由于ArrayDeque不允许放入<code>null</code>值，则当<code>elements[head]=null</code>时，意味着容器为空。</p>
-
-<pre><code class="language-java">public E pollFirst() {
-    E result = elements[head];
-    if (result == null)//null值意味着deque为空
-        return null;
-    elements[head] = null;//let GC work
-    head = (head + 1) &amp; (elements.length - 1);//下标越界处理
-    return result;
-}
-</code></pre>
-
-<h3 id="toc_7">pollLast()</h3>
-
-<p><code>pollLast()</code>的作用是返回并删除Deque的尾端元素，也就是<code>tail</code>位置前面的那个元素。</p>
-
-<pre><code class="language-java">public E pollLast() {
-    int t = (tail - 1) &amp; (elements.length - 1);//tail的上一个位置是最后一个元素
-    E result = elements[t];
-    if (result == null)//null值意味着deque为空
-        return null;
-    elements[t] = null;//let GC work
-    tail = t;
-    return result;
-}
-</code></pre>
-
-<h3 id="toc_8">peekFirst()</h3>
-
-<p><code>peekFrist()</code>的作用是返回但不删除Deque的首端元素，也就是<code>head</code>位置的元素，只需要直接返回element[head]即可。</p>
-
-<pre><code class="language-java">public E peekFirst() {
-    return elements[head]; // 如果Deque为空，则返回null
-}
-</code></pre>
-
-<h3 id="toc_9">peekLast()</h3>
-
-<p><code>peekLast()</code>的作用是返回单不删除Deque的尾端函数，也就是<code>tail</code>的前一个位置的元素，只需要处理一下坐标位置即可。</p>
-
-<pre><code class="language-java">public E peekLast() {
-    return elements[(tail - 1) &amp; (elements.length - 1)];
-}
-</code></pre>
-
-<h2 id="toc_10">声明</h2>
 
 <p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
 作者：CarpenterLee</p>

@@ -107,6 +107,199 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14893892449120.html">
+                
+                  <h1>设计模式-单例模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>单例模式(Singleton Pattern)：确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例，这个类称为单例类，它提供全局访问的方法。单例模式是一种对象创建型模式。</p>
+</blockquote>
+
+<p>单例模式有三个要点：一是某个类只能有一个实例；二是它必须自行创建这个实例；三是它必须自行向整个系统提供这个实例。<br/>
+单例模式是结构最简单的设计模式一，在它的核心结构中只包含一个被称为单例类的特殊类。单例模式结构如图所示：<br/>
+<img src="media/14893892449120/14893894908299.gif" alt=""/></p>
+
+<p>单例模式结构图中只包含一个单例角色：</p>
+
+<ul>
+<li>Singleton（单例）：在单例类的内部实现只生成一个实例，同时它提供一个静态的getInstance()工厂方法，让客户可以访问它的唯一实例；为了防止在外部对其实例化，将其构造函数设计为私有；在单例类内部定义了一个Singleton类型的静态对象，作为外部共享的唯一实例。</li>
+</ul>
+
+<h2 id="toc_0">实现</h2>
+
+<h3 id="toc_1">饿汉单例类</h3>
+
+<p>饿汉式单例类是实现起来最简单的单例类，饿汉式单例类结构图如图所示：<br/>
+<img src="media/14893892449120/14893897883680.gif" alt=""/><br/>
+从图中可以看出，由于在定义静态变量的时候实例化单例类，因此在类加载的时候就已经创建了单例对象，代码如下所示：</p>
+
+<pre><code class="language-java">public class EagerSingleton {
+    private static final EagerSingleton EAGER_SINGLETON = new EagerSingleton();
+
+    private EagerSingleton() {
+
+    }
+
+    public static EagerSingleton getInstance() {
+        return EAGER_SINGLETON;
+    }
+}
+</code></pre>
+
+<h3 id="toc_2">懒汉单例模式</h3>
+
+<p>除了饿汉式单例，还有一种经典的懒汉式单例。懒汉式单例类结构图如图所示：<br/>
+<img src="media/14893892449120/14893900184282.gif" alt=""/><br/>
+从图中可以看出，懒汉式单例在第一次调用getInstance()方法时实例化，在类加载时并不自行实例化，这种技术又称为延迟加载(Lazy Load)技术，即需要的时候再加载实例，为了避免多个线程同时调用getInstance()方法，我们可以使用关键字synchronized，代码如下所示：</p>
+
+<pre><code class="language-java">public class LazySingleton1 {
+    private static LazySingleton1 instance = null;
+
+    private LazySingleton1() {
+    }
+
+    synchronized public static LazySingleton1 getInstance() {
+        if (instance == null) {
+            instance = new LazySingleton1();
+        }
+        return instance;
+    }
+}
+</code></pre>
+
+<p>该懒汉式单例类在<code>getInstance()</code>方法前面增加了关键字<em>synchronized</em>进行线程锁，以处理多个线程同时访问的问题。但是，上述代码虽然解决了线程安全问题，但是每次调用<code>getInstance()</code>时都需要进行线程锁定判断，在多线程高并发访问环境中，将会导致系统性能大大降低。如何既解决线程安全问题又不影响系统性能呢？我们继续对懒汉式单例进行改进。事实上，我们无须对整个<code>getInstance()</code>方法进行锁定，只需对其中的代码<code>instance = new LazySingleton();</code>进行锁定即可。因此<code>getInstance()</code>方法可以进行如下改进：</p>
+
+<pre><code class="language-java">public static LazySingleton getInstance() {   
+    if (instance == null) {  
+        synchronized (LazySingleton.class) {  
+            instance = new LazySingleton();   
+        }  
+    }  
+    return instance;   
+} 
+</code></pre>
+
+<p>问题貌似得以解决，事实并非如此。如果使用以上代码来实现单例，还是会存在单例对象不唯一。原因如下：假如在某一瞬间线程A和线程B都在调用<code>getInstance()</code>方法，此时instance对象为null值，均能通过<code>instance == null</code>的判断。由于实现了<em>synchronized</em>加锁机制，线程A进入synchronized锁定的代码中执行实例创建代码，线程B处于排队等待状态，必须等待线程A执行完毕后才可以进入synchronized锁定代码。但当A执行完毕时，线程B并不知道实例已经创建，将继续创建新的实例，导致产生多个单例对象，违背单例模式的设计思想，因此需要进行进一步改进，在synchronized中再进行一次(instance == null)判断，这种方式称为<strong>双重检查锁定(Double-Check Locking)</strong>。使用双重检查锁定实现的懒汉式单例类完整代码如下所示：</p>
+
+<pre><code class="language-java">class LazySingleton {   
+    private volatile static LazySingleton instance = null;   
+  
+    private LazySingleton() { }   
+  
+    public static LazySingleton getInstance() {   
+        //第一重判断  
+        if (instance == null) {  
+            //锁定代码块  
+            synchronized (LazySingleton.class) {  
+                //第二重判断  
+                if (instance == null) {  
+                    instance = new LazySingleton(); //创建单例实例  
+                }  
+            }  
+        }  
+        return instance;   
+    }  
+}  
+</code></pre>
+
+<p>需要注意的是，如果使用双重检查锁定来实现懒汉式单例类，需要在静态成员变量instance之前增加修饰符volatile，被volatile修饰的成员变量可以确保多个线程都能够正确处理，且该代码只能在JDK 1.5及以上版本中才能正确执行。由于volatile关键字会屏蔽Java虚拟机所做的一些代码优化，可能会导致系统运行效率降低，因此即使使用双重检查锁定来实现单例模式也不是一种完美的实现方式。 </p>
+
+<h3 id="toc_3">懒汉和饿汉的比较</h3>
+
+<p>饿汉式单例类在类被加载时就将自己实例化，它的优点在于无须考虑多线程访问问题，可以确保实例的唯一性；从调用速度和反应时间角度来讲，由于单例对象一开始就得以创建，因此要优于懒汉式单例。但是无论系统在运行时是否需要使用该单例对象，由于在类加载时该对象就需要创建，因此从资源利用效率角度来讲，饿汉式单例不及懒汉式单例，而且在系统加载时由于需要创建饿汉式单例对象，加载时间可能会比较长。<br/>
+懒汉式单例类在第一次使用时创建，无须一直占用系统资源，实现了延迟加载，但是必须处理好多个线程同时访问的问题，特别是当单例类作为资源控制器，在实例化时必然涉及资源初始化，而资源初始化很有可能耗费大量时间，这意味着出现多线程同时首次引用此类的机率变得较大，需要通过双重检查锁定等机制进行控制，这将导致系统性能受到一定影响。</p>
+
+<h3 id="toc_4">静态内部类实现法</h3>
+
+<p>饿汉式单例类不能实现延迟加载，不管将来用不用始终占据内存；懒汉式单例类线程安全控制烦琐，而且性能受影响。可见，无论是饿汉式单例还是懒汉式单例都存在这样那样的问题，有没有一种方法，能够将两种单例的缺点都克服，而将两者的优点合二为一呢？答案是：Yes！下面我们来学习这种更好的被称之为Initialization Demand Holder (IoDH)的技术。<br/>
+在IoDH中，我们在单例类中增加一个静态(static)内部类，在该内部类中创建单例对象，再将该单例对象通过getInstance()方法返回给外部使用，实现代码如下所示：</p>
+
+<pre><code class="language-java">class Singleton {  
+    private Singleton() {  
+    }  
+      
+    private static class HolderClass {  
+            private final static Singleton instance = new Singleton();  
+    }  
+      
+    public static Singleton getInstance() {  
+        return HolderClass.instance;  
+    }  
+      
+    public static void main(String args[]) {  
+        Singleton s1, s2;   
+            s1 = Singleton.getInstance();  
+        s2 = Singleton.getInstance();  
+        System.out.println(s1==s2);  
+    }  
+}  
+</code></pre>
+
+<p>编译并运行上述代码，运行结果为：true，即创建的单例对象s1和s2为同一对象。由于静态单例对象没有作为Singleton的成员变量直接实例化，因此类加载时不会实例化Singleton，第一次调用getInstance()时将加载内部类HolderClass，在该内部类中定义了一个static类型的变量instance，此时会首先初始化这个成员变量，由Java虚拟机来保证其线程安全性，确保该成员变量只能初始化一次。由于getInstance()方法没有任何线程锁定，因此其性能不会造成任何影响。</p>
+
+<p>通过使用IoDH，我们既可以实现延迟加载，又可以保证线程安全，不影响系统性能，不失为一种最好的Java语言单例模式实现方式（其缺点是与编程语言本身的特性相关，很多面向对象语言不支持IoDH）。</p>
+
+<h2 id="toc_5">总结</h2>
+
+<p>单例模式作为一种目标明确、结构简单、理解容易的设计模式，在软件开发中使用频率相当高，在很多应用软件和框架中都得以广泛应用。</p>
+
+<h3 id="toc_6">主要优点</h3>
+
+<p>单例模式的主要优点如下：</p>
+
+<ol>
+<li>单例模式提供了对唯一实例的受控访问。因为单例类封装了它的唯一实例，所以它可以严格控制客户怎样以及何时访问它。</li>
+<li>由于在系统内存中只存在一个对象，因此可以节约系统资源，对于一些需要频繁创建和销毁的对象单例模式无疑可以提高系统的性能。</li>
+<li>允许可变数目的实例。基于单例模式我们可以进行扩展，使用与单例控制相似的方法来获得指定个数的对象实例，既节省系统资源，又解决了单例单例对象共享过多有损性能的问题。</li>
+</ol>
+
+<h3 id="toc_7">主要缺点</h3>
+
+<p>单例模式的主要缺点如下：</p>
+
+<ol>
+<li>由于单例模式中没有抽象层，因此单例类的扩展有很大的困难。</li>
+<li>单例类的职责过重，在一定程度上违背了“单一职责原则”。因为单例类既充当了工厂角色，提供了工厂方法，同时又充当了产品角色，包含一些业务方法，将产品的创建和产品的本身的功能融合到一起。</li>
+</ol>
+
+<h3 id="toc_8">适用场景</h3>
+
+<p>在以下情况下可以考虑使用单例模式：</p>
+
+<ol>
+<li>系统只需要一个实例对象，如系统要求提供一个唯一的序列号生成器或资源管理器，或者需要考虑资源消耗太大而只允许创建一个对象。</li>
+<li>客户调用类的单个实例只允许使用一个公共访问点，除了该公共访问点，不能通过其他途径访问该实例。</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14893892449120.html" data-count-type="comments" href="14893892449120.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14893043668918.html">
                 
                   <h1>设计模式-抽象工厂模式</h1>
@@ -605,146 +798,6 @@ product = factory.createProduct();
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14892030475974.html">
-                
-                  <h1>设计模式-观察者模式</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>定义对象之间的一种一对多依赖关系，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。观察者模式的别名包括发布-订阅（Publish/Subscribe）模式、模型-视图（Model/View）模式、源-监听器（Source/Listener）模式或从属者（Dependents）模式。观察者模式是一种对象行为型模式。</p>
-</blockquote>
-
-<p>观察者模式是使用频率最高的设计模式之一，它用于建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应作出反应。在观察者模式中，发生改变的对象称为观察目标，而被通知的对象称为观察者，一个观察目标可以对应多个观察者，而且这些观察者之间可以没有任何相互联系，可以根据需要增加和删除观察者，使得系统更易于扩展。</p>
-
-<h2 id="toc_0">观察者模式中的角色</h2>
-
-<p>在观察者模式中包含如下几个角色：</p>
-
-<ol>
-<li>Subject（目标）：目标又称为主题，它是指被观察的对象。在目标中定义了一个观察者集合，一个观察目标可以接受任意数量的观察者来观察，它提供一系列方法来增加和删除观察者对象，同时它定义了通知方法notify()。目标类可以是接口，也可以是抽象类或具体类。</li>
-<li>ConcreteSubject（具体目标）：具体目标是目标类的子类，通常它包含有经常发生改变的数据，当它的状态发生改变时，向它的各个观察者发出通知；同时它还实现了在目标类中定义的抽象业务逻辑方法（如果有的话）。如果无须扩展目标类，则具体目标类可以省略。</li>
-<li>Observer（观察者）：观察者将对观察目标的改变做出反应，观察者一般定义为接口，该接口声明了更新数据的方法update()，因此又称为抽象观察者。</li>
-<li>ConcreteObserver（具体观察者）：在具体观察者中维护一个指向具体目标对象的引用，它存储具体观察者的有关状态，这些状态需要和具体目标的状态保持一致；它实现了在抽象观察者Observer中定义的update()方法。通常在实现时，可以调用具体目标类的attach()方法将自己添加到目标类的集合中或通过detach()方法将自己从目标类的集合中删除。</li>
-</ol>
-
-<p><img src="media/14892030475974/14892033599821.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
-观察者模式描述了如何建立对象与对象之间的依赖关系，以及如何构造满足这种需求的系统。观察者模式包含观察目标和观察者两类对象，一个目标可以有任意数目的与之相依赖的观察者，一旦观察目标的状态发生改变，所有的观察者都将得到通知。作为对这个通知的响应，每个观察者都将监视观察目标的状态以使其状态与目标状态同步，这种交互也称为发布-订阅(Publish-Subscribe)。观察目标是通知的发布者，它发出通知时并不需要知道谁是它的观察者，可以有任意数目的观察者订阅它并接收通知。</p>
-
-<h2 id="toc_1">通用代码实现</h2>
-
-<p>目标类的实现：</p>
-
-<pre><code class="language-java">package com.swu.ObserverPattern;
-
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * 主题的实现类，如有需要可以进一步将此类抽象
- * 
- * @author zhanjingbo
- *
- */
-public class Subject {
-    /**
-     * 维护所有观察者的队列
-     */
-    private List&lt;Observer&gt; observers = new ArrayList&lt;Observer&gt;();
-
-    /**
-     * 将观察者添加入通知队列
-     * 
-     * @param obs
-     */
-    public void attach(Observer obs) {
-        this.observers.add(obs);
-    }
-
-    /**
-     * 将观察者移除出通知队列
-     * 
-     * @param obs
-     */
-    public void detach(Observer obs) {
-        this.observers.remove(obs);
-    }
-
-    /**
-     * 通知所有观察者
-     */
-    public void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
-
-}
-</code></pre>
-
-<p>观察者抽象的接口：</p>
-
-<pre><code class="language-java">public interface Observer {
-    void update();
-}
-</code></pre>
-
-<p>观察者的具体实现：</p>
-
-<pre><code class="language-java">public class ConcerteObserversA implements Observer {
-    public void update() {
-        System.out.println(&quot;A类观察者收到消息&quot;);
-    }
-}
-</code></pre>
-
-<h2 id="toc_2">JDK对观察者模式的支持</h2>
-
-<p>观察者模式在Java语言中的地位非常重要。在JDK的java.util包中，提供了Observable类以及Observer接口，它们构成了JDK对观察者模式的支持。如图所示：<br/>
-<img src="media/14892030475974/14892071855093.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h3 id="toc_3">Observer接口</h3>
-
-<p>在java.util.Observer接口中只声明一个方法，它充当抽象观察者，其方法声明代码如下所示：<code>void  update(Observable o, Object arg);</code>当观察目标的状态发生变化时，该方法将会被调用，在Observer的子类中将实现update()方法，即具体观察者可以根据需要具有不同的更新行为。当调用观察目标类Observable的notifyObservers()方法时，将执行观察者类中的update()方法。</p>
-
-<h3 id="toc_4">Observable类</h3>
-
-<p>java.util.Observable类充当观察目标类，在Observable中定义了一个向量Vector来存储观察者对象，它所包含的方法及说明见表：<br/>
-<img src="media/14892030475974/14892075822399.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/><br/>
-我们可以直接使用Observer接口和Observable类来作为观察者模式的抽象层，再自定义具体观察者类和具体观察目标类，通过使用JDK中的Observer接口和Observable类，可以更加方便地在Java语言中应用观察者模式。</p>
-
-<h2 id="toc_5">实现</h2>
-
-<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
-<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14892030475974.html" data-count-type="comments" href="14892030475974.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -833,6 +886,18 @@ public class Subject {
 	      
 		      
 			      <li class="post">
+			        <a href="14893892449120.html">设计模式-单例模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14893744942754.html">剑指Offer-合并两个排序的链表</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
 			      </li>
 		     
@@ -846,18 +911,6 @@ public class Subject {
 		      
 			      <li class="post">
 			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892373699810.html">设计模式-简单工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892189846734.html">设计模式-装饰模式</a>
 			      </li>
 		     
 		  
