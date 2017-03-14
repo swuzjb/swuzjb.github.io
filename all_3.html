@@ -107,6 +107,84 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14889379059302.html">
+                
+                  <h1>剑指Offer-替换空格</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>请实现一个函数，将一个字符串中的空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。</p>
+</blockquote>
+
+<h2 id="toc_0">结题思路</h2>
+
+<p>这个题目Java开发者可能一下就笑了，so easy啊，一个库函数就解决了。但是，我们还是要尝试去造一下轮子，追求原理。<br/>
+由于要将空格替换为%20，字符串前后的长度肯定不一样，那么就肯定涉及到了重新申请内存地址。</p>
+
+<p>最简单的思路，我们遍历字符串，发现空格，就将空格后面的字符进行移动，然后继续遍历。这样的做法时间复杂度为O(n<sup>2)，因为每次都移动了大量的字符。</sup></p>
+
+<p>所以我们提出一个简要的方法，重新申请一个字符串（C/C++中准确的成为字符数组），这个新字符串的长度为原字符串长度+空格个数*2（空格的个数，可以通过一次遍历获得），然后用两个指针变量分别指向两个字符串的首位，然后进行复制，当原字符串指针指向空格时，新字符串插入“%20”，直到末尾。</p>
+
+<h2 id="toc_1">实现代码</h2>
+
+<p>库函数解决：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        return str.toString().replaceAll(&quot; &quot;, &quot;%20&quot;);
+    }
+}
+</code></pre>
+
+<p>自己过不去版：</p>
+
+<pre><code class="language-java">public class Solution {
+    public String replaceSpace(StringBuffer str) {
+        StringBuffer newStr = new StringBuffer();
+        
+        int i = 0;
+        
+        while(i&lt;str.length()){
+            if(str.charAt(i) != &#39; &#39;){
+                newStr.append(str.charAt(i));
+            }else{
+                newStr.append(&quot;%20&quot;);
+            }
+            i++;
+        }
+        return newStr.toString();
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889379059302.html" data-count-type="comments" href="14889379059302.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14889364537323.html">
                 
                   <h1>剑指Offer-二维数组中的查找</h1>
@@ -640,151 +718,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879172287548.html">
-                
-                  <h1>Java容器框架分析(六)——HashSet与HashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
-
-<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
-
-<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
-
-<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
-
-<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
-当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
-
-<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
-算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
-上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
-         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
-        Object k;
-        //依据equals()方法判断是否相等
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
-            return e;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_2">put()</h3>
-
-<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
-
-<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
-        resize(2 * table.length);//自动扩容，并重新哈希
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = hash &amp; (table.length-1);//hash%table.length
-    }
-    //在冲突链表头部插入新的entry
-    Entry&lt;K,V&gt; e = table[bucketIndex];
-    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
-    size++;
-}
-</code></pre>
-
-<h3 id="toc_3">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
-
-<pre><code class="language-java">//removeEntryForKey()
-final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
-    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
-    Entry&lt;K,V&gt; e = prev;
-    while (e != null) {//遍历冲突链表
-        Entry&lt;K,V&gt; next = e.next;
-        Object k;
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
-            modCount++; size--;
-            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
-            else prev.next = next;
-            return e;
-        }
-        prev = e; e = next;
-    }
-    return e;
-}
-</code></pre>
-
-<h2 id="toc_4">HashSet</h2>
-
-<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
-
-<pre><code class="language-java">public class HashSet&lt;E&gt;
-{
-    ......
-    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public HashSet() {
-        map = new HashMap&lt;&gt;();
-    }
-    ......
-    public boolean add(E e) {//简单的方法转换
-        return map.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879172287548.html" data-count-type="comments" href="14879172287548.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -873,6 +806,12 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 	      
 		      
 			      <li class="post">
+			        <a href="14894720983586.html">设计模式-命令模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14893892449120.html">设计模式-单例模式</a>
 			      </li>
 		     
@@ -892,12 +831,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 		      
 			      <li class="post">
 			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
 			      </li>
 		     
 		  

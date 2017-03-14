@@ -107,6 +107,151 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14879172287548.html">
+                
+                  <h1>Java容器框架分析(六)——HashSet与HashMap</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>之所以把HashSet和HashMap放在一起，是因为二者在Java中有着相同的实现，前者仅仅是对后者进行了一次封装，也就是说HashSet中有一个HashMap(适配器模式)。因此本文将重点分析HashMap。</p>
+
+<p>HashMap实现了Map接口，允许放入key为null的元素，也允许插入value为null的元素。除没有实现同步外，其余跟HashTable大致相同；跟TreeMap不同，该容器不保证元素顺序，根据需要，该容器可能会对元素重新哈希，元素的顺序也会被重新打散。因此在不同时间迭代同一个HashMap的顺序可能会不同。</p>
+
+<p>根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式，另外一种是冲突链表方式。Java HashMap采用的是冲突链表方式。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879180909568.png" alt=""/></p>
+
+<p>从上图可以看出，如果选择合适的哈希函数，put()和get()方法可以在常数时间内完成。但是在对HashMap进行迭代时，需要遍历整个table及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将HashMap的初始大小设置的过大。</p>
+
+<p>有两个参数可以影响HashMap的性能：初始容量（inital capacity）和负载系数（loadFactor）。初始容量指定了初始table的大小，负载系数表示用来自动扩容的临界值。<br/>
+当entry的数量超过<code>capacity*loadFactor</code>时，容器将自动扩容并重新哈希，对于插入元素较多的场景，将初始容量设大可以减小重新哈希的次数。</p>
+
+<p>将对象放入到HashMap或者HashSet中时，有两个方法需要特别注意：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>决定了对象会被放在哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是同一个对象。所以，如果要将自定义的对象放入到HashMap或者HashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">get()</h3>
+
+<p><code>get(Object key)</code>方法根据指定的<code>key</code>值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.getValue()</code>。因此<code>getEntry()</code>是算法的核心。<br/>
+算法思想是首先通过<code>hash()</code>函数得到对应的bucket下标，然后依次遍历冲突链表，通过<code>key.equals(k)</code>方法来判断是否是要找的那个<code>entry</code>。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879194728200.png" alt=""/><br/>
+上图中 <code>hash(k)&amp;(table.length-1)</code>等价于<code>hash(k)%table.length</code>，原因是table.length必须是2的指数，因此table.length-1就是二进制低位全是1，跟hash(k)相与会将hash值得高位全抹掉，剩下的就是余数了。</p>
+
+<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    for (Entry&lt;K,V&gt; e = table[hash&amp;(table.length-1)];//得到冲突链表
+         e != null; e = e.next) {//依次遍历冲突链表中的每个entry
+        Object k;
+        //依据equals()方法判断是否相等
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+            return e;
+    }
+    return null;
+}
+</code></pre>
+
+<h3 id="toc_2">put()</h3>
+
+<p>put(K key,V value)方法是将指定的key,value对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含该元组，则直接返回，查找过程类似于getEntry()方法；如果没有找到，则会通过addEntry(int hash,K key,V value,int bucketIndex)方法插入新的entry，插入方式为头插法。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879200695663.png" alt=""/></p>
+
+<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);//自动扩容，并重新哈希
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = hash &amp; (table.length-1);//hash%table.length
+    }
+    //在冲突链表头部插入新的entry
+    Entry&lt;K,V&gt; e = table[bucketIndex];
+    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
+    size++;
+}
+</code></pre>
+
+<h3 id="toc_3">remove()</h3>
+
+<p><code>remove(Object key)</code>的作用是删除对应的<code>entry</code>，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里面实现的。<code>removeEntryForKey(Object key)</code>方法会首先找到key值对应的entry，然后删除entry（修改链表的引用）。查找过程类似于getEntry()。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879203192877.png" alt=""/></p>
+
+<pre><code class="language-java">//removeEntryForKey()
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
+    ......
+    int hash = (key == null) ? 0 : hash(key);
+    int i = indexFor(hash, table.length);//hash&amp;(table.length-1)
+    Entry&lt;K,V&gt; prev = table[i];//得到冲突链表
+    Entry&lt;K,V&gt; e = prev;
+    while (e != null) {//遍历冲突链表
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+        if (e.hash == hash &amp;&amp;
+            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {//找到要删除的entry
+            modCount++; size--;
+            if (prev == e) table[i] = next;//删除的是冲突链表的第一个entry
+            else prev.next = next;
+            return e;
+        }
+        prev = e; e = next;
+    }
+    return e;
+}
+</code></pre>
+
+<h2 id="toc_4">HashSet</h2>
+
+<p>前面已经说过 HashSet 是对 HashMap 的简单包装，对 HashSet 的函数调用都会转换成合适的 HashMap 方法，因此 HashSet 的实现非常简单，只有不到 300 行代码。这里不再赘述。</p>
+
+<pre><code class="language-java">public class HashSet&lt;E&gt;
+{
+    ......
+    private transient HashMap&lt;E,Object&gt; map;//HashSet里面有一个HashMap
+    // Dummy value to associate with an Object in the backing Map
+    private static final Object PRESENT = new Object();
+    public HashSet() {
+        map = new HashMap&lt;&gt;();
+    }
+    ......
+    public boolean add(E e) {//简单的方法转换
+        return map.put(e, PRESENT)==null;
+    }
+    ......
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879172287548.html" data-count-type="comments" href="14879172287548.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14879027517066.html">
                 
                   <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
@@ -1019,128 +1164,6 @@ size(), isEmpty(), get(), set() 方法均能在常数时间内完成，add() 方
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14876629153312.html">
-                
-                  <h1>Java容器框架分析（一）——相关概念综述</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">概述</h2>
-
-<p>容器，就是用于容纳其它对象的对象。在Java API中已经实现了很多常用的容器统称为Java Collections Framework（JCF）。JCF起始于JDK 1.2 使用JCF的优点在于：</p>
-
-<ul>
-<li>降低编程难度<br/></li>
-<li>提高程序性能</li>
-<li>提高API之间的互操作性</li>
-<li>降低学习难度</li>
-<li>降低设计和实现相关API的难度</li>
-<li>增强程序的重用性</li>
-</ul>
-
-<p>Java容器只能存放对象，对于基础类型（如int、double、float等），需要将其包装成对应的包装类型对象后才能放到容器之中，当然很多情况之下拆包和解包过程可以由虚拟机自动完成。</p>
-
-<h2 id="toc_1">泛型</h2>
-
-<p>Java 容器能够容纳任何类型的对象，这一点表面上是通过泛型机制完成，Java 泛型不是什么神奇的东西，只是编译器为我们提供的一个 “语法糖”，泛型本身并不需要Java虚拟机的支持，只需要在编译阶段做一下简单的字符串替换即可。实质上Java的单继承机制才是保证这一特性的根本，因为所有的对象都是Object的子类，容器里只要能够存放Object对象就行了。<br/>
-事实上，所有容器的内部存放的都是Object对象，泛型机制只是简化了编程，由编译器自动帮我们完成了强制类型转换和类型检测而已。JDK 1.4 以及之前版本不支持泛型，类型转换需要程序员显式完成。</p>
-
-<pre><code class="language-java">//JDK 1.4 or before
-ArrayList list = new ArrayList();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = (String)list.get(i);//显式类型转换
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5 or latter
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();//参数化类型
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(int i = 0; i &lt; list.size(); i++){
-    String weekday = list.get(i);//隐式类型转换，编译器自动完成
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_2">内存管理</h2>
-
-<p>Java不需要程序员来管理内存回收，而是有着一套自动的垃圾回收机制。另外，由于Java里的对象都在堆上，所以容器中放的其实是对象的引用而不是对象本身，这就避免了容器对象的拷贝复制问题。</p>
-
-<h2 id="toc_3">接口与实现</h2>
-
-<h3 id="toc_4">接口</h3>
-
-<p>为了规范容器的行为，统一设计，JCF定义了14种容器接口，他们之间的关系如下图:<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876644819118.png" alt=""/><br/>
-Map接口并没有继承自Collection接口，因为Map表示的是关联式容器而不是集合，但是Java在Map接口中提供了从Map转化为Collection的方法，可以方便的将Map切换到集合视图。上图中提供了Queue接口，却没有Stack接口，是因为在JDk 1.6之后Stack接口的功能已经被Deque取代。</p>
-
-<h3 id="toc_5">实现</h3>
-
-<p>上述接口的通用实现类见下表：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-21-14876650570700.jpg" alt=""/></p>
-
-<h2 id="toc_6">迭代器（Iterator）</h2>
-
-<p>跟C++的STL一样，JCF的迭代器为我们提供了遍历容器中元素的方法，只有容器本身清楚容器里元素的组织方式，因此迭代器只能通过容器本身得到。每个容器都会通过内部类的形式来实现自己的迭代器，相比C++ STL的迭代器，JCF的迭代器更容易使用。<br/>
-实例代码：</p>
-
-<pre><code class="language-java">//通过迭代器来访问容器元素
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-//得到迭代器
-Iterator&lt;String&gt; it = list.iterator();
-while(it.hasNext()){
-    String weekday = it.next();//访问元素
-    System.out.println(weekday.toUpperCase());
-}
-//JDK 1.5引入了增强的for循环，简化了迭代容器时的写法。
-//使用foreach迭代
-ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
-list.add(new String(&quot;Monday&quot;));
-list.add(new String(&quot;Tuesday&quot;));
-list.add(new String(&quot;Wensday&quot;));
-for(String weekday : list){
-    System.out.println(weekday.toUpperCase());
-}
-</code></pre>
-
-<h2 id="toc_7">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14876629153312.html" data-count-type="comments" href="14876629153312.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1229,6 +1252,12 @@ for(String weekday : list){
 	      
 		      
 			      <li class="post">
+			        <a href="14894720983586.html">设计模式-命令模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14893892449120.html">设计模式-单例模式</a>
 			      </li>
 		     
@@ -1248,12 +1277,6 @@ for(String weekday : list){
 		      
 			      <li class="post">
 			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14892880856219.html">剑指Offer-二进制中1的个数</a>
 			      </li>
 		     
 		  
