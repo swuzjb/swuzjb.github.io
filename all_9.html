@@ -107,6 +107,203 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14640741638557.html">
+                
+                  <h1>GeekBand.Swift-Homework13</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">题目</h2>
+
+<p>请说出下面代码存在的问题，以及改进方式。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    } 
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+</code></pre>
+
+<h2 id="toc_1">回答</h2>
+
+<h3 id="toc_2">问题分析</h3>
+
+<p>题目代码所描述的关系为用户——信用卡关系。在设计过程中，用户类中有信用卡属性，信用卡中有用户属性。<br/>
+如果在实际操作过程中，执行如下代码：</p>
+
+<pre><code class="language-swift">var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+</code></pre>
+
+<p>执行之后内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640753860457.jpg" alt=""/><br/>
+可见，执行之后card和customer之间构成了循环引用，在ARC(自动引用计数)模式之下，会导致两个变量没办法被回收，造成内存溢出。执行如下代码：</p>
+
+<pre><code class="language-swift">card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存关系如图：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640756280185.jpg" alt=""/></p>
+
+<p>card和customer的引用计数非0，无法吸收。</p>
+
+<h3 id="toc_3">解决方法</h3>
+
+<h4 id="toc_4">方案A——手动打破循环引用</h4>
+
+<p>程序员通过自己的操作，打破循环引用，使引用计数减少。</p>
+
+<pre><code class="language-swift">card = nil;
+customer.card = nil;
+customer = nil;
+</code></pre>
+
+<p>执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640760729455.jpg" alt=""/></p>
+
+<h4 id="toc_5">方案B-weak(弱)引用</h4>
+
+<p>弱引用是语言提供的打破循环引用的方式，弱引用在计算引用计数时计算。代码如下：</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    //注意这里！！
+    weak var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存结构:<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640768586804.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640769060387.jpg" alt=""/></p>
+
+<h4 id="toc_6">方案C-unowned(无主)引用</h4>
+
+<p>如果不允许属性的值为nil，我们可以将其设置为unowned引用，打破循环引用。</p>
+
+<pre><code class="language-swift">class Customer{
+    let name:String;
+    var card:CreditCard?;
+    init(name:String){
+        self.name = name;
+    }
+    deinit{
+        print(&quot;\(name) is being deinitialized&quot;);
+    }
+}
+class CreditCard{
+    let number:UInt64;
+    //注意这里！！！！
+    unowned let customer:Customer;
+    init(number:UInt64,customer:Customer){
+        self.number = number;
+        self.customer = customer;
+    }
+    
+    deinit{
+        print(&quot;Card #\(number) is being deinitialized&quot;);
+    }
+}
+
+var customer :Customer?;
+customer = Customer(name:&quot;Jobs&quot;);
+var card :CreditCard?;
+card = CreditCard(number: 10000,customer: customer!);
+customer!.card = card;
+card = nil;
+customer = nil;
+</code></pre>
+
+<p>内存模型：<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640773927457.jpg" alt=""/><br/>
+执行结果，deinit析构器成功执行。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2016-05-24-14640774704318.jpg" alt=""/></p>
+
+<h5 id="toc_7">方案B和C的区别</h5>
+
+<p>弱引用在对象被释放后，ARC会将引用设置为nil,无主引用在对象被释放后，ARC不会设置nil，访问是会抛运行时错误（空悬指针）。</p>
+
+<h2 id="toc_8">写在最后</h2>
+
+<p>其实还有一个不太合理的，Customer应该可以拥有多张卡。所以card属性应该为</p>
+
+<pre><code class="language-swift">var cards:Array&lt;CreditCard&gt;?;
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14640741638557.html" data-count-type="comments" href="14640741638557.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14635750426080.html">
                 
                   <h1>GeekBand.Swift-集合类型</h1>
@@ -704,171 +901,6 @@ func print(color: Color){
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14628720930939.html">
-                
-                  <h1>GeekBand.Swift-下标与操作符</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">下标</h2>
-
-<blockquote>
-<p>下标是Swift的一种属性访问方式，可以描述为带参数的计算属性</p>
-</blockquote>
-
-<ul>
-<li>下标可以用于class、struct、enum</li>
-<li>只能定义实例下标，不能定义类型下标</li>
-<li>可以定义读写下标或只读下标</li>
-<li>下标的索引参数可以是任意类型，可以设计多个参数</li>
-<li>一个类型可以提供多个下标的重载版本（参数不同）</li>
-</ul>
-
-<pre><code class="language-swift">
-class Vector{
-    var datas = [Int](count:100,repeatedValue:0);
-    subscript(index:Int)-&gt; Int{
-        get{
-            return datas[index]
-        }
-        set{          
-            datas[index]=newValue
-        }
-    }
-}
-
-var datas=Vector()
-for i in 0..&lt;10{
-   datas[i]=i
-}
-for i in 0..&lt;10{
-    print(datas[i])
-}
-</code></pre>
-
-<h2 id="toc_1">操作符</h2>
-
-<blockquote>
-<p>Swift的操作符在默认情况下与其他程序语言没什么本质差别</p>
-</blockquote>
-
-<h3 id="toc_2">重载操作符</h3>
-
-<p>Swift除了标准操作符之外，还可以针对自定义类型重载标准操作符。重载操作符又称为“操作符函数”，本质是一个全局函数。<br/>
-可以重载前缀，中缀，后缀操作符。前缀和后缀操作符需要加关键词prefix和postfix。<br/>
-也可以通过将参数设置为inout参数，重载复合赋值操作符，如+=,-=。</p>
-
-<pre><code class="language-swift">class Complex{
-    var real=0.0
-    var imag=0.0
-    
-    init(real:Double, imag:Double){
-        self.real=real
-        self.imag=imag
-    }
-}
-
-//中缀操作符
-func + (left: Complex, right: Complex) -&gt; Complex {
-    
-    return Complex(real: left.real + right.real,
-        imag: left.imag + right.imag)
-}
-
-var c1=Complex(real: 10,imag: 20)
-var c2=Complex(real: 100,imag: 200)
-var c3=c1+c2
-
-
-
-//前缀操作符
-prefix func - (data: Complex) -&gt; Complex {
-    return Complex(real: -data.real, imag: -data.imag)
-}
-
-
-var c4 = -c3
-
-//复合赋值操作符
-func += (inout left: Complex, right: Complex) {
-    left = left + right
-}
-
-c1+=c2
-
-//自定义操作符
-prefix operator +++ {}
-
-prefix func +++ (inout data: Complex) -&gt; Complex {
-    data += data
-    return data
-}
-
-</code></pre>
-
-<h3 id="toc_3">相等操作符</h3>
-
-<ul>
-<li>引用相等(判断对象地址是否相等，仅针对引用类型，不适用值类型)
-
-<ul>
-<li>相等 ===</li>
-<li>不等 !==</li>
-</ul></li>
-<li>值相等（判断实例值是否相等，自定义类型需要重载提供值比较语义）
-
-<ul>
-<li>相等 ==</li>
-<li>不等 !=</li>
-</ul></li>
-</ul>
-
-<pre><code class="language-swift">//值相等操作符
-func == (left: Complex, right: Complex) -&gt; Bool {
-    return (left.real == right.real) &amp;&amp; (left.imag == right.imag)
-}
-func != (left: Complex, right: Complex) -&gt; Bool {
-    return !(left == right)
-}
-
-
-var c5=c3
-
-print(c1==c5) //值相等
-print(c2==c5) //值不等
-print(c1===c5) //引用不等
-print(c3===c5) //引用相等
-print(c3==c5)
-
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2016/5/10</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14628720930939.html" data-count-type="comments" href="14628720930939.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -957,6 +989,12 @@ print(c3==c5)
 	      
 		      
 			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
 			      </li>
 		     
@@ -976,12 +1014,6 @@ print(c3==c5)
 		      
 			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
 			      </li>
 		     
 		  

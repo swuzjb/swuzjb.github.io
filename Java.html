@@ -107,6 +107,180 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14896338034345.html">
+                
+                  <h1>设计模式-适配器模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>将一个接口转换成客户希望的另一个接口，使接口不兼容的那些类可以一起工作，其别名为包装器(Wrapper)。适配器模式既可以作为类结构型模式，也可以作为对象结构型模式。</p>
+</blockquote>
+
+<p>与电源适配器相似，在适配器模式中引入了一个被称为适配器(Adapter)的包装类，而它所包装的对象称为适配者(Adaptee)，即被适配的类。适配器的实现就是把客户类的请求转化为对适配者的相应接口的调用。也就是说：当客户类调用适配器的方法时，在适配器类的内部将调用适配者类的方法，而这个过程对客户类是透明的，客户类并不直接访问适配者类。因此，适配器让那些由于接口不兼容而不能交互的类可以一起工作。<br/>
+       适配器模式可以将一个类的接口和另一个类的接口匹配起来，而无须修改原来的适配者接口和抽象目标类接口。</p>
+
+<h2 id="toc_0">角色</h2>
+
+<p>在适配器模式中，我们通过增加一个新的适配器类来解决接口不兼容的问题，使得原本没有任何关系的类可以协同工作。根据适配器类与适配者类的关系不同，适配器模式可分为对象适配器和类适配器两种，在对象适配器模式中，适配器与适配者之间是关联关系；在类适配器模式中，适配器与适配者之间是继承（或实现）关系。在实际开发中，对象适配器的使用频率更高，对象适配器模式结构如图所示：<br/>
+<img src="media/14896338034345/14896339232297.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<p>在对象适配器模式结构图中包含如下几个角色：</p>
+
+<ul>
+<li>Target（目标抽象类）：目标抽象类定义客户所需接口，可以是一个抽象类或接口，也可以是具体类。</li>
+<li>Adapter（适配器类）：适配器可以调用另一个接口，作为一个转换器，对Adaptee和Target进行适配，适配器类是适配器模式的核心，在对象适配器中，它通过继承Target并关联一个Adaptee对象使二者产生联系。</li>
+<li>Adaptee（适配者类）：适配者即被适配的角色，它定义了一个已经存在的接口，这个接口需要适配，适配者类一般是一个具体类，包含了客户希望使用的业务方法，在某些情况下可能没有适配者类的源代码。</li>
+</ul>
+
+<h2 id="toc_1">实现</h2>
+
+<p>根据对象适配器模式结构图，在对象适配器中，客户端需要调用<code>request()</code>方法，而适配者类Adaptee没有该方法，但是它所提供的<code>specilRequest()</code>方法却是客户端所需要的。为了使客户端能够使用适配者类，需要提供一个包装类<code>Adapter</code>，即适配器类。这个包装类包装了一个适配者的实例，从而将客户端与适配者衔接起来，在适配器的<code>request()</code>方法中调用适配者的<code>specilRequest()</code>方法。因为适配器类与适配者类是关联关系（也可称之为委派关系），所以这种适配器模式称为对象适配器模式。典型的对象适配器代码如下所示：</p>
+
+<pre><code class="language-java">public class Adapter implements Target {
+
+    // 适配者
+    private Adaptee adaptee;
+
+    public Adapter(Adaptee adaptee) {
+        this.adaptee = adaptee;
+    }
+
+    @Override
+    public void request() {
+        adaptee.specilRequest();
+    }
+
+}
+</code></pre>
+
+<h3 id="toc_2">类适配器</h3>
+
+<p>除了对象适配器模式之外，适配器模式还有一种形式，那就是类适配器模式，类适配器模式和对象适配器模式最大的区别在于适配器和适配者之间的关系不同，对象适配器模式中适配器和适配者之间是关联关系，而类适配器模式中适配器和适配者是继承关系，类适配器模式结构如图所示：<br/>
+<img src="media/14896338034345/14896390263550.jpg" alt=""/><br/>
+根据类适配器模式结构图，适配器类实现了抽象目标类接口Target，并继承了适配者类，在适配器类的request()方法中调用所继承的适配者类的specificRequest()方法，实现了适配。</p>
+
+<pre><code class="language-java">class Adapter extends Adaptee implements Target {  
+    public void request() {  
+        specificRequest();  
+    }  
+}  
+</code></pre>
+
+<p>由于Java、C#等语言不支持多重类继承，因此类适配器的使用受到很多限制，例如如果目标抽象类Target不是接口，而是一个类，就无法使用类适配器；此外，如果适配者Adapter为最终(Final)类，也无法使用类适配器。在Java等面向对象编程语言中，大部分情况下我们使用的是对象适配器，类适配器较少使用。</p>
+
+<h3 id="toc_3">双向适配器</h3>
+
+<p>在对象适配器的使用过程中，如果在适配器中同时包含对目标类和适配者类的引用，适配者可以通过它调用目标类中的方法，目标类也可以通过它调用适配者类中的方法，那么该适配器就是一个双向适配器，其结构示意图如图所示：<br/>
+<img src="media/14896338034345/14896390854550.jpg" alt=""/></p>
+
+<pre><code class="language-java">class Adapter implements Target,Adaptee {  
+    //同时维持对抽象目标类和适配者的引用  
+    private Target target;  
+    private Adaptee adaptee;  
+      
+    public Adapter(Target target) {  
+        this.target = target;  
+    }  
+      
+    public Adapter(Adaptee adaptee) {  
+        this.adaptee = adaptee;  
+    }  
+      
+    public void request() {  
+        adaptee.specificRequest();  
+    }  
+      
+    public void specificRequest() {  
+        target.request();  
+    }  
+}  
+</code></pre>
+
+<h2 id="toc_4">总结</h2>
+
+<p>适配器模式将现有接口转化为客户类所期望的接口，实现了对现有类的复用，它是一种使用频率非常高的设计模式，在软件开发中得以广泛应用，在spring等开源框架、驱动程序设计（如JDBC中的数据库驱动程序）中也使用了适配器模式。</p>
+
+<h3 id="toc_5">主要优点</h3>
+
+<p>无论是对象适配器模式还是类适配器模式都具有如下优点：</p>
+
+<ol>
+<li>将目标类和适配者类解耦，通过引入一个适配器类来重用现有的适配者类，无须修改原有结构。</li>
+<li>增加了类的透明性和复用性，将具体的业务实现过程封装在适配者类中，对于客户端类而言是透明的，而且提高了适配者的复用性，同一个适配者类可以在多个不同的系统中复用。</li>
+<li>灵活性和扩展性都非常好，通过使用配置文件，可以很方便地更换适配器，也可以在不修改原有代码的基础上增加新的适配器类，完全符合“开闭原则”。</li>
+</ol>
+
+<p>具体来说，类适配器模式还有如下优点：</p>
+
+<ol>
+<li>由于适配器类是适配者类的子类，因此可以在适配器类中置换一些适配者的方法，使得适配器的灵活性更强。</li>
+</ol>
+
+<p>对象适配器模式还有如下优点：</p>
+
+<ol>
+<li>一个对象适配器可以把多个不同的适配者适配到同一个目标；</li>
+<li>可以适配一个适配者的子类，由于适配器和适配者之间是关联关系，根据“里氏代换原则”，适配者的子类也可通过该适配器进行适配。</li>
+</ol>
+
+<h3 id="toc_6">主要缺点</h3>
+
+<p>类适配器模式的缺点如下：</p>
+
+<ol>
+<li>对于Java、C#等不支持多重类继承的语言，一次最多只能适配一个适配者类，不能同时适配多个适配者；</li>
+<li>适配者类不能为最终类，如在Java中不能为final类，C#中不能为sealed类；</li>
+<li>在Java、C#等语言中，类适配器模式中的目标抽象类只能为接口，不能为类，其使用有一定的局限性。</li>
+</ol>
+
+<p>对象适配器模式的缺点如下：</p>
+
+<ol>
+<li>与类适配器模式相比，要在适配器中置换适配者类的某些方法比较麻烦。如果一定要置换掉适配者类的一个或多个方法，可以先做一个适配者类的子类，将适配者类的方法置换掉，然后再把适配者类的子类当做真正的适配者进行适配，实现过程较为复杂。</li>
+</ol>
+
+<h3 id="toc_7">适用场景</h3>
+
+<p>在以下情况下可以考虑使用适配器模式：</p>
+
+<ol>
+<li>系统需要使用一些现有的类，而这些类的接口（如方法名）不符合系统的需要，甚至没有这些类的源代码。</li>
+<li>想创建一个可以重复使用的类，用于与一些彼此之间没有太大关联的一些类，包括一些可能在将来引进的类一起工作。</li>
+</ol>
+
+<h2 id="toc_8">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14896338034345.html" data-count-type="comments" href="14896338034345.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14894720983586.html">
                 
                   <h1>设计模式-命令模式</h1>
@@ -773,151 +947,6 @@ product = factory.createProduct();
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14892373699810.html">
-                
-                  <h1>设计模式-简单工厂模式</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<blockquote>
-<p>简单工厂模式(Simple Factory Pattern)：定义一个工厂类，它可以根据参数的不同返回不同类的实例，被创建的实例通常都具有共同的父类。因为在简单工厂模式中用于创建实例的方法是静态(static)方法，因此简单工厂模式又被称为静态工厂方法(Static Factory Method)模式，它属于类创建型模式。</p>
-</blockquote>
-
-<p>简单工厂模式的要点在于：当你需要什么，只需要传入一个正确的参数，就可以获取你所需要的对象，而无须知道其创建细节。简单工厂模式结构比较简单，其核心是工厂类的设计，其结构如图所示：<br/>
-<img src="media/14892373699810/14892374346473.jpg" alt="" class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
-
-<h2 id="toc_0">简单工厂模式中的角色</h2>
-
-<p>在简单工厂模式结构图中包含如下几个角色：</p>
-
-<ol>
-<li>Factory（工厂角色）：工厂角色即工厂类，它是简单工厂模式的核心，负责实现创建所有产品实例的内部逻辑；工厂类可以被外界直接调用，创建所需的产品对象；在工厂类中提供了静态的工厂方法factoryMethod()，它的返回类型为抽象产品类型Product。</li>
-<li>Product（抽象产品角色）：它是工厂类所创建的所有对象的父类，封装了各种产品对象的公有方法，它的引入将提高系统的灵活性，使得在工厂类中只需定义一个通用的工厂方法，因为所有创建的具体产品对象都是其子类对象。</li>
-<li>ConcreteProduct（具体产品角色）：它是简单工厂模式的创建目标，所有被创建的对象都充当这个角色的某个具体类的实例。每一个具体产品角色都继承了抽象产品角色，需要实现在抽象产品中声明的抽象方法</li>
-</ol>
-
-<h2 id="toc_1">实现</h2>
-
-<p>在简单工厂模式中，客户端通过工厂类来创建一个产品类的实例，而无须直接使用new关键字来创建对象，它是工厂模式家族中最简单的一员。<br/>
-在使用简单工厂模式时，首先需要对产品类进行重构，不能设计一个包罗万象的产品类，而需根据实际情况设计一个产品层次结构，将所有产品类公共的代码移至抽象产品类，并在抽象产品类中声明一些抽象方法，以供不同的具体产品类来实现，典型的抽象产品类代码如下所示：</p>
-
-<pre><code class="language-java">public abstract class Product {
-    //公共方法的实现
-    public void methodSame() {
-    }
-
-    // 声明抽象业务方法
-    public abstract void methodDiff();
-}
-</code></pre>
-
-<p>在具体产品类中实现了抽象产品类中声明的抽象业务方法，不同的具体产品类可以提供不同的实现，典型的具体产品类代码如下所示：</p>
-
-<pre><code class="language-java">public class ConcreteProductA extends Product {
-    @Override
-    public void methodDiff() {
-        System.out.println(&quot;具体产品A的特性实现&quot;);
-    }
-}
-</code></pre>
-
-<p>简单工厂模式的核心是工厂类，在没有工厂类之前，客户端一般会使用new关键字来直接创建产品对象，而在引入工厂类之后，客户端可以通过工厂类来创建产品，在简单工厂模式中，工厂类提供了一个静态工厂方法供客户端使用，根据所传入的参数不同可以创建不同的产品对象，典型的工厂类代码如下所示：</p>
-
-<pre><code class="language-java">public class SimpleFactory {
-    public static Product getProduct(String arg) {
-        Product product = null;
-        if (arg.equalsIgnoreCase(&quot;A&quot;)) {
-            product = new ConcreteProductA();
-            // 初始化设置product
-        } else if (arg.equalsIgnoreCase(&quot;B&quot;)) {
-            product = new ConcreteProductB();
-            // 初始化设置product
-        }
-        return product;
-    }
-}
-</code></pre>
-
-<p>客户端调用，如果追求进一步解耦，可以引入配置文件，每次根据配置文件的值，对产品进行实例化：</p>
-
-<pre><code class="language-java">    public static void main(String[] args) {
-        Product product;
-        product = SimpleFactory.getProduct(&quot;A&quot;); // 通过工厂类创建产品对象
-        product.methodSame();
-        product.methodDiff();
-    }
-</code></pre>
-
-<h2 id="toc_2">总结</h2>
-
-<p>简单工厂模式提供了专门的工厂类用于创建对象，将对象的创建和对象的使用分离开，它作为一种最简单的工厂模式在软件开发中得到了较为广泛的应用。</p>
-
-<h3 id="toc_3">主要优点</h3>
-
-<p>简单工厂模式的主要优点如下：</p>
-
-<ol>
-<li>工厂类包含必要的判断逻辑，可以决定在什么时候创建哪一个产品类的实例，客户端可以免除直接创建产品对象的职责，而仅仅“消费”产品，简单工厂模式实现了对象创建和使用的分离。</li>
-<li>客户端无须知道所创建的具体产品类的类名，只需要知道具体产品类所对应的参数即可，对于一些复杂的类名，通过简单工厂模式可以在一定程度减少使用者的记忆量。</li>
-<li>通过引入配置文件，可以在不修改任何客户端代码的情况下更换和增加新的具体产品类，在一定程度上提高了系统的灵活性。</li>
-</ol>
-
-<h3 id="toc_4">主要缺点</h3>
-
-<p>简单工厂模式的主要缺点如下：</p>
-
-<ol>
-<li>由于工厂类集中了所有产品的创建逻辑，职责过重，一旦不能正常工作，整个系统都要受到影响。</li>
-<li>使用简单工厂模式势必会增加系统中类的个数（引入了新的工厂类），增加了系统的复杂度和理解难度。</li>
-<li>系统扩展困难，一旦添加新产品就不得不修改工厂逻辑，在产品类型较多时，有可能造成工厂逻辑过于复杂，不利于系统的扩展和维护。</li>
-<li>简单工厂模式由于使用了静态工厂方法，造成工厂角色无法形成基于继承的等级结构。</li>
-</ol>
-
-<h3 id="toc_5">适用场景</h3>
-
-<p>在以下情况下可以考虑使用简单工厂模式：</p>
-
-<ol>
-<li>工厂类负责创建的对象比较少，由于创建的对象较少，不会造成工厂方法中的业务逻辑太过复杂。</li>
-<li>客户端只知道传入工厂类的参数，对于如何创建对象并不关心。</li>
-</ol>
-
-<h2 id="toc_6">练习</h2>
-
-<p>使用简单工厂模式设计一个可以创建不同几何形状（如圆形、方形和三角形等）的绘图工具，每个几何图形都具有绘制draw()和擦除erase()两个方法，要求在绘制不支持的几何图形时，提示一个UnSupportedShapeException。</p>
-
-<h2 id="toc_7">实现</h2>
-
-<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
-<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/3/11</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14892373699810.html" data-count-type="comments" href="14892373699810.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1006,6 +1035,12 @@ product = factory.createProduct();
 	      
 		      
 			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
 			      </li>
 		     
@@ -1025,12 +1060,6 @@ product = factory.createProduct();
 		      
 			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
 			      </li>
 		     
 		  

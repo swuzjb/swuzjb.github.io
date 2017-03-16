@@ -107,6 +107,183 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14879958366746.html">
+                
+                  <h1>Java容器框架分析(八)——PriorityQueue</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
+
+<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
+
+<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
+
+<ul>
+<li><code>leftNo = parentNo*2+1</code></li>
+<li><code>rightNo = parentNo*2+2</code></li>
+<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
+</ul>
+
+<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
+
+<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">add()&amp;offer()</h3>
+
+<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
+
+<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
+
+<pre><code class="language-java">public boolean offer(E e) {
+    if (e == null)//不允许放入null元素
+        throw new NullPointerException();
+    modCount++;
+    int i = size;
+    if (i &gt;= queue.length)
+        grow(i + 1);//自动扩容
+    size = i + 1;
+    if (i == 0)//队列原来为空，这是插入的第一个元素
+        queue[0] = e;
+    else
+        siftUp(i, e);//调整
+    return true;
+}
+</code></pre>
+
+<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
+
+<pre><code class="language-java">private void siftUp(int k, E x) {
+    while (k &gt; 0) {
+        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
+        Object e = queue[parent];
+        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
+            break;
+        queue[k] = e;
+        k = parent;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
+
+<h3 id="toc_2">element()&amp;peek()</h3>
+
+<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
+
+<pre><code class="language-java">//peek()
+public E peek() {
+    if (size == 0)
+        return null;
+    return (E) queue[0];//0下标处的那个元素就是最小的那个
+}
+</code></pre>
+
+<h3 id="toc_3">remove()&amp;poll()</h3>
+
+<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
+代码如下：</p>
+
+<pre><code class="language-java">public E poll() {
+    if (size == 0)
+        return null;
+    int s = --size;
+    modCount++;
+    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
+    E x = (E) queue[s];
+    queue[s] = null;
+    if (s != 0)
+        siftDown(0, x);//调整
+    return result;
+}
+</code></pre>
+
+<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
+
+<pre><code class="language-java">//siftDown()
+private void siftDown(int k, E x) {
+    int half = size &gt;&gt;&gt; 1;
+    while (k &lt; half) {
+        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
+        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
+        Object c = queue[child];
+        int right = child + 1;
+        if (right &lt; size &amp;&amp;
+            comparator.compare((E) c, (E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (comparator.compare(x, (E) c) &lt;= 0)
+            break;
+        queue[k] = c;//然后用c取代原来的值
+        k = child;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<h3 id="toc_4">remove(Object o)</h3>
+
+<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
+
+<pre><code class="language-java">//remove(Object o)
+public boolean remove(Object o) {
+    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
+    int i = indexOf(o);
+    if (i == -1)
+        return false;
+    int s = --size;
+    if (s == i) //情况1
+        queue[i] = null;
+    else {
+        E moved = (E) queue[s];
+        queue[s] = null;
+        siftDown(i, moved);//情况2
+        ......
+    }
+    return true;
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14879892493054.html">
                 
                   <h1>Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</h1>
@@ -1064,164 +1241,6 @@ ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序�
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14878187570598.html">
-                
-                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">LinkedList简介</h2>
-
-<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
-LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
-双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
-
-<pre><code class="language-java">//Node内部类
-private static class Node&lt;E&gt; {
-    E item;
-    Node&lt;E&gt; next;
-    Node&lt;E&gt; prev;
-    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
-        this.item = element;
-        this.next = next;
-        this.prev = prev;
-    }
-}
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
-
-<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">add()</h3>
-
-<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
-
-<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
-
-<pre><code class="language-java">public boolean add(E e) {
-    final Node&lt;E&gt; l = last;
-    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
-    last = newNode;
-    if (l == null)
-        first = newNode;//原来链表为空，这是插入的第一个元素
-    else
-        l.next = newNode;
-    size++;
-    return true;
-}
-</code></pre>
-
-<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
-
-<pre><code class="language-java">public void add(int index, E element) {
-     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
-    checkPositionIndex(index);
-    if (index == size)//插入位置是末尾，包括列表为空的情况
-        add(element);
-    else{
-        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
-        //2.修改引用，完成插入操作。
-        final Node&lt;E&gt; pred = succ.prev;
-        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
-        succ.prev = newNode;
-        if (pred == null)//插入位置为0
-            first = newNode;
-        else
-            pred.next = newNode;
-        size++;
-    }
-}
-</code></pre>
-
-<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
-两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
-
-<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
-    final E element = x.item;
-    final Node&lt;E&gt; next = x.next;
-    final Node&lt;E&gt; prev = x.prev;
-    if (prev == null) {//删除的是第一个元素
-        first = next;
-    } else {
-        prev.next = next;
-        x.prev = null;
-    }
-    if (next == null) {//删除的是最后一个元素
-        last = prev;
-    } else {
-        next.prev = prev;
-        x.next = null;
-    }
-    x.item = null;//let GC work
-    size--;
-    return element;
-}
-</code></pre>
-
-<h3 id="toc_4">get()</h3>
-
-<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    //检测index是否越界
-    checkElementIndex(index);
-    return node(index).item;
-}
-</code></pre>
-
-<h3 id="toc_5">set()</h3>
-
-<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    checkElementIndex(index);
-    Node&lt;E&gt; x = node(index);
-    E oldVal = x.item;
-    x.item = element;//替换新值
-    return oldVal;
-}
-</code></pre>
-
-<h2 id="toc_6">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/23</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1310,6 +1329,12 @@ private static class Node&lt;E&gt; {
 	      
 		      
 			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
 			      </li>
 		     
@@ -1329,12 +1354,6 @@ private static class Node&lt;E&gt; {
 		      
 			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
 			      </li>
 		     
 		  

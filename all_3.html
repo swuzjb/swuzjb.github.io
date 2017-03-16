@@ -107,6 +107,129 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14890230803105.html">
+                
+                  <h1>剑指Offer-从尾到头打印链表</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>输入一个链表，从尾到头打印链表每个节点的值。</p>
+</blockquote>
+
+<h2 id="toc_0">问题解答</h2>
+
+<p>要解决这个问题肯定要遍历链表。遍历的顺序是从头到尾的顺序，可是输出的要求顺序却是从尾到头。也就是说第一个遍历到的节点，最后一个输出，而最后一个遍历到的节点第一个输出。这就是典型的后进先出，我们可以用栈实现这个顺序。每经过一个节点的时候，把该节点放入到一个栈中。当遍历完整个链表后，再从栈顶开始逐个输出节点的值，此时，输出的节点顺序已经反转过来了。<br/>
+既然可以使用栈实现这个需求，那么我们就可以考虑使用递归，递归本质上就是一个栈结构。这样要实现反过来输出链表，我们每访问到一个结点的时候，先递归输出它后面的节点，在输出该节点自身，这样链表的输出就反过来了。</p>
+
+<h2 id="toc_1">递归实现</h2>
+
+<pre><code class="language-java">/**
+*    public class ListNode {
+*        int val;
+*        ListNode next = null;
+*
+*        ListNode(int val) {
+*            this.val = val;
+*        }
+*    }
+*
+*/
+import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        search(listNode);
+        return array;
+    }
+    public void  search(ListNode listNode){
+        if(listNode != null){
+            search(listNode.next);
+            array.add(listNode.val);
+        }
+        
+    }
+}
+</code></pre>
+
+<p>本题基于递归实现看起来很简洁，但是有个问题，当链表非常长的时候，就会导致函数调用层级很深，从而有可能导致函数调用栈溢出。</p>
+
+<h2 id="toc_2">显示栈实现</h2>
+
+<pre><code class="language-java">import java.util.*;
+
+public class Solution {
+    
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayDeque&lt;Integer&gt; stack = new ArrayDeque&lt;&gt;();
+        while(listNode != null){
+            stack.offerFirst(listNode.val);
+            listNode = listNode.next;
+        }
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;(stack.size());
+        while (stack.size()&gt;0) {
+            array.add(stack.pollFirst());
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+<h2 id="toc_3">翻转链表</h2>
+
+<p>如果可以改变原链表的结构，就可以对链表进行翻转。</p>
+
+<pre><code class="language-java">import java.util.ArrayList;
+public class Solution {
+    private ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+    public ArrayList&lt;Integer&gt; printListFromTailToHead(ListNode listNode) {
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;&gt;();
+        ListNode head = null;
+        ListNode next = null;
+        while (listNode != null) {
+            next = listNode.next;
+            listNode.next = head;
+            head = listNode;
+            listNode = next;
+        }
+        while (head != null) {
+            array.add(head.val);
+            head = head.next;
+        }
+        return array;
+    }
+    
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14890230803105.html" data-count-type="comments" href="14890230803105.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14889379059302.html">
                 
                   <h1>剑指Offer-替换空格</h1>
@@ -543,181 +666,6 @@ public boolean remove(Object o) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879892493054.html">
-                
-                  <h1>Java容器框架分析(七)——LinkedHashSet与LinkedHashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>如果你已经看过前面关于HashSet和HashMap，以及TreeSet和TreeMap的讲解，一定能够想到本文要讲解的LinkedSet和LinkedHashMap在Java中也有着相同的实现，前者仅仅是对后者做了一层包装，也就是说<strong>LinkedHashSet里面有一个LinkedHashMap(适配器模式)</strong>。因此本文将重点介绍LinkedHashMap。</p>
-
-<p>LinkedHashMap实现了Map接口，即允许放入key为null的元素，也允许插入value为null的元素。从名字上可以看出该容器是LinkedList和HashMap的混合体，也就是说它同时满足HashMap和LinkedList的某些特性。可以将LinkedHashMap看作采用LinkedList增强的HashMap。</p>
-
-<p>事实上LinkedHashMap是HashMap的直接子类，二者的唯一区别是LinkedHashMap在HashMap的基础上，采用双向链表的形式将所有entry连接起来，这样是为保证元素的迭代顺序和插入顺序相同。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879901525374.png" alt=""/></p>
-
-<p>上图给出了LinkedHashMap的结构图，主体部分跟HashMap完全一样，多了header指向双向链表的头部，该双向链表的迭代顺序就是entry的插入顺序。<br/>
-除了可以保证迭代顺序，这种结构还有一个好处：迭代LinkedHashMap时不需要像HashMap那样遍历整个table，而是只需要直接遍历header指向的双向链表即可。也就说LinkedHashMap的迭代时间就只跟entry的个数有关，和table的大小无关。</p>
-
-<p>有两个参数可以影响 LinkedHashMap 的性能：初始容量（inital capacity）和负载系数（load factor）。初始容量指定了初始table的大小，负载系数用来指定自动扩容的临界值。当entry的数量超过<code>capacity*load_factor</code>时，容器将自动扩容并重新哈希。对于插入元素较多的场景，将初始容量设大可以减少重新哈希的次数。<br/>
-将对象放入到 LinkedHashMap 或 LinkedHashSet 中时，有两个方法需要特别关心：<code>hashCode()</code>和<code>equals()</code>。<code>hashCode()</code>方法决定了对象会被放到哪个bucket里，当多个对象的哈希值冲突时，<code>equals()</code>方法决定了这些对象是否是 “同一个对象”。所以，如果要将自定义的对象放入到LinkedHashMap或LinkedHashSet中，需要覆盖<code>hashCode()</code>和<code>equals()</code>方法。</p>
-
-<p>通过如下方式可以得到一个跟源Map迭代顺序一样的LinkedHashMap：</p>
-
-<pre><code class="language-java">void foo(Map m) {
-    Map copy = new LinkedHashMap(m);
-    ...
-}
-</code></pre>
-
-<p>出于性能原因，LinkedHashMap是非线程安全的，如果需要在多线程环境使用，需要程序呀手动进行同步；或者通过如下方式将LinkedHashMap包装成同步的：</p>
-
-<pre><code class="language-java">Map m = Collections.synchronizedMap(new LinkedHashMap(...));
-</code></pre>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">get()</h3>
-
-<p>get(Object key)方法根据指定的key值返回对应的value.该方法的流程和HashMap的实现方式基本一样，可参考前文。</p>
-
-<h3 id="toc_2">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key,value</code>对添加到map里。该方法首先会对map做一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>get()</code>方法；如没有找到则会通过<code>addEntry(int hash,K key,V value,int bucketIndex)</code>方法插入新的entry。<br/>
-PS.这里的插入有两重含义：</p>
-
-<ol>
-<li>从table的角度来看，新的entry需要插入到对应的bucket里，当有哈希冲突时，采用头插法将新的entry插入到冲突链表的头部。</li>
-<li>从header的角度，新的entry需要插入到双向链表的尾部。</li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879912929279.png" alt=""/></p>
-
-<p>addEntry()代码如下：</p>
-
-<pre><code class="language-java">void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
-        resize(2 * table.length);// 自动扩容，并重新哈希
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = hash &amp; (table.length-1);// hash%table.length
-    }
-    // 1.在冲突链表头部插入新的entry
-    HashMap.Entry&lt;K,V&gt; old = table[bucketIndex];
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(hash, key, value, old);
-    table[bucketIndex] = e;
-    // 2.在双向链表的尾部插入新的entry
-    e.addBefore(header);
-    size++;
-}
-</code></pre>
-
-<p>上述代码中用到了<code>addBefore()</code>方法将新<code>entry e</code>插入到双向链表引用<code>header</code>的前面，这样e就成为了双向链表中的最后一个元素。<code>addBefore()</code>的代码如下：</p>
-
-<pre><code class="language-java">// LinkedHashMap.Entry.addBefor()，将this插入到existingEntry的前面
-private void addBefore(Entry&lt;K,V&gt; existingEntry) {
-    after  = existingEntry;
-    before = existingEntry.before;
-    before.after = this;
-    after.before = this;
-}
-</code></pre>
-
-<p>仅需要简单修改相关entry的引用而已。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法的具体逻辑是在<code>removeEntryForKey(Object key)</code>里实现的。<code>removeEntryForKey()</code>方法会首先找到key值对应的entry，然后删除entry(修改链表的引用)。查找过程和get()方法类似。<br/>
-注意，这里的删除也有两层含义：</p>
-
-<ol>
-<li>从table的角度看，需要将该entry从对应的bucket里删除，如果对应的冲突链表不空，需要修改冲突链表的相应引用。</li>
-<li>从header的角度来看，需要将该entry从双向链表中删除，同时修改链表中前面以及后面元素的相应引用。</li>
-</ol>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879925343738.png" alt=""/></p>
-
-<p><code>removeEntryForKey()</code>对应的代码如下：</p>
-
-<pre><code class="language-java">// LinkedHashMap.removeEntryForKey()，删除key值对应的entry
-final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
-    ......
-    int hash = (key == null) ? 0 : hash(key);
-    int i = indexFor(hash, table.length);// hash&amp;(table.length-1)
-    Entry&lt;K,V&gt; prev = table[i];// 得到冲突链表
-    Entry&lt;K,V&gt; e = prev;
-    while (e != null) {// 遍历冲突链表
-        Entry&lt;K,V&gt; next = e.next;
-        Object k;
-        if (e.hash == hash &amp;&amp;
-            ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) {// 找到要删除的entry
-            modCount++; size--;
-            // 1. 将e从对应bucket的冲突链表中删除
-            if (prev == e) table[i] = next;
-            else prev.next = next;
-            // 2. 将e从双向链表中删除
-            e.before.after = e.after;
-            e.after.before = e.before;
-            return e;
-        }
-        prev = e; e = next;
-    }
-    return e;
-}
-</code></pre>
-
-<h2 id="toc_4">LinkedHashSet</h2>
-
-<p>前面已经说过 LinkedHashSet 是对 LinkedHashMap 的简单包装，对 LinkedHashSet 的函数调用都会转换成合适的 LinkedHashMap 方法，因此 LinkedHashSet 的实现非常简单，这里不再赘述。</p>
-
-<pre><code class="language-java">public class LinkedHashSet&lt;E&gt;
-    extends HashSet&lt;E&gt;
-    implements Set&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    // LinkedHashSet里面有一个LinkedHashMap
-    public LinkedHashSet(int initialCapacity, float loadFactor) {
-        map = new LinkedHashMap&lt;&gt;(initialCapacity, loadFactor);
-    }
-    ......
-    public boolean add(E e) {//简单的方法转换
-        return map.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879892493054.html" data-count-type="comments" href="14879892493054.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -806,6 +754,12 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 	      
 		      
 			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
 			      </li>
 		     
@@ -825,12 +779,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
 		      
 			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
 			      </li>
 		     
 		  

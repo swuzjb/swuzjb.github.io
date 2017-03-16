@@ -107,6 +107,247 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14689148951216.html">
+                
+                  <h1>Java康复性训练——MyBatis3(2)</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>接上篇，继续对Mybatis的使用进行介绍。</p>
+
+<blockquote>
+<p>代码展示：<a href="https://github.com/swuzjb/MybatisDemo">Github地址</a></p>
+</blockquote>
+
+<h2 id="toc_0">Mapper的XML配置</h2>
+
+<p>上一篇的文章当中UserMapper接口只定义了一个addUser的方法。这次我们首先先完善这个接口类。添加写、改、删、查这些方法。</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import java.util.List;
+
+import site.zhanjingbo.model.User;
+
+public interface UserMapper {
+    public int addUser(User user);
+    public int updateUser(User user);
+    public int deleteUser(Integer id);
+    
+    public User getUserById(Integer id);
+    public List&lt;User&gt; getAllUser();
+    
+}
+</code></pre>
+
+<h3 id="toc_1">添加XML配置</h3>
+
+<p>配置文件如下：</p>
+
+<pre><code class="language-xml">    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+</code></pre>
+
+<h3 id="toc_2">修改XML配置</h3>
+
+<pre><code class="language-xml">    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+</code></pre>
+
+<h3 id="toc_3">删除XML配置</h3>
+
+<pre><code class="language-xml">    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+</code></pre>
+
+<h3 id="toc_4">查询XML配置</h3>
+
+<ol>
+<li><p>返回单个对象。(注意:对象一定要有对应的构造方法或无参构造)</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultType=&quot;User&quot;&gt;
+    select * from user where id=#{id}
+&lt;/select&gt;
+</code></pre></li>
+<li><p>返回结构List。</p>
+
+<ol>
+<li><p>先声明一个返回类型</p>
+
+<pre><code class="language-xml">&lt;resultMap type=&quot;User&quot; id=&quot;UserList&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+    &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+&lt;/resultMap&gt;
+</code></pre></li>
+<li><p>声明SQL语句映射</p>
+
+<pre><code class="language-xml">&lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserList&quot;&gt;
+    select * from user
+&lt;/select&gt;
+</code></pre></li>
+</ol></li>
+</ol>
+
+<h2 id="toc_5">关系映射</h2>
+
+<h3 id="toc_6">一对一关系</h3>
+
+<p>为了更好的展示，我们给User添加一个Role的属性，也就是角色属性。</p>
+
+<ol>
+<li><p>建立Role的POJO对象</p>
+
+<pre><code class="language-java">package site.zhanjingbo.model;
+public class Role {
+    private Integer id;
+    private String roleName;
+
+    public Role(){
+        super();
+    }
+    public Role(Integer id, String roleName) {
+        super();
+        this.id = id;
+        this.roleName = roleName;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    public String getRoleName() {
+        return roleName;
+    }
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Role [id=&quot; + id + &quot;, roleName=&quot; + roleName + &quot;]&quot;;
+    }
+}
+</code></pre></li>
+<li><p>建立Role的Mapper接口</p>
+
+<pre><code class="language-java">package site.zhanjingbo.mapper;
+
+import site.zhanjingbo.model.Role;
+
+public interface RoleMapper {
+    public Role getRoleById(Integer id);
+}
+</code></pre></li>
+<li><p>建立Role的Mapper映射文件（注：这里使用的Role 实在config文件中设置了别名）</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+    &lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultType=&quot;Role&quot;&gt;
+        select * from role where id=#{id}
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+<li><p>修改User的Mapper映射文件，主要修改查询语句的相关返回，设置resultMap为UserResult，其声明如下：</p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+  PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+  &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.UserMapper&quot;&gt;  
+    &lt;resultMap type=&quot;User&quot; id=&quot;UserResult&quot;&gt;
+        &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+        &lt;result property=&quot;username&quot; column=&quot;username&quot;/&gt;
+        &lt;result property=&quot;password&quot; column=&quot;password&quot;/&gt;
+        &lt;association property=&quot;role&quot; column=&quot;roleId&quot; select=&quot;site.zhanjingbo.mapper.RoleMapper.getRoleById&quot;&gt;&lt;/association&gt;
+    &lt;/resultMap&gt;
+
+    &lt;insert id=&quot;addUser&quot; parameterType=&quot;User&quot; useGeneratedKeys=&quot;true&quot; &gt;
+        insert into user(username,password) values(#{username},#{password}) 
+    &lt;/insert&gt;
+    &lt;update id=&quot;updateUser&quot; parameterType=&quot;User&quot;&gt;
+        update user set username=#{username},password=#{password} where id=#{id}
+    &lt;/update&gt;
+    &lt;delete id=&quot;deleteUser&quot; parameterType=&quot;Integer&quot;&gt;
+        delete from user where id=#{id}
+    &lt;/delete&gt;
+    &lt;select id=&quot;getUserById&quot; parameterType=&quot;Integer&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user where id=#{id}
+    &lt;/select&gt;
+    &lt;select id=&quot;getAllUser&quot; resultMap=&quot;UserResult&quot;&gt;
+        select * from user
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_7">一对多关系</h3>
+
+<p>一对多关系其实是扩展的一对一关系，我们在这一部分对上面的Role实体进行扩展。在上面我们定义一个用户只能有一个角色，但是一个角色其实可以有多个用户。这就构成了一对多。<br/>
+为了展示一对多，我们增加一个根据用户角色查询用户的功能。</p>
+
+<ol>
+<li>需要在UserMapper中添加一个根据Role返回User List的方法。</li>
+<li>在UserMapper.xml中完善这个方法的SQL语句</li>
+<li>在Role中增加UserList属性，并添加getter和setter方法</li>
+<li><p>在RoleMapper.xml中增加配置。如下代码展示</p>
+
+<pre><code class="language-xml"> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+&quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;site.zhanjingbo.mapper.RoleMapper&quot;&gt;
+&lt;resultMap type=&quot;Role&quot; id=&quot;RoleResult&quot;&gt;
+    &lt;id property=&quot;id&quot; column=&quot;id&quot;/&gt;
+    &lt;result property=&quot;roleName&quot; column=&quot;roleName&quot;/&gt;
+    &lt;collection property=&quot;userList&quot; column=&quot;id&quot; select=&quot;site.zhanjingbo.mapper.UserMapper.getUserByRole&quot;&gt;&lt;/collection&gt;
+&lt;/resultMap&gt;
+&lt;select id=&quot;getRoleById&quot; parameterType=&quot;Integer&quot;  resultMap=&quot;RoleResult&quot;&gt;
+    select * from role where id=#{id}
+&lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre></li>
+</ol>
+
+<h3 id="toc_8">多对多关系</h3>
+
+<p>多对多关系可以理解为双向的一对多关系，参照上方的一对多实现，关联中间表即可。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/19</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14689148951216.html" data-count-type="comments" href="14689148951216.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14687533604786.html">
                 
                   <h1>Java康复性训练——MyBatis3(1)</h1>
@@ -1021,6 +1262,12 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 	      
 		      
 			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
 			      </li>
 		     
@@ -1040,12 +1287,6 @@ System.out.println(Math.abs(a-b)&lt;1e6);
 		      
 			      <li class="post">
 			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893023180281.html">设计模式-工厂方法模式</a>
 			      </li>
 		     
 		  
