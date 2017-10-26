@@ -1,0 +1,589 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  Java研发工程师的面试宝典 - Zhan's Blog
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="Zhan's Blog" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:swuzjb.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="_self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        <li id=""><a target="_blank" href="aboutMe.html">RESUME</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; Zhan's Blog</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html">iOS学习笔记</a></li>
+        
+            <li><a href="Java.html">Java</a></li>
+        
+            <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
+        
+            <li><a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html">算法-数据结构</a></li>
+        
+            <li><a href="%E5%85%B6%E5%AE%83.html">其它</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Java研发工程师的面试宝典</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2017/8/26</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Java.html'>Java</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+              &nbsp;<a  class="ds-thread-count" data-thread-key="15037351230027.html" data-count-type="comments" href="15037351230027.html#ds-thread"></a>
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <h2 id="toc_0">Java基础</h2>
+
+<h3 id="toc_1">面向对象和面向过程的区别?</h3>
+
+<h4 id="toc_2">面向过程</h4>
+
+<ul>
+<li>定义：</li>
+<li>优点：性能比面向对象高，因为类调用时需要实例化</li>
+<li>缺点：没有面向对象易维护，易复用，易扩展</li>
+</ul>
+
+<h4 id="toc_3">面向对象</h4>
+
+<ul>
+<li>定义：面向对象程序设计是种具有对象概念的程序编程范型，同时也是一种程序开发的抽象方针。它可能包含数据、属性、代码与方法。对象则指的是类的实例。它将对象作为程序的基本单元，将程序和数据封装其中，以提高软件的重用性、灵活性和扩展性，对象里的程序可以访问及经常修改对象相关连的数据。在面向对象程序编程里，计算机程序会被设计成彼此相关的对象。</li>
+</ul>
+
+<h3 id="toc_4">Java的四个基本特性?</h3>
+
+<ul>
+<li>抽象：就是把现实生活中的某一类东西提取出来，用程序代码进行表示，通常叫做类或者接口。抽象包括于两个方面：一个是数据抽象，一个是过程抽象。数据抽象也就是对象的属性，过程抽象是对象的行为特征。</li>
+<li>封装：把客观事物封装成抽象的类，并且类可以把自己的数据和方法只让可信的类或者对象操作，对不可信的进行隐藏。封装也分为属性的封装和方法的封装。</li>
+<li>继承：继承是从已有类得到继承信息创建新类的过程。提供继承信息的类被称为父类（超类、基类）；得到继承信息的类被称为子类（派生类）。</li>
+<li>多态：允许不同的子类对象对同一消息做出响应。即父类引用指向子类对象。</li>
+</ul>
+
+<h3 id="toc_5">重载(Overload)和重写(Override)的区别?</h3>
+
+<ul>
+<li>重载：发生在同一个类中，方法名必须相同，参数类型不同、个数不同、顺序不同，方法返回值和访问修饰符可以不同，发生在编译时。</li>
+<li>重写：发生在父子继承关系中，方法名和参数列表必须相同，返回值可以小于等于父类定义的返回值，抛出异常小于等于父类，访问修饰符大于等于父类。</li>
+</ul>
+
+<h3 id="toc_6">构造器Constructor是否可被重写</h3>
+
+<p>不可以。构造器不能被重写，且不能用static修饰，只能添加private、protected、public在三个权限修饰符，且不能有返回语句。</p>
+
+<h3 id="toc_7">访问控制符private、default、protected、public的区别</h3>
+
+<ul>
+<li>private修饰的方法和属性只能在本类中被访问</li>
+<li>default修饰的方法和属性在同包下可访问</li>
+<li>protected修饰的方法和属性在同包和子类中可访问</li>
+<li>public修饰的方法和属性是公开的</li>
+</ul>
+
+<h3 id="toc_8">是否可以继承String类？为什么？</h3>
+
+<p>不能。String类是final关键字修饰的，所以不可继承。</p>
+
+<h3 id="toc_9">String、StringBuilder、StringBuffer的区别？</h3>
+
+<ul>
+<li>可变性：
+
+<ul>
+<li>不可变对象：String</li>
+<li>可变对象：StringBuilder、StringBuffer</li>
+</ul></li>
+<li>线程安全性：
+
+<ul>
+<li>线程安全的：StringBuffer</li>
+<li>线程不安全：StringBuilder</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_10">hashCode()和equals()的关系</h3>
+
+<p>如果两个对象equals()的返回值为true，那么他们应该有同样的hashCode值。反之，若两个对象由相同的hashCode他们可能不相等（equals()返回false）。</p>
+
+<h3 id="toc_11">抽象类和接口的区别</h3>
+
+<ul>
+<li>语法层次：抽象类和接口的定义方式有区别</li>
+<li>抽象层次：抽象类是对对类抽象，而接口是对行为的抽象。抽象类是对整个类整体进行抽象，包括属性、行为，但是接口却是对类局部（行为）进行抽象。抽象类是自底向上抽象而来的，接口是自顶向下设计出来的。</li>
+<li>跨域不同：抽象类所体现的是一种继承关系，想要使得继承关系合理，父类和子类之间必须存在“is-a”的关系，即父类和子类在概念本质上应该是相同的。对于接口来说，并不要求接口的实现者和接口定义在概念本质上是一致的，仅仅是实现了接口定义的契约而已，表达“like-a”关系。</li>
+</ul>
+
+<h3 id="toc_12">Java中的基本类型？自动装箱与拆箱？</h3>
+
+<ul>
+<li>Java中的基本类型有8种：byte、short、int、long、float、double、boolean、char； </li>
+<li>对应的包装类类别：Byte、Short、Integer、Long、Float、Double、Boolean、Character</li>
+<li>装箱：将基本应用类型用它们对应的引用类型包装起来；</li>
+<li>拆箱：将包装类型转换为基本类型;</li>
+<li>Java使用自动装箱和拆箱机制，节省了常用数值的内存开销和创建对象的开销，提升了效率。由编译器来完成，编译器在编译期间根据语法决定是否进行装箱和拆箱操作。</li>
+</ul>
+
+<h3 id="toc_13">什么是泛型？为什么要使用泛型？什么是类型擦除？</h3>
+
+<ul>
+<li>泛型即参数化类型。创建集合时就指定集合元素的类型，确保该集合只能保存其指定的类型元素，避免使用强制类型转换。</li>
+<li>Java编译器生成的字节码是不包含泛型信息的，泛型类型信息将在编译处理时被擦除，这个过程被称为类型擦除。类型擦除的主要过程如下：
+
+<ol>
+<li>将所有的泛型参数用其最左边（最顶级的父类型）类型替换。</li>
+<li>移除所有的泛型信息。</li>
+</ol></li>
+</ul>
+
+<h3 id="toc_14">Java中的集合类及关系图</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-08-28-15038901073788.png" alt=""/></p>
+
+<ul>
+<li>List和Set继承自Collection接口
+
+<ul>
+<li>Set无序、不允许重复元素。HashSet和TreeSet是两个主要的实现类；</li>
+<li>List有序，运行重复元素。ArrayList和LinkedList是两个主要的实现类；</li>
+</ul></li>
+<li>Map也属于集合系统，但是没有实现Collection接口。Map主要表示Key对Value的映射集合。Key值不可重复，但是Vaule可以重复。HashMap和TreeMap是两个主要的实现类。</li>
+</ul>
+
+<h3 id="toc_15">HashMap的实现原理?</h3>
+
+<p>待填坑</p>
+
+<h3 id="toc_16">Hashtable的实现原理?</h3>
+
+<p>待填坑</p>
+
+<h3 id="toc_17">HashMap和Hashtable的区别?</h3>
+
+<h3 id="toc_18">Hashtable如何实现线程安全?</h3>
+
+<h3 id="toc_19">ArrayList和Vector的区别？</h3>
+
+<h3 id="toc_20">ArrayList和LinkedList的区别和使用场景？</h3>
+
+<h4 id="toc_21">区别</h4>
+
+<ul>
+<li>ArrayList基于数组实现，可以简单的认为ArrayList是一个大小可变的数组，随着越来越多的元素被添加到ArrayList中，其规模动态增加。</li>
+<li>LinkedList基于双向链表实现，相较于ArrayList，元素增删的速度较快，但是随机访问的速度较慢，且LinkedList实现了Queue接口，还可以作为队列使用。</li>
+</ul>
+
+<h4 id="toc_22">使用场景</h4>
+
+<ul>
+<li>LinkedList适用于频繁增删的场景</li>
+<li>ArrayList适用于检索频繁的场景</li>
+</ul>
+
+<h3 id="toc_23">Collection和Collections的区别？</h3>
+
+<ul>
+<li>java.util.Collection是一个集合接口。他提供了对集合对象进行基本操作的通用接口方法，在Java类库中很多具体的实现。Collection接口的意义是为各种具体的集合提供了最大化的统一操作方式。</li>
+<li>java.util.Collections是一个包装类。它包含各种有关机和操作的静态方法，此类不能实例化，就像一个工作类，服务于Java的集合框架</li>
+</ul>
+
+<h3 id="toc_24">ConcurrentHashMap的实现原理</h3>
+
+<h3 id="toc_25">Java的异常机制？Error、Exception的区别？</h3>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-08-28-15038981395732.jpg" alt=""/></p>
+
+<p>在Java中，所有的异常都有一个共同的祖先Throwable。Throwable指定代码中可用异常传播机制通过Java应用程序传输的任何问题的共性。Throwable有两个重要的子类：</p>
+
+<ul>
+<li>Error：一般指与虚拟机相关的问题，如系统崩溃、虚拟机错误、内存空间不足、方法调用栈溢出。对于这类错误导致的应用程序中断，仅靠程序本身无法恢复和预防，遇到这样的错误建议程序终止。</li>
+<li>Exception：表示程序可以处理的异常，可以捕获且可能恢复。遇到这类异常，应该尽可能的处理异常，使程序恢复运行，而不会随意终止。</li>
+</ul>
+
+<h3 id="toc_26">Unchecked Exception和Checked Exception？</h3>
+
+<ul>
+<li>Unchecked Exception
+
+<ul>
+<li>指的是程序的瑕疵或逻辑错误，并在运行时无法恢复</li>
+<li>包括Error和RuntimeException及其子类</li>
+<li>语法上不需要声明抛出异常</li>
+</ul></li>
+<li>Checked Exception
+
+<ul>
+<li>代表程序不能直接控制的无效界外情况（如用户输入、数据库问题、网络异常、文件丢失等）</li>
+<li>除了Error和RuntimeException及其子类之外</li>
+<li>需要使用try-catch处理或throws声明抛出异常 </li>
+</ul></li>
+</ul>
+
+<h2 id="toc_27">JavaEE</h2>
+
+<h3 id="toc_28">Servlet生命周期和各个方法？</h3>
+
+<h4 id="toc_29">Servlet的生命周期</h4>
+
+<p>Servlet的生命周期分为四个部分，分别是：加载-&gt;实例化-&gt;服务-&gt;销毁</p>
+
+<h4 id="toc_30">主要方法</h4>
+
+<ul>
+<li>init():在Servlet的生命周期中，仅执行一次init()方法。它是在服务器装入Servlet时执行，负责初始化Servlet对象。可以通过配置服务器配置，以在服务器启动或在客户机首次访问Servlet时装入Servlet对象。无论有多少客户机访问Servlet，都不会重复执行init()方法。</li>
+<li>service():Servlet的核心方法，负责响应客户的请求。每当一个客户请求一个HttpServlet对象，该对象的service()方法就要调用，而且传递给这个方法一个ServletRequest对象和一个ServletResponse对象作为参数。</li>
+<li>destory():仅执行一次，在服务器端停止且卸载Servlet时执行该方法。当Servlet对象退出生命周期时，负责释放占用的资源。一个Servlet在运行service()方法时可能会产生其它的线程，因此需要确认在调用destory()方法时，这些线程已经终止或者完成。</li>
+</ul>
+
+<h3 id="toc_31">Servlet中如何定义Filter？</h3>
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="15090148978006.html" 
+          title="Previous Post: ">&laquo; </a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14896338034345.html" 
+          title="Next Post: 设计模式-适配器模式">设计模式-适配器模式 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+              <div class="ds-thread" data-thread-key="15037351230027.html" data-url="http://swuzjb.github.io/15037351230027.html" data-title="Java研发工程师的面试宝典"></div>
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>Zhan's Blog</h1>
+                <div class="site-des">展镜博的个人博客</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a class="github" target="_blank" href="https://github.com/swuzjb" title="GitHub">GitHub</a>
+<a class="email" href="mailto:412008196@qq.com" title="Email">Email</a>
+  <a class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html"><strong>iOS学习笔记</strong></a>
+        
+            <a href="Java.html"><strong>Java</strong></a>
+        
+            <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
+        
+            <a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html"><strong>算法-数据结构</strong></a>
+        
+            <a href="%E5%85%B6%E5%AE%83.html"><strong>其它</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>BookList</h2>
+                </div>
+                <div class="side-content">
+
+                <p class="cat-list">
+                
+                    <a href="bookList.html"><strong>待读书单</strong></a>
+                
+                </p>
+
+
+                </div>
+              </div>
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15090149503358.html">Jupyterhub安装流程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15090148978006.html"></a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15037351230027.html">Java研发工程师的面试宝典</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14896338034345.html">设计模式-适配器模式</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14894720983586.html">设计模式-命令模式</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+                <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>FRIEND LINKS</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+                  <li class="post">
+                    <a href="https://guxinyan.github.io">顾鑫燕的博客</a>
+                    
+                  </li>
+                  <li class="post">
+                    <a href="http://ranchu.win">CD'S Blog</a>
+                  </li>
+                  <li class="post">
+                    <a href="https://hran.me">Hran's Blog</a>
+                  </li>
+          </ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2016 swuzjb
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+
+
+<script type="text/javascript">
+var duoshuoQuery = {short_name:'zhanjingbo'};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?0fb9ecff8c9a2c820ce81c18ff77c1e8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+  </body>
+</html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Java容器框架分析(八)——PriorityQueue - Zhan's Blog
+  Zhan's Blog
   
   </title>
   
@@ -100,217 +100,158 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>Java容器框架分析(八)——PriorityQueue</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2017/2/25</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14577530083114.html">
+                
+                  <h1>GeekBand-OC中的类别和协议</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>类别（category）——通过使用类别，我们可以动态地为现有的类添加新方法，而且可以将类定义模块化地分不到多个相关文件中。通常只在类别中定义方法。</p>
+</blockquote>
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='Java.html'>Java</a></span>
-           
-         
-          <span class="comments">
-            
+<p>类别，接口部分的定义,通常该文件命名为已有&quot;类+类别名.h&quot;</p>
 
-            
-              &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
-
-<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
-
-<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
-
-<ul>
-<li><code>leftNo = parentNo*2+1</code></li>
-<li><code>rightNo = parentNo*2+2</code></li>
-<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
-</ul>
-
-<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
-
-<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
-
-<h2 id="toc_0">常用方法剖析</h2>
-
-<h3 id="toc_1">add()&amp;offer()</h3>
-
-<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
-
-<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
-
-<pre><code class="language-java">public boolean offer(E e) {
-    if (e == null)//不允许放入null元素
-        throw new NullPointerException();
-    modCount++;
-    int i = size;
-    if (i &gt;= queue.length)
-        grow(i + 1);//自动扩容
-    size = i + 1;
-    if (i == 0)//队列原来为空，这是插入的第一个元素
-        queue[0] = e;
-    else
-        siftUp(i, e);//调整
-    return true;
-}
+<pre><code> @interface 已有类 （类别名）
+    //.......方法实现
+ @end
 </code></pre>
 
-<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
+<p>例如，考虑为NSNumber增加一个类别，则接口部分代码如下</p>
 
-<pre><code class="language-java">private void siftUp(int k, E x) {
-    while (k &gt; 0) {
-        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
-        Object e = queue[parent];
-        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
-            break;
-        queue[k] = e;
-        k = parent;
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+@interface NSNumber (code)
+ -(NSNumber *) add:(double) num;
+ -(NSNumber *) mult:(double) num
+@end
+</code></pre>
+
+<p>该类别的实现部分如下</p>
+
+<pre><code> #import &quot;NSNumber+code.h&quot;
+
+ @implementation NSNumber (code)
+ -(NSNumber *) add:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue] +num)];
+}
+-(NSNumber *) mult:(double) num
+{
+  return [NSNumber numberWithDouble:([self doubleValue]     +num)];
+}
+@end
+</code></pre>
+
+<p>所有NSNumber类的实例就都会具有add:、multi:方法，从而实现对NSNumber类的动态扩展。</p>
+
+<p><img src="media/14577530083114/QQ20160308-1@2x.png" alt="QQ20160308-1@2x"/></p>
+
+<p>PS.如果一个函数在.h文件中无声明而在.m文件中定义它的实现，那么该方法就是私有方法，只能在本类的文件中使用。 若我们在类别的借口部分声明这个方法，那么我们就可以实现对该私有方法的访问。</p>
+
+<hr/>
+
+<h2 id="toc_0">扩展（extension）</h2>
+
+<p>扩展与类别相似，扩展相当于匿名类别，即没有类别名得类别</p>
+
+<p>在用法上，类别通常都都有单独的.h和.m文件。扩展则是临时的对某个类进行扩展，类的实现部分同时实现类接口部分定义的方法和扩展中定义的方法。定义类的扩展时，可以增加额外的实例变量，也可使用@property和@synthesize关键字，但在定义类的额外列表时不允许额外定义实例变量。</p>
+
+<p>有类名为Vehicle，只有name属性没有定义方法。对其进行扩展。为原来的Vehicle类增加color属性和drive:方法，因此在Vehicle.m实现文件里面要实现Vehicle.h里声明的方法及这个drive:方法。</p>
+
+<pre><code>//&quot;Vehicle.m&quot;
+#import &quot;Vehicle.h&quot;
+@interface Vehicle ()
+@property(nonatomic, strong) NSString *color;
+-(void) drive:(NSString *)name;
+@end
+@implementation Vehicle
+-(void) drive:(NSString *)name
+{
+    NSLog(@&quot;交通工具名称%@,颜色属性%@&quot;,_name,_color);
+}
+@end
+</code></pre>
+
+<p><img src="media/14577530083114/QQ20160308-2@2x.png" alt="QQ20160308-2@2x"/></p>
+
+<hr/>
+
+<h2 id="toc_1">协议（protocol）</h2>
+
+<p>以NSObject为基础，为NSOject创建类别，创建类别时指定该类新增的方法，既可以实现非正式协议。而OC中对于实现非正式协议的类而言，OC并不强制实现该协议中的所有方法 。</p>
+
+<p>正式协议使用@protocol关键字定义</p>
+
+<pre><code>    @protocol 协议名 &lt;父协议1， 父协议2&gt;
+    {
+          //.....方法声明
     }
-    queue[k] = x;
-}
+    @end
 </code></pre>
 
-<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
+<p>协议是支持多继承的。在OC2.0标准中新增了@required\@optional两个关键字，声明方式是必须是必须实现还是可选的，默认为@required.<br/>
+遵守协议的语法如下：</p>
 
-<h3 id="toc_2">element()&amp;peek()</h3>
-
-<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
-
-<pre><code class="language-java">//peek()
-public E peek() {
-    if (size == 0)
-        return null;
-    return (E) queue[0];//0下标处的那个元素就是最小的那个
-}
+<pre><code> @interface 类名：父类型 &lt;协议1， 协议2...&gt;
 </code></pre>
 
-<h3 id="toc_3">remove()&amp;poll()</h3>
+<p>使用协议来定义变量，那么这些变量只能调用该协议中声明的方法，否则编译器会提示错误。<br/>
+协议体现的是一种规范，定义协议的类可以把协议定义的方法委托(delegate)给实现协议的类，这样可以让类具有更好的通用性，具体的动作交给协议的实现类来完成。在大量的应用程序开发中大量依赖委托这个概念。</p>
 
-<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
-代码如下：</p>
+<p><img src="media/14577530083114/QQ20160308-0@2x.png" alt="QQ20160308-0@2x"/></p>
 
-<pre><code class="language-java">public E poll() {
-    if (size == 0)
-        return null;
-    int s = --size;
-    modCount++;
-    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
-    E x = (E) queue[s];
-    queue[s] = null;
-    if (s != 0)
-        siftDown(0, x);//调整
-    return result;
-}
-</code></pre>
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='iOS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html'>iOS学习笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
-
-<pre><code class="language-java">//siftDown()
-private void siftDown(int k, E x) {
-    int half = size &gt;&gt;&gt; 1;
-    while (k &lt; half) {
-        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
-        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
-        Object c = queue[child];
-        int right = child + 1;
-        if (right &lt; size &amp;&amp;
-            comparator.compare((E) c, (E) queue[right]) &gt; 0)
-            c = queue[child = right];
-        if (comparator.compare(x, (E) c) &lt;= 0)
-            break;
-        queue[k] = c;//然后用c取代原来的值
-        k = child;
-    }
-    queue[k] = x;
-}
-</code></pre>
-
-<h3 id="toc_4">remove(Object o)</h3>
-
-<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
-
-<pre><code class="language-java">//remove(Object o)
-public boolean remove(Object o) {
-    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
-    int i = indexOf(o);
-    if (i == -1)
-        return false;
-    int s = --size;
-    if (s == i) //情况1
-        queue[i] = null;
-    else {
-        E moved = (E) queue[s];
-        queue[s] = null;
-        siftDown(i, moved);//情况2
-        ......
-    }
-    return true;
-}
-</code></pre>
-
-<h2 id="toc_5">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-      </div>
-
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="14880758779206.html" 
-          title="Previous Post: Java容器框架分析(九)——WeakHashMap">&laquo; Java容器框架分析(九)——WeakHashMap</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="14879892493054.html" 
-          title="Next Post: Java容器框架分析(七)——LinkedHashSet与LinkedHashMap">Java容器框架分析(七)——LinkedHashSet与LinkedHashMap &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
-
-          
-
-          
-              <div class="ds-thread" data-thread-key="14879958366746.html" data-url="http://swuzjb.github.io/14879958366746.html" data-title="Java容器框架分析(八)——PriorityQueue"></div>
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14577530083114.html" data-count-type="comments" href="14577530083114.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
 
 
-
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="all_15.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

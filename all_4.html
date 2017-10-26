@@ -85,6 +85,8 @@
             <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
         
             <li><a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html">算法-数据结构</a></li>
+        
+            <li><a href="%E5%85%B6%E5%AE%83.html">其它</a></li>
          
 
       </ul>
@@ -106,6 +108,365 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14889364537323.html">
+                
+                  <h1>剑指Offer-二维数组中的查找</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。</p>
+</blockquote>
+
+<h2 id="toc_0">解题思路</h2>
+
+<p>假设二维数组为N行，M列。则初始下标变量<code>int i=0;</code> <code>int j = M-1;</code>。此时选取a[i][j]作为比较标准:</p>
+
+<ul>
+<li>若target == a[i][j],则表明已找到对应的数字，返回true；</li>
+<li>若target &gt; a[i][j],由于数组是从左至右递增的，所以这一行左边的数据都要比a[i][j]小，所以可以排除，此时将i++，作为新的比较标准；</li>
+<li>若target &lt; a[i][j]，由于数组是从上而下递增的，该列的所有数字都比target大，不需要比较，则将j--，作为新的比较标准；</li>
+<li>若遍历到<code>i==n，j==0</code>,依旧没有找到匹配数据，则返回false；</li>
+</ul>
+
+<h2 id="toc_1">实现代码</h2>
+
+<pre><code class="language-java">public class Solution {
+    public boolean Find(int target, int [][] array) {
+        if(array.length == 0){
+            return false;
+        }
+        int i = 0;
+        int j = array[0].length - 1;
+        
+        while(i &lt; array.length &amp;&amp; j &gt;=0){
+            if(array[i][j] == target){
+                return true;
+            }
+            if(target &gt; array[i][j]){
+                i++;
+                continue;
+            }
+            if(target &lt; array[i][j]){
+                j--;
+                continue;
+            }
+        }
+        return false;
+
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>算法-数据结构</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14889364537323.html" data-count-type="comments" href="14889364537323.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14880758779206.html">
+                
+                  <h1>Java容器框架分析(九)——WeakHashMap</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>在Java容器框架系列文章的最后，笔者打算介绍一个特殊的成员：WeakHashMap，从名字可以看出它是某种Map。它的特殊之处在于WeakHashMap里的entry可能会被GC自动删除，即使程序员没有调用remove()或者clear()方法。</p>
+
+<p>更直观的说，当使用WeakHashMap时，即使没有显示的添加或者删除任何元素，也可能发生如下情况：</p>
+
+<ul>
+<li>调用两次<code>size()</code>方法返回不同的值</li>
+<li>两次调用<code>isEmpty()</code>方法，第一次返回<code>false</code>，第二次返回<code>true</code></li>
+<li>两次调用<code>containsKey()</code>方法，第一次返回<code>true</code>，第二次返回<code>false</code>，尽管是同一个<code>key</code></li>
+<li>两次调用<code>get()</code>方法，第一次返回一个<code>value</code>，第二次返回<code>null</code>，尽管两次使用的是同一个对象</li>
+</ul>
+
+<p>遇到这么奇葩的现象，你是不是觉得使用者一定疯掉？其实不然，<strong>WeekHashMap的这个特点特别适用于需要缓存的场景</strong>。在缓存场景下，由于内存是有限的，不能缓存所有对象；对象缓存命中可以提高效率，但缓存Miss也不会造成错误，因为可以通过计算重新得到。</p>
+
+<p>要明白WeakHashMap的工作原理，还需要引入一个概念：<strong>弱引用</strong>。我们知道Java中的内存是通过GC自动管理的，GC会在程序运行过程中自动判断哪些对象时可以被回收的，并在合适的时机进行内存释放。GC判断某个对象是否可以回收的依据是：<strong>是否有有效的引用指向该对象</strong>。如果没有有效引用指向该对象（意味着不存在访问该对象的方式），那么该对象就是可回收的。这里的<strong>有效引用并不包括弱引用</strong>。也就是说，虽然<strong>弱引用可以用来访问对象，但进行垃圾回收时弱引用并不会被考虑在内，仅有弱引用指向的对象仍然会被GC回收</strong>。</p>
+
+<p>WeakHashMap内部使用弱引用来管理entry，弱引用的特性对应到WeakHashMap上意味着什么呢？将一对key,value放入到WeakHashMap里并不能避免该key值被GC回收，除非在WeakHashMap之外还有对该key的强引用。</p>
+
+<h2 id="toc_0">具体实现</h2>
+
+<p>WeakHashMap的储存结构类似于HashMap，可参考前文。</p>
+
+<h3 id="toc_1">WeakHashSet？</h3>
+
+<p>如果你看过前几篇关于Map和Set的讲解，一定会问：既然有 WeekHashMap，是否有WeekHashSet呢？答案是没有！不过Java Collections工具类给出了解决方案，<code>Collections.newSetFromMap(Map&lt;E,Boolean&gt; map)</code>方法可以将任何Map包装成一个Set。通过如下方式可以快速得到一个 Weak HashSet：<br/>
+<code>java<br/>
+// 将WeakHashMap包装成一个Set<br/>
+Set&lt;Object&gt; weakHashSet = Collections.newSetFromMap(<br/>
+        new WeakHashMap&lt;Object, Boolean&gt;());<br/>
+</code><br/>
+其内部只是对传入的Map进行了简单的封装：</p>
+
+<pre><code class="language-java">// Collections.newSetFromMap()用于将任何Map包装成一个Set
+public static &lt;E&gt; Set&lt;E&gt; newSetFromMap(Map&lt;E, Boolean&gt; map) {
+    return new SetFromMap&lt;&gt;(map);
+}
+
+private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
+    implements Set&lt;E&gt;, Serializable
+{
+    private final Map&lt;E, Boolean&gt; m;  // The backing map
+    private transient Set&lt;E&gt; s;       // Its keySet
+    SetFromMap(Map&lt;E, Boolean&gt; map) {
+        if (!map.isEmpty())
+            throw new IllegalArgumentException(&quot;Map is non-empty&quot;);
+        m = map;
+        s = map.keySet();
+    }
+    public void clear()               {        m.clear(); }
+    public int size()                 { return m.size(); }
+    public boolean isEmpty()          { return m.isEmpty(); }
+    public boolean contains(Object o) { return m.containsKey(o); }
+    public boolean remove(Object o)   { return m.remove(o) != null; }
+    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
+    public Iterator&lt;E&gt; iterator()     { return s.iterator(); }
+    public Object[] toArray()         { return s.toArray(); }
+    public &lt;T&gt; T[] toArray(T[] a)     { return s.toArray(a); }
+    public String toString()          { return s.toString(); }
+    public int hashCode()             { return s.hashCode(); }
+    public boolean equals(Object o)   { return o == this || s.equals(o); }
+    public boolean containsAll(Collection&lt;?&gt; c) {return s.containsAll(c);}
+    public boolean removeAll(Collection&lt;?&gt; c)   {return s.removeAll(c);}
+    public boolean retainAll(Collection&lt;?&gt; c)   {return s.retainAll(c);}
+    // addAll is the only inherited implementation
+    ......
+}
+</code></pre>
+
+<h2 id="toc_2">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14880758779206.html" data-count-type="comments" href="14880758779206.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14879958366746.html">
+                
+                  <h1>Java容器框架分析(八)——PriorityQueue</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>前面以ArrayDeque讲解了Stack和Queue，其实还有一种特殊的队列叫做PriorityQueue，即优先队列。优先队列的作用是能保证每次取出的元素都是队列中权值最小的（Java的优先队列是每次取出最小的元素，C++的优先队列是每次取最大元素）。这里涉及到大小关系，元素的大小评判可以通过元素本身的自然顺序，或者通过自定义的比较器来进行定义。</p>
+
+<p>Java中的PriorityQueue实现了Queue接口，不允许放入null元素；其底层通过堆实现，具体说是通过完全二叉树实现的小根堆（任意一个非叶子节点的权值，都不大于左右子节点的权值），也就意味着可以通过数组来作为PriorityQueue的底层实现。</p>
+
+<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14879965840202.png" alt=""/></p>
+
+<p>上图中我们给每个元素按照宽度优先遍历的方式进行了编号，如果你足够细心会发现，父子节点的编号是有规律的：</p>
+
+<ul>
+<li><code>leftNo = parentNo*2+1</code></li>
+<li><code>rightNo = parentNo*2+2</code></li>
+<li><code>parentNo = (nodeNo - 1 ) / 2</code></li>
+</ul>
+
+<p>通过上述三个公式，可以轻易的推算某个节点的父子节点位置。这也就是为什么可以用数组来储存堆的原因。</p>
+
+<p>PriorityQueue的<code>peek()</code>和<code>element()</code>操作是常数时间。<code>add()</code>、<code>offer()</code>、无参数的<code>remove()</code>、以及<code>poll()</code>方法的时间复杂度都是log(n)。</p>
+
+<h2 id="toc_0">常用方法剖析</h2>
+
+<h3 id="toc_1">add()&amp;offer()</h3>
+
+<p>add(E e)和offer(E e)的语义相同，都是向优先队列中插入元素，只是Queue接口规定二者对插入时失败的处理不同，前者在插入失败时抛出异常，后者则返回false。对于PriorityQueue这个方法在实现上并没有什么区别。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880003809279.png" alt=""/></p>
+
+<p>新插入的元素可能会破坏小根堆的性质，所以必须进行调整。</p>
+
+<pre><code class="language-java">public boolean offer(E e) {
+    if (e == null)//不允许放入null元素
+        throw new NullPointerException();
+    modCount++;
+    int i = size;
+    if (i &gt;= queue.length)
+        grow(i + 1);//自动扩容
+    size = i + 1;
+    if (i == 0)//队列原来为空，这是插入的第一个元素
+        queue[0] = e;
+    else
+        siftUp(i, e);//调整
+    return true;
+}
+</code></pre>
+
+<p>上述代码中，扩容函数grow()类似于ArrayList中的grow()函数，就是再申请一个更大的数组，并将原数组复制过去，这里不再赘述。需要注意的调整函数。siftUp(int k,E e)，该方法用于插入元素x并维持堆的特性。</p>
+
+<pre><code class="language-java">private void siftUp(int k, E x) {
+    while (k &gt; 0) {
+        int parent = (k - 1) &gt;&gt;&gt; 1;//parentNo = (nodeNo-1)/2
+        Object e = queue[parent];
+        if (comparator.compare(x, (E) e) &gt;= 0)//调用比较器的比较方法
+            break;
+        queue[k] = e;
+        k = parent;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<p>新加入的元素x可能会破坏小根堆的性质，因此需要进行调整，调整的过程为：<strong>从指定位置k开始将x逐层与当前点的parent进行比较并交换知道满足<code>x&gt;=queue[parent]</code>为止</strong>，这里比较的可以是自然顺序，也可以是自定义的比较器顺序。</p>
+
+<h3 id="toc_2">element()&amp;peek()</h3>
+
+<p>element()和peek()的语义完全相同，都是获取但不删除队首元素，也就是队列中权值最小的那个元素，两者唯一区别是方法失败时前者抛出异常后者返回null。根据小根堆的性质，堆顶的那个元素就是全局最小的；由于堆用数组进行存储，根据下标关系，0下标处的那个元素就是堆顶元素，所以直接返回数组0下标的那个元素即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880023896388.png" alt=""/></p>
+
+<pre><code class="language-java">//peek()
+public E peek() {
+    if (size == 0)
+        return null;
+    return (E) queue[0];//0下标处的那个元素就是最小的那个
+}
+</code></pre>
+
+<h3 id="toc_3">remove()&amp;poll()</h3>
+
+<p>remove()和poll()方法的语义也完全相同，都是获取并删除队首元素，区别是当方法失败时前者抛出异常，后者返回null。由于删除操作会改变堆的结构，为维护小根堆的性质，需要进行必要的调整。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880029594504.png" alt=""/><br/>
+代码如下：</p>
+
+<pre><code class="language-java">public E poll() {
+    if (size == 0)
+        return null;
+    int s = --size;
+    modCount++;
+    E result = (E) queue[0];//0下标处的那个元素就是最小的那个
+    E x = (E) queue[s];
+    queue[s] = null;
+    if (s != 0)
+        siftDown(0, x);//调整
+    return result;
+}
+</code></pre>
+
+<p>上述代码首先记录0下标处的元素，并用最后一个元素替换0下标位置的元素，之后调用<code>siftDown()</code>方法对堆进行调整，最后返回原来0下标位置那个元素（也就是原先的堆顶元素）。重点是<code>siftDown(int k,E e)</code>方法，该方法的作用是<strong>从k指定的位置开始，将x逐层向下与当前点的左右孩子中较小的那个交换，直到x小于等于左右孩子中的任意一个位置</strong>。</p>
+
+<pre><code class="language-java">//siftDown()
+private void siftDown(int k, E x) {
+    int half = size &gt;&gt;&gt; 1;
+    while (k &lt; half) {
+        //首先找到左右孩子中较小的那个，记录到c里，并用child记录其下标
+        int child = (k &lt;&lt; 1) + 1;//leftNo = parentNo*2+1
+        Object c = queue[child];
+        int right = child + 1;
+        if (right &lt; size &amp;&amp;
+            comparator.compare((E) c, (E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (comparator.compare(x, (E) c) &lt;= 0)
+            break;
+        queue[k] = c;//然后用c取代原来的值
+        k = child;
+    }
+    queue[k] = x;
+}
+</code></pre>
+
+<h3 id="toc_4">remove(Object o)</h3>
+
+<p>remove(Object o)方法用于删除队列中跟o相等的某一个元素（如果多个相等，只删除一个），该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列的结构，所以需要进行调整；又由于删除位置是任意的，所以调整过程比其它函数复杂一些。具体来说，remove(Object o)可以分为2种情况：1.删除的是最后一个元素则直接删除即可，不需要调整；2.删除的不是最后一个元素，从删除点开始以最后一个元素为参照点调用一次siftDown()即可。<br/>
+<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-25-14880047702540.png" alt=""/></p>
+
+<pre><code class="language-java">//remove(Object o)
+public boolean remove(Object o) {
+    //通过遍历数组的方式找到第一个满足o.equals(queue[i])元素的下标
+    int i = indexOf(o);
+    if (i == -1)
+        return false;
+    int s = --size;
+    if (s == i) //情况1
+        queue[i] = null;
+    else {
+        E moved = (E) queue[s];
+        queue[s] = null;
+        siftDown(i, moved);//情况2
+        ......
+    }
+    return true;
+}
+</code></pre>
+
+<h2 id="toc_5">声明</h2>
+
+<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
+作者：CarpenterLee</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/2/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879958366746.html" data-count-type="comments" href="14879958366746.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14879892493054.html">
                 
@@ -426,802 +787,6 @@ final Entry&lt;K,V&gt; removeEntryForKey(Object key) {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14879027517066.html">
-                
-                  <h1>Java容器框架分析(五)——TreeSet与TreeMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>之所以把TreeSet和TreeMap放到一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说TreeSet里面有一个TreeMap（适配器模式）。因此本文将重点分析TreeMap。</p>
-
-<h2 id="toc_0">TreeMap简介</h2>
-
-<p>Java TreeMap实现了SortedMap接口，也就是说会按照key的大小顺序对Map中的元素进行排序，key的大小评判可以通过其本身的自然顺序，也可以通过构造时传入的比较器。</p>
-
-<p>TreeMap的底层通过红黑树实现，也就意味着<code>containsKey()</code>,<code>get()</code>,<code>put()</code>,<code>remove()</code>都有着<em>O(log n)</em>的时间复杂度。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879037942508.png" alt=""/></p>
-
-<p>出于性能原因，TreeMap是非同步的，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将TreeMap包装成同步的：</p>
-
-<pre><code class="language-java">SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
-</code></pre>
-
-<h2 id="toc_1">红黑树</h2>
-
-<p><strong>红黑树是一种近似平衡的二叉查找树，他能保证任何一个节点的左右子树的高度差不会超过二者中较低的那个的一倍</strong>。具体来说，红黑树是满足如下条件的<strong>二叉查找树</strong>：</p>
-
-<ol>
-<li>每个节点要么是红色要么是黑色。</li>
-<li>根节点必须是黑色。</li>
-<li>红色节点不能连续（即红色节点的孩子和父亲都不能是红色）。</li>
-<li>对每个节点，从该点到null（树尾端）的任何路径，都含有相同个数的黑色节点。
-在树的结构发生改变时（插入或者删除操作），往往会破坏上述的条件3或者条件4，需要通过调整使查找树的结构重新满足红黑树的约束条件。</li>
-</ol>
-
-<h3 id="toc_2">预备知识</h3>
-
-<p>前文说到当查找树的结构发生改变时，红黑树的约束条件可能被破坏，需要通过调整使得查找树重新满足红黑树的约束条件。调整可以分为两类：颜色调整（即改变某个节点的颜色）和结构调整（即改变查找树的结构关系）。结构调整包含两个基本的操作：左旋和右旋。</p>
-
-<h4 id="toc_3">左旋</h4>
-
-<p>左旋的过程是将x的右子树绕x逆时针旋转，使得x的右子树成为x的父亲，同时修改相关节点的引用，旋转之后，二叉查找树的属性仍然满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879047657614.png" alt=""/></p>
-
-<p>TreeMap中的左旋操作代码：</p>
-
-<pre><code class="language-java">private void rotateLeft(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; r = p.right;
-        p.right = r.left;
-        if (r.left != null)
-            r.left.parent = p;
-        r.parent = p.parent;
-        if (p.parent == null)
-            root = r;
-        else if (p.parent.left == p)
-            p.parent.left = r;
-        else
-            p.parent.right = r;
-        r.left = p;
-        p.parent = r;
-    }
-}
-</code></pre>
-
-<h3 id="toc_4">右旋</h3>
-
-<p>右旋的过程是将x的左子树绕x顺时针旋转，使得x的左子树成为x的父亲，同时修改相关节点的引用。旋转之后，二叉查找树的属性依旧满足。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879049484921.png" alt=""/></p>
-
-<p>TreeMap中的右旋代码：</p>
-
-<pre><code class="language-java">private void rotateRight(Entry&lt;K,V&gt; p) {
-    if (p != null) {
-        Entry&lt;K,V&gt; l = p.left;
-        p.left = l.right;
-        if (l.right != null) l.right.parent = p;
-        l.parent = p.parent;
-        if (p.parent == null)
-            root = l;
-        else if (p.parent.right == p)
-            p.parent.right = l;
-        else p.parent.left = l;
-        l.right = p;
-        p.parent = l;
-    }
-}
-</code></pre>
-
-<h3 id="toc_5">寻找节点后继</h3>
-
-<p>对于一课二叉查找树，给定节点t，其后继（数中大于t的最小的那个元素）可以通过如下方式找到：</p>
-
-<ol>
-<li>t的右子树不空，则t的后继是其右子树中最小的那个元素</li>
-<li>t的右子树为空，则t的后继是其第一个向左走的祖先</li>
-</ol>
-
-<p>TreeMap中寻找节点后继的代码如下：</p>
-
-<pre><code class="language-java">static &lt;K,V&gt; TreeMap.Entry&lt;K,V&gt; successor(Entry&lt;K,V&gt; t) {
-    if (t == null)
-        return null;
-    else if (t.right != null) {
-            // 1. t的右子树不空，则t的后继是其右子树中最小的那个元素
-        Entry&lt;K,V&gt; p = t.right;
-        while (p.left != null)
-            p = p.left;
-        return p;
-    } else {
-            // 2. t的右孩子为空，则t的后继是其第一个向左走的祖先
-        Entry&lt;K,V&gt; p = t.parent;
-        Entry&lt;K,V&gt; ch = t;
-        while (p != null &amp;&amp; ch == p.right) {
-            ch = p;
-            p = p.parent;
-        }
-        return p;
-    }
-}
-</code></pre>
-
-<h2 id="toc_6">常用方法剖析</h2>
-
-<h3 id="toc_7">get()</h3>
-
-<p><code>get(Object key)</code>方法根据指定的key值返回对应的<code>value</code>，该方法调用了<code>getEntry(Object key)</code>得到相应的<code>entry</code>，然后返回<code>entry.value</code>。因此<code>getEntry()</code>是算法的核心。算法思想是依据<code>key</code>的顺序（自然顺序或自定义比较器顺序）对二叉树进行查找，直到找到满足<code>k.compareTo(p.key) == 0</code> 的<code>entry</code>。 <br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879118892511.png" alt=""/></p>
-
-<pre><code class="language-java">final Entry&lt;K,V&gt; getEntry(Object key) {
-    ......
-    if (key == null)//不允许key值为null
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    Entry&lt;K,V&gt; p = root;
-    while (p != null) {
-        int cmp = k.compareTo(p.key);
-        if (cmp &lt; 0)//向左找
-            p = p.left;
-        else if (cmp &gt; 0)//向右找
-            p = p.right;
-        else
-            return p;
-    }
-    return null;
-}
-</code></pre>
-
-<h3 id="toc_8">put()</h3>
-
-<p><code>put(K key,V value)</code>方法是将指定的<code>key，value</code>对添加到map里。该方法首先会对map进行一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于<code>getEntry()</code>方法；如果没有找到则会在红黑树中插入新的<code>entry</code>，如果插入之后破坏了红黑树的约束条件，则会进行相关的调整（旋转或改变颜色）。</p>
-
-<pre><code class="language-java">public V put(K key, V value) {
-    ......
-    int cmp;
-    Entry&lt;K,V&gt; parent;
-    if (key == null)
-        throw new NullPointerException();
-    Comparable&lt;? super K&gt; k = (Comparable&lt;? super K&gt;) key;//使用元素的自然顺序
-    do {
-        parent = t;
-        cmp = k.compareTo(t.key);
-        if (cmp &lt; 0) t = t.left;//向左找
-        else if (cmp &gt; 0) t = t.right;//向右找
-        else return t.setValue(value);
-    } while (t != null);
-    Entry&lt;K,V&gt; e = new Entry&lt;&gt;(key, value, parent);//创建并插入新的entry
-    if (cmp &lt; 0) parent.left = e;
-    else parent.right = e;
-    fixAfterInsertion(e);//调整
-    size++;
-    return null;
-}
-</code></pre>
-
-<p>上述代码的插入部分并不难理解:首先在红黑树上找到合适的位置，然后创建新的<code>entry</code>并插入（当然，新插入的节点一定是树的叶子节点）。难点是调整函数<code>fixAfterInsertion()</code>，前面已经说过，调整往往需要：1.改变某些节点的颜色;2.对某些节点进行旋转。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879127618711.png" alt=""/></p>
-
-<pre><code class="language-java">//红黑树调整函数fixAfterInsertion()
-private void fixAfterInsertion(Entry&lt;K,V&gt; x) {
-    x.color = RED;
-    while (x != null &amp;&amp; x != root &amp;&amp; x.parent.color == RED) {
-        if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
-            Entry&lt;K,V&gt; y = rightOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况1
-                setColor(y, BLACK);                        // 情况1
-                setColor(parentOf(parentOf(x)), RED);      // 情况1
-                x = parentOf(parentOf(x));                 // 情况1
-            } else {
-                if (x == rightOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况2
-                    rotateLeft(x);                         // 情况2
-                }
-                setColor(parentOf(x), BLACK);              // 情况3
-                setColor(parentOf(parentOf(x)), RED);      // 情况3
-                rotateRight(parentOf(parentOf(x)));        // 情况3
-            }
-        } else {
-            Entry&lt;K,V&gt; y = leftOf(parentOf(parentOf(x)));
-            if (colorOf(y) == RED) {
-                setColor(parentOf(x), BLACK);              // 情况4
-                setColor(y, BLACK);                        // 情况4
-                setColor(parentOf(parentOf(x)), RED);      // 情况4
-                x = parentOf(parentOf(x));                 // 情况4
-            } else {
-                if (x == leftOf(parentOf(x))) {
-                    x = parentOf(x);                       // 情况5
-                    rotateRight(x);                        // 情况5
-                }
-                setColor(parentOf(x), BLACK);              // 情况6
-                setColor(parentOf(parentOf(x)), RED);      // 情况6
-                rotateLeft(parentOf(parentOf(x)));         // 情况6
-            }
-        }
-    }
-    root.color = BLACK;
-}
-</code></pre>
-
-<h3 id="toc_9">remove()</h3>
-
-<p><code>remove(Object key)</code>的作用是删除key值对应的entry，该方法首先通过上文提到的<code>getEntry(Object key)</code>方法找到key值对应的entry，然后调用<code>deleteEntry(Entry&lt;K,V&gt; entry)</code>删除对应的entry，由于删除操作会改变红黑树的结构，有可能破坏红黑树的约束条件，因此有可能要进行调整。<br/>
-<code>getEntry()</code>函数前面已经讲解过，这里重点放在deleteEntry()上，该函数删除指定的entry并在红黑树的约束被破坏时调用<code>fixAfterDeletion(Entry&lt;K,V&gt; x)</code>进行调整。</p>
-
-<p>由于红黑树是一颗增强版的二叉查找树，红黑树的删除操作跟普通二叉查找树的删除操作也就非常相似，唯一的区别是红黑树在节点删除之后可能需要进行调整。现在考虑一颗普通二叉查找树的删除过程，可以分为两种情况：</p>
-
-<ol>
-<li>删除点p的左右子树都为空，或者只有一颗子树非空；</li>
-<li>删除点p的左右子树都非空。</li>
-</ol>
-
-<p>对于上述情况1，处理起来比较简单，直接将p删除（左右子树均为空），或者用非空子树替代p（只有一颗子树为非空）；对于情况2，可以用p的后继s（数中大于x的最小的那个元素）代替p，然后使用情况1删除s。<br/>
-基于以上的逻辑，红黑树的删除节点函数<code>deleteEntry()</code>代码如下： </p>
-
-<pre><code class="language-java">private void deleteEntry(Entry&lt;K,V&gt; p) {
-    modCount++;
-    size--;
-    if (p.left != null &amp;&amp; p.right != null) {// 2. 删除点p的左右子树都非空。
-        Entry&lt;K,V&gt; s = successor(p);// 后继
-        p.key = s.key;
-        p.value = s.value;
-        p = s;
-    }
-    Entry&lt;K,V&gt; replacement = (p.left != null ? p.left : p.right);
-    if (replacement != null) {// 1. 删除点p只有一棵子树非空。
-        replacement.parent = p.parent;
-        if (p.parent == null)
-            root = replacement;
-        else if (p == p.parent.left)
-            p.parent.left  = replacement;
-        else
-            p.parent.right = replacement;
-        p.left = p.right = p.parent = null;
-        if (p.color == BLACK)
-            fixAfterDeletion(replacement);// 调整
-    } else if (p.parent == null) {
-        root = null;
-    } else { // 1. 删除点p的左右子树都为空
-        if (p.color == BLACK)
-            fixAfterDeletion(p);// 调整
-        if (p.parent != null) {
-            if (p == p.parent.left)
-                p.parent.left = null;
-            else if (p == p.parent.right)
-                p.parent.right = null;
-            p.parent = null;
-        }
-    }
-}
-</code></pre>
-
-<p>上述代码中占据大量代码行的，是用来修改父子节点间引用关系的代码，其逻辑并不难理解。下面着重讲解删除后调整函数<code>fixAfterDeletion()</code>。首先请思考一下，删除了那些点才会调整？只有删除点是黑色时，才会触发调整函数，因为红色节点不会破坏红黑树的任何约束，而删除黑色点会破坏规则4。<br/>
-跟上文中讲过的<code>fixAfterInsertion()</code>函数一样，这里也要分成若干种情况。无论有多少情况，具体的调整操作只有两种：1.改变某些节点的颜色；2.对某些节点进行旋转。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14879160078690.png" alt=""/></p>
-
-<p>上述图解的总体思想是：将情况 1 首先转换成情况 2，或者转换成情况 3 和情况 4。当然，该图解并不意味着调整过程一定是从情况 1 开始。通过后续代码我们还会发现几个有趣的规则：a). 如果是由情况 1 之后紧接着进入的情况 2，那么情况 2 之后一定会退出循环（因为 x 为红色）；b). 一旦进入情况 3 和情况 4，一定会退出循环（因为 x 为 root）。</p>
-
-<p>删除后调整函数fixAfterDeletion()的具体代码如下，其中用到了上文中提到的rotateLeft()和rotateRight()函数。通过代码我们能够看到，情况 3 其实是落在情况 4 内的。情况 5～情况 8 跟前四种情况是对称的，因此图解中并没有画出后四种情况，读者可以参考代码自行理解。</p>
-
-<pre><code class="language-java">private void fixAfterDeletion(Entry&lt;K,V&gt; x) {
-    while (x != root &amp;&amp; colorOf(x) == BLACK) {
-        if (x == leftOf(parentOf(x))) {
-            Entry&lt;K,V&gt; sib = rightOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况1
-                setColor(parentOf(x), RED);             // 情况1
-                rotateLeft(parentOf(x));                // 情况1
-                sib = rightOf(parentOf(x));             // 情况1
-            }
-            if (colorOf(leftOf(sib))  == BLACK &amp;&amp;
-                colorOf(rightOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况2
-                x = parentOf(x);                        // 情况2
-            } else {
-                if (colorOf(rightOf(sib)) == BLACK) {
-                    setColor(leftOf(sib), BLACK);       // 情况3
-                    setColor(sib, RED);                 // 情况3
-                    rotateRight(sib);                   // 情况3
-                    sib = rightOf(parentOf(x));         // 情况3
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况4
-                setColor(parentOf(x), BLACK);           // 情况4
-                setColor(rightOf(sib), BLACK);          // 情况4
-                rotateLeft(parentOf(x));                // 情况4
-                x = root;                               // 情况4
-            }
-        } else { // 跟前四种情况对称
-            Entry&lt;K,V&gt; sib = leftOf(parentOf(x));
-            if (colorOf(sib) == RED) {
-                setColor(sib, BLACK);                   // 情况5
-                setColor(parentOf(x), RED);             // 情况5
-                rotateRight(parentOf(x));               // 情况5
-                sib = leftOf(parentOf(x));              // 情况5
-            }
-            if (colorOf(rightOf(sib)) == BLACK &amp;&amp;
-                colorOf(leftOf(sib)) == BLACK) {
-                setColor(sib, RED);                     // 情况6
-                x = parentOf(x);                        // 情况6
-            } else {
-                if (colorOf(leftOf(sib)) == BLACK) {
-                    setColor(rightOf(sib), BLACK);      // 情况7
-                    setColor(sib, RED);                 // 情况7
-                    rotateLeft(sib);                    // 情况7
-                    sib = leftOf(parentOf(x));          // 情况7
-                }
-                setColor(sib, colorOf(parentOf(x)));    // 情况8
-                setColor(parentOf(x), BLACK);           // 情况8
-                setColor(leftOf(sib), BLACK);           // 情况8
-                rotateRight(parentOf(x));               // 情况8
-                x = root;                               // 情况8
-            }
-        }
-    }
-    setColor(x, BLACK);
-}
-</code></pre>
-
-<h2 id="toc_10">TreeSet</h2>
-
-<p>上面已经说过TreeSet实质上就是对TreeMap的简单包装，对TreeSet的函数调用都会转换成合适TreeMap的方法。因此TreeSet的实现十分简单。</p>
-
-<pre><code class="language-java">public class TreeSet&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements NavigableSet&lt;E&gt;, Cloneable, java.io.Serializable {
-    ......
-    private transient NavigableMap&lt;E,Object&gt; m;
-    // Dummy value to associate with an Object in the backing Map
-    private static final Object PRESENT = new Object();
-    public TreeSet() {
-        this.m = new TreeMap&lt;E,Object&gt;();// TreeSet里面有一个TreeMap
-    }
-    ......
-    public boolean add(E e) {
-        return m.put(e, PRESENT)==null;
-    }
-    ......
-}
-</code></pre>
-
-<h2 id="toc_11">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14879027517066.html" data-count-type="comments" href="14879027517066.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14878305448928.html">
-                
-                  <h1>Java容器框架分析(四)——ArrayDeque源码分析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">ArrayDeque简介</h2>
-
-<p>Java中有一个叫做Stack的实现类，却没有Queue的实现类（只有Queue接口）。当需要使用栈时，Java官方已经不推荐使用Stack而是推荐使用更高效的ArrayDeque；既然Queue只是一个接口，当需要使用队列是也就首选ArrayDeque了，其次就是LinkedList啦。</p>
-
-<h2 id="toc_1">Deque接口</h2>
-
-<p>要将栈和队列，首先需要介绍Deque接口，Deque全称Double Ended Queue，即双端队列。它既可以当做栈使用，也可以当做队列使用。<br/>
-下标展示Deque和Queue的接口对照表：</p>
-
-<table>
-<thead>
-<tr>
-<th>Queue方法</th>
-<th>Deque方法</th>
-<th>方法说明</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>add(e)</td>
-<td>addLast(e)</td>
-<td>向队尾插入元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>offer(e)</td>
-<td>offerLast(e)</td>
-<td>向队尾插入元素，失败则返回false</td>
-</tr>
-<tr>
-<td>remove()</td>
-<td>removeFirst()</td>
-<td>获取并删除队首元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>poll()</td>
-<td>pollFrist()</td>
-<td>获取并删除队首元素，失败则返回null</td>
-</tr>
-<tr>
-<td>element()</td>
-<td>getFirst()</td>
-<td>获取但不删除队首元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>peek()</td>
-<td>peekFirst()</td>
-<td>获取但不删除队首元素，失败则返回null</td>
-</tr>
-</tbody>
-</table>
-
-<p>下表列出了Deque和Stack的接口对应关系：</p>
-
-<table>
-<thead>
-<tr>
-<th>Stack方法</th>
-<th>Deque方法</th>
-<th>方法说明</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>push(e)</td>
-<td>addFirst(e)</td>
-<td>向栈顶插入元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>offerFirst(e)</td>
-<td>向栈顶插入元素，失败则返回false</td>
-</tr>
-<tr>
-<td>pop()</td>
-<td>removeFirst(e)</td>
-<td>获取并删除栈顶元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>pollFirst()</td>
-<td>获取并删除栈顶元素，失败则返回null</td>
-</tr>
-<tr>
-<td>peek()</td>
-<td>getFirst()</td>
-<td>获取但不删除栈顶元素，失败则抛出异常</td>
-</tr>
-<tr>
-<td>-</td>
-<td>peekFirst()</td>
-<td>获取但不删除栈顶元素，失败则返回null</td>
-</tr>
-</tbody>
-</table>
-
-<p>上面两个表共定义了Deque的12个接口，添加、删除、查询都有2套接口，它们功能相同，区别就在于对于失败情况的处理方式是不同的。<strong>一套接口遇到失败就会抛出异常，另一套遇到失败会返回特殊值（false或者null）</strong>。除非某种实现对于容量有限制，大多数情况之下，添加操作是不会失败的。虽然上面列举了12个接口，但是无非就是对容器的两端进行添加、删除、查询操作。</p>
-
-<h2 id="toc_2">ArrayDeque简介</h2>
-
-<p>ArrayDeque和LinkedList是Deque的两个通用实现，由于官方更加推荐使用ArrayDeque用作栈和队列，加之上一篇已经对LinkedList进行了讲解，本文着重讲解ArrayDeque的具体实现。<br/>
-从名字就可以看出ArrayDeque的底层使用数组实现，为了满足可以在数组的两端插入或删除元素的要求，该数组还必须是循环的，即循环数组，也就是说数组的任何一点都可以被看作为终点或是起点。<br/>
-ArrayDeque是线程不安全的，当多个线程同时操作时，需要程序员自己进行同步维护。另外，该容器不允许放入null值。</p>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878324914756.png" alt=""/></p>
-
-<p>上图中我们看到，<strong><code>head</code>指向首端第一个有效元素，<code>tail</code>指向尾端第一个可以插入元素的空位</strong>。因为是循环数组，所以head不一定总等于 0，tail也不一定总是比head大。</p>
-
-<h2 id="toc_3">常用方法剖析</h2>
-
-<h3 id="toc_4">addFirst()</h3>
-
-<p><code>addFirst(E e)</code>的作用是在Deque的首端插入元素，也就是在<code>head</code>之前插入元素，在空间足够且下标没有越界的情况之下需要将<code>elements[--head] = e</code>即可。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878327863308.png" alt=""/></p>
-
-<p>实际需要特别考虑的问题：1、空间是否够用；2、下标是否越界的问题。上图之中，如果head的位置为0之后，在调用<code>addFirst()</code>虽然空余空间还有但是head的值为-1，就造成了下标越界。下列代码很好的解决了这个问题：</p>
-
-<pre><code class="language-java">public void addFirst(E e) {
-    if (e == null)//不允许放入null
-        throw new NullPointerException();
-    elements[head = (head - 1) &amp; (elements.length - 1)] = e;//2.下标是否越界
-    if (head == tail)//1.空间是否够用
-        doubleCapacity();//扩容
-}
-</code></pre>
-
-<p>上述代码我们看到，<strong>空间问题是在插入之后解决的</strong>。因为tail总是指向下一个可插入的空位，也就意味着<code>elements</code>数组至少有一个空位，所以插入元素的时候不需要考虑空间问题。<br/>
-下标越界的处理起来非常简单，<code>head=(head-1)&amp;(elements.length - 1)</code>就可以了，<strong>这段代码相当于取余，同时解决了head为负值的情况</strong>。因为elements.length必须是2的指数倍，elements.length - 1就是二进制低位全1，跟head-1 进行 与（&amp;）运算之后就起到了取模的作用，如果head-1为负数（只可能为-1）,则相当于对其取相对于elements.length的补码。</p>
-
-<p>下面再说扩容函数<code>doubleCapacity()</code>，其逻辑是申请一个长度为原数组两倍的新数组，然后将原数组复制过去。复制分两次进行，第一次复制head右边的元素，第二次复制head左边的元素。如图所示：<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878340364545.png" alt=""/></p>
-
-<pre><code class="language-java">private void doubleCapacity() {
-    assert head == tail;
-    int p = head;
-    int n = elements.length;
-    int r = n - p; // head右边元素的个数
-    int newCapacity = n &lt;&lt; 1;//原空间的2倍
-    if (newCapacity &lt; 0)
-        throw new IllegalStateException(&quot;Sorry, deque too big&quot;);
-    Object[] a = new Object[newCapacity];
-    System.arraycopy(elements, p, a, 0, r);//复制右半部分，对应上图中绿色部分
-    System.arraycopy(elements, 0, a, r, p);//复制左半部分，对应上图中灰色部分
-    elements = (E[])a;
-    head = 0;
-    tail = n;
-}
-</code></pre>
-
-<h3 id="toc_5">addLast()</h3>
-
-<p><code>addLast(E e)</code>的作用是在Deque的尾端插入元素，也就是在<code>tail</code>的位置插入元素，由于tail总是指向下一个可以插入的空位，因此只需要<code>element[tail] = e</code>即可。插入完成之后再检查空间，如果空间已经用光，则调用<code>doubleCapacity()</code>进行扩容。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878375459017.png" alt=""/></p>
-
-<pre><code class="language-java">public void addLast(E e) {
-    if (e == null)//不允许放入null
-        throw new NullPointerException();
-    elements[tail] = e;//赋值
-    if ( (tail = (tail + 1) &amp; (elements.length - 1)) == head)//下标越界处理
-        doubleCapacity();//扩容
-}
-</code></pre>
-
-<h3 id="toc_6">pollFirst()</h3>
-
-<p><code>pollFirst()</code>的作用是返回并删除Deque的首部元素，也就是head位置的元素。如果容器不空，只需要直接返回<code>elements[head]</code>即可，当然还需要处理下标的问题，由于ArrayDeque不允许放入<code>null</code>值，则当<code>elements[head]=null</code>时，意味着容器为空。</p>
-
-<pre><code class="language-java">public E pollFirst() {
-    E result = elements[head];
-    if (result == null)//null值意味着deque为空
-        return null;
-    elements[head] = null;//let GC work
-    head = (head + 1) &amp; (elements.length - 1);//下标越界处理
-    return result;
-}
-</code></pre>
-
-<h3 id="toc_7">pollLast()</h3>
-
-<p><code>pollLast()</code>的作用是返回并删除Deque的尾端元素，也就是<code>tail</code>位置前面的那个元素。</p>
-
-<pre><code class="language-java">public E pollLast() {
-    int t = (tail - 1) &amp; (elements.length - 1);//tail的上一个位置是最后一个元素
-    E result = elements[t];
-    if (result == null)//null值意味着deque为空
-        return null;
-    elements[t] = null;//let GC work
-    tail = t;
-    return result;
-}
-</code></pre>
-
-<h3 id="toc_8">peekFirst()</h3>
-
-<p><code>peekFrist()</code>的作用是返回但不删除Deque的首端元素，也就是<code>head</code>位置的元素，只需要直接返回element[head]即可。</p>
-
-<pre><code class="language-java">public E peekFirst() {
-    return elements[head]; // 如果Deque为空，则返回null
-}
-</code></pre>
-
-<h3 id="toc_9">peekLast()</h3>
-
-<p><code>peekLast()</code>的作用是返回单不删除Deque的尾端函数，也就是<code>tail</code>的前一个位置的元素，只需要处理一下坐标位置即可。</p>
-
-<pre><code class="language-java">public E peekLast() {
-    return elements[(tail - 1) &amp; (elements.length - 1)];
-}
-</code></pre>
-
-<h2 id="toc_10">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/23</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878305448928.html" data-count-type="comments" href="14878305448928.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="14878187570598.html">
-                
-                  <h1>Java容器框架分析(三)——LinkedList源码分析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">LinkedList简介</h2>
-
-<p>LinkedList同时实现了List接口和Deque接口，所以它可以看作一个顺序容器，又可以看作是一个队列（Queue），同时又可以看作为一个栈（Stack）。所以当你需要使用栈和队列时，可以考虑使用LinkedList，一方面是因为Java官方文档已经声明不建议使用Stack类，而且Java也没有官方的Queue的实现类。关于栈或者队列，现在的首选是ArrayDeque，当作为栈或者队列使用时，它具有更好的性能（相比LinkedList）。<br/>
-LinkedList的底层通过双向链表作为基础数据结构进行实现。本节将对LinkedList作为线性顺序容器的维护过程予以说明。<br/>
-双向列表的每个节点用内部类Node表示。LinkedList通过其<code>first</code>和<code>last</code>引用分别指向链表的第一个和最后一个元素。当链表为空时，<code>first</code>和<code>last</code>引用均为<code>null</code>。</p>
-
-<pre><code class="language-java">//Node内部类
-private static class Node&lt;E&gt; {
-    E item;
-    Node&lt;E&gt; next;
-    Node&lt;E&gt; prev;
-    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) {
-        this.item = element;
-        this.next = next;
-        this.prev = prev;
-    }
-}
-</code></pre>
-
-<p><img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878256240088.png" alt="LinkedList示意图"/></p>
-
-<p>鉴于LinkedList的实现方式，所有和下标有关的操作的时间复杂度都是线性的。而在末尾或首部删除元素仅需要常数时间。为追求效率LinkedList没有实现同步，如果需要多个线程并发访问，可以采用<code>Collections.synchronizedList()</code>对其进行包装。</p>
-
-<h2 id="toc_1">常用方法剖析</h2>
-
-<h3 id="toc_2">add()</h3>
-
-<p><code>add()</code>方法有两个版本，一个是<code>add(E e)</code>，该方法在LinkedList的末尾插入元素，因为有<code>last</code>指向链表末尾，在末尾插入元素的花费是常数时间。只需要几个简单的修改几个相关引用即可；另一个是<code>add(int index,E e)</code>，该方法是在指定位置插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。<br/>
-<img src="http://7xrsyo.com1.z0.glb.clouddn.com/2017-02-24-14878263883597.png" alt="add方法示意"/></p>
-
-<p>如上图，可以看出<code>add(E e)</code>的逻辑非常简单，代码如下：</p>
-
-<pre><code class="language-java">public boolean add(E e) {
-    final Node&lt;E&gt; l = last;
-    final Node&lt;E&gt; newNode = new Node&lt;&gt;(l, e, null);
-    last = newNode;
-    if (l == null)
-        first = newNode;//原来链表为空，这是插入的第一个元素
-    else
-        l.next = newNode;
-    size++;
-    return true;
-}
-</code></pre>
-
-<p><code>add(int index,E e)</code>的逻辑相比就复杂一些，可以分成两个部分：先根据index找到需要插入的位置；再修改对应的引用，完成插入操作。代码如下：</p>
-
-<pre><code class="language-java">public void add(int index, E element) {
-     //位置越界检查index &gt;= 0 &amp;&amp; index &lt;= size;
-    checkPositionIndex(index);
-    if (index == size)//插入位置是末尾，包括列表为空的情况
-        add(element);
-    else{
-        Node&lt;E&gt; succ = node(index);//1.先根据index找到要插入的位置
-        //2.修改引用，完成插入操作。
-        final Node&lt;E&gt; pred = succ.prev;
-        final Node&lt;E&gt; newNode = new Node&lt;&gt;(pred, e, succ);
-        succ.prev = newNode;
-        if (pred == null)//插入位置为0
-            first = newNode;
-        else
-            pred.next = newNode;
-        size++;
-    }
-}
-</code></pre>
-
-<p>其中<code>node</code>函数的实现有一些小技巧，因为链表是双向的，所以可以从前往后也可以从后往前，具体从那边开始就取决于<code>index&lt; (size &gt;&gt; 1)</code>即index是靠近前端还是后端。</p>
-
-<h3 id="toc_3">remove()</h3>
-
-<p>remove()方法也有两个版本：<code>remove(Object o)</code>删除第一个和对应元素相同的元素；<code>remove(int index)</code>删除指定位置的元素。<br/>
-两个删除操作都需要：先找到对应的目标元素在修改相关引用，完成删除操作。在寻找被删除元素引用的时候<code>remove(Object o)</code>调用的是元素的equals方法，而<code>remove(int index)</code>使用的是下标计数，两种方式都是线性的时间复杂度。在修改引用过程中，都是通过<code>unlink(Node&lt;E&gt; x)</code>方法完成的，需要特别考虑删除元素是首尾的情况。</p>
-
-<pre><code class="language-java">E unlink(Node&lt;E&gt; x) {
-    final E element = x.item;
-    final Node&lt;E&gt; next = x.next;
-    final Node&lt;E&gt; prev = x.prev;
-    if (prev == null) {//删除的是第一个元素
-        first = next;
-    } else {
-        prev.next = next;
-        x.prev = null;
-    }
-    if (next == null) {//删除的是最后一个元素
-        last = prev;
-    } else {
-        next.prev = prev;
-        x.next = null;
-    }
-    x.item = null;//let GC work
-    size--;
-    return element;
-}
-</code></pre>
-
-<h3 id="toc_4">get()</h3>
-
-<p><code>get(int index)</code>得到指定下标处元素的引用，通过调用上文中提到的<code>node(int index)</code>方法实现。</p>
-
-<pre><code class="language-java">public E get(int index) {
-    //检测index是否越界
-    checkElementIndex(index);
-    return node(index).item;
-}
-</code></pre>
-
-<h3 id="toc_5">set()</h3>
-
-<p><code>set(int index,E e)</code>方法将指定下标处的元素修改成指定值，也是先通过<code>node(int index)</code>方法找到对应下标的元素的引用，然后修改Node中的item值。</p>
-
-<pre><code class="language-java">public E set(int index, E element) {
-    checkElementIndex(index);
-    Node&lt;E&gt; x = node(index);
-    E oldVal = x.item;
-    x.item = element;//替换新值
-    return oldVal;
-}
-</code></pre>
-
-<h2 id="toc_6">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/23</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14878187570598.html" data-count-type="comments" href="14878187570598.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -1280,6 +845,8 @@ private static class Node&lt;E&gt; {
             <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
         
             <a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html"><strong>算法-数据结构</strong></a>
+        
+            <a href="%E5%85%B6%E5%AE%83.html"><strong>其它</strong></a>
          
         </p>
 
@@ -1310,6 +877,24 @@ private static class Node&lt;E&gt; {
 	      
 		      
 			      <li class="post">
+			        <a href="15090149503358.html">Jupyterhub安装流程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15090148978006.html"></a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15037351230027.html">Java研发工程师的面试宝典</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14896338034345.html">设计模式-适配器模式</a>
 			      </li>
 		     
@@ -1317,24 +902,6 @@ private static class Node&lt;E&gt; {
 		      
 			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893892449120.html">设计模式-单例模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893744942754.html">剑指Offer-合并两个排序的链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
 			      </li>
 		     
 		  
@@ -1440,7 +1007,7 @@ var duoshuoQuery = {short_name:'zhanjingbo'};
     </script>
 
     <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
 <script>
 var _hmt = _hmt || [];
 (function() {

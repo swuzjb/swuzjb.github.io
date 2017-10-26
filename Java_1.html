@@ -85,6 +85,8 @@
             <li><a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html">课程相关</a></li>
         
             <li><a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html">算法-数据结构</a></li>
+        
+            <li><a href="%E5%85%B6%E5%AE%83.html">其它</a></li>
          
 
       </ul>
@@ -106,6 +108,128 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="14893023180281.html">
+                
+                  <h1>设计模式-工厂方法模式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<blockquote>
+<p>工厂方法模式(Factory Method Pattern)：定义一个用于创建对象的接口，让子类决定将哪一个类实例化。工厂方法模式让一个类的实例化延迟到其子类。工厂方法模式又简称为工厂模式(Factory Pattern)，又可称作虚拟构造器模式(Virtual Constructor Pattern)或多态工厂模式(Polymorphic Factory Pattern)。工厂方法模式是一种类创建型模式。</p>
+</blockquote>
+
+<p>在简单工厂模式中只提供一个工厂类，该工厂类处于对产品类进行实例化的中心位置，它需要知道每一个产品对象的创建细节，并决定何时实例化哪一个产品类。简单工厂模式最大的缺点是当有新产品要加入到系统中时，必须修改工厂类，需要在其中加入必要的业务逻辑，这违背了“开闭原则”。此外，在简单工厂模式中，所有的产品都由同一个工厂创建，工厂类职责较重，业务逻辑较为复杂，具体产品与工厂类之间的耦合度高，严重影响了系统的灵活性和扩展性，而工厂方法模式则可以很好地解决这一问题。<br/>
+在工厂方法模式中，<strong>我们不再提供一个统一的工厂类来创建所有的产品对象，而是针对不同的产品提供不同的工厂，系统提供一个与产品等级结构对应的工厂等级结构</strong>。</p>
+
+<h2 id="toc_0">工厂方法模式中的角色</h2>
+
+<p>工厂方法模式提供一个抽象工厂接口来声明抽象工厂方法，而由其子类来具体实现工厂方法，创建具体的产品对象。<br/>
+在工厂方法模式结构图中包含如下几个角色：</p>
+
+<ol>
+<li>Product（抽象产品）：它是定义产品的接口，是工厂方法模式所创建对象的超类型，也就是产品对象的公共父类。</li>
+<li>ConcreteProduct（具体产品）：它实现了抽象产品接口，某种类型的具体产品由专门的具体工厂创建，具体工厂和具体产品之间一一对应。</li>
+<li>Factory（抽象工厂）：在抽象工厂类中，声明了工厂方法(Factory Method)，用于返回一个产品。抽象工厂是工厂方法模式的核心，所有创建对象的工厂类都必须实现该接口。</li>
+<li>ConcreteFactory（具体工厂）：它是抽象工厂类的子类，实现了抽象工厂中定义的工厂方法，并可由客户端调用，返回一个具体产品类的实例。</li>
+</ol>
+
+<p>工厂方法模式结构如图2所示：<br/>
+<img src="media/14893023180281/14893025237716.jpg" alt=" " class="mw_img_center" style="display: block; clear:both; margin: 0 auto;"/></p>
+
+<h2 id="toc_1">实现</h2>
+
+<p>与简单工厂模式相比，工厂方法模式最重要的区别是引入了抽象工厂角色，抽象工厂可以是接口，也可以是抽象类或者具体类，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public interface AbstarctFactory {
+    public Product createProduct();
+}
+</code></pre>
+
+<p>在抽象工厂中声明了工厂方法但并未实现工厂方法，具体产品对象的创建由其子类负责，客户端针对抽象工厂编程，可在运行时再指定具体工厂类，具体工厂类实现了工厂方法，不同的具体工厂可以创建不同的具体产品，其典型代码如下所示：</p>
+
+<pre><code class="language-java">public class ConcreteFactoryA implements AbstarctFactory {
+    @Override
+    public Product createProduct() {
+        return new ConcreteProductA();
+    }
+}
+</code></pre>
+
+<p>在实际使用时，具体工厂类在实现工厂方法时除了创建具体产品对象之外，还可以负责产品对象的初始化工作以及一些资源和环境配置工作，例如连接数据库、创建文件等。<br/>
+在客户端代码中，只需关心工厂类即可，不同的具体工厂可以创建不同的产品，典型的客户端类代码片段如下所示：</p>
+
+<pre><code class="language-java">AbstractFactory factory;  
+factory = new ConcreteFactoryA(); //可通过配置文件实现  
+Product product;  
+product = factory.createProduct();  
+</code></pre>
+
+<p>可以通过配置文件来存储具体工厂类ConcreteFactory的类名，更换新的具体工厂时无须修改源代码，系统扩展更为方便。</p>
+
+<h2 id="toc_2">总结</h2>
+
+<p>工厂方法模式是简单工厂模式的延伸，它继承了简单工厂模式的优点，同时还弥补了简单工厂模式的不足。工厂方法模式是使用频率最高的设计模式之一，是很多开源框架和API类库的核心模式。</p>
+
+<h3 id="toc_3">主要优点</h3>
+
+<p>工厂方法模式的主要优点如下：</p>
+
+<ol>
+<li>在工厂方法模式中，工厂方法用来创建客户所需要的产品，同时还向客户隐藏了哪种具体产品类将被实例化这一细节，用户只需要关心所需产品对应的工厂，无须关心创建细节，甚至无须知道具体产品类的类名。</li>
+<li>基于工厂角色和产品角色的多态性设计是工厂方法模式的关键。它能够让工厂可以自主确定创建何种产品对象，而如何创建这个对象的细节则完全封装在具体工厂内部。工厂方法模式之所以又被称为多态工厂模式，就正是因为所有的具体工厂类都具有同一抽象父类。</li>
+<li>使用工厂方法模式的另一个优点是在系统中加入新产品时，无须修改抽象工厂和抽象产品提供的接口，无须修改客户端，也无须修改其他的具体工厂和具体产品，而只要添加一个具体工厂和具体产品就可以了，这样，系统的可扩展性也就变得非常好，完全符合“开闭原则”。</li>
+</ol>
+
+<h3 id="toc_4">主要缺点</h3>
+
+<p>工厂方法模式的主要缺点如下：</p>
+
+<ol>
+<li>在添加新产品时，需要编写新的具体产品类，而且还要提供与之对应的具体工厂类，系统中类的个数将成对增加，在一定程度上增加了系统的复杂度，有更多的类需要编译和运行，会给系统带来一些额外的开销。</li>
+<li>由于考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度，且在实现时可能需要用到DOM、反射等技术，增加了系统的实现难度。</li>
+</ol>
+
+<h3 id="toc_5">适用场景</h3>
+
+<p>在以下情况下可以考虑使用工厂方法模式：</p>
+
+<ol>
+<li>客户端不知道它所需要的对象的类。在工厂方法模式中，客户端不需要知道具体产品类的类名，只需要知道所对应的工厂即可，具体的产品对象由具体工厂类创建，可将具体工厂类的类名存储在配置文件或数据库中。</li>
+<li>抽象工厂类通过其子类来指定创建哪个对象。在工厂方法模式中，对于抽象工厂类只需要提供一个创建产品的接口，而由其子类来确定具体要创建的对象，利用面向对象的多态性和里氏代换原则，在程序运行时，子类对象将覆盖父类对象，从而使得系统更容易扩展。</li>
+</ol>
+
+<h2 id="toc_6">实现</h2>
+
+<p><a href="https://github.com/swuzjb/DesignPatterns">相关代码Github地址</a><br/>
+<a href="http://blog.csdn.net/lovelion">文章参考-刘伟</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/3/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                      
+                        &nbsp;<a  class="ds-thread-count" data-thread-key="14893023180281.html" data-count-type="comments" href="14893023180281.html#ds-thread"></a>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="14892373699810.html">
                 
@@ -677,111 +801,6 @@ public class Context {
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="14880758779206.html">
-                
-                  <h1>Java容器框架分析(九)——WeakHashMap</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>在Java容器框架系列文章的最后，笔者打算介绍一个特殊的成员：WeakHashMap，从名字可以看出它是某种Map。它的特殊之处在于WeakHashMap里的entry可能会被GC自动删除，即使程序员没有调用remove()或者clear()方法。</p>
-
-<p>更直观的说，当使用WeakHashMap时，即使没有显示的添加或者删除任何元素，也可能发生如下情况：</p>
-
-<ul>
-<li>调用两次<code>size()</code>方法返回不同的值</li>
-<li>两次调用<code>isEmpty()</code>方法，第一次返回<code>false</code>，第二次返回<code>true</code></li>
-<li>两次调用<code>containsKey()</code>方法，第一次返回<code>true</code>，第二次返回<code>false</code>，尽管是同一个<code>key</code></li>
-<li>两次调用<code>get()</code>方法，第一次返回一个<code>value</code>，第二次返回<code>null</code>，尽管两次使用的是同一个对象</li>
-</ul>
-
-<p>遇到这么奇葩的现象，你是不是觉得使用者一定疯掉？其实不然，<strong>WeekHashMap的这个特点特别适用于需要缓存的场景</strong>。在缓存场景下，由于内存是有限的，不能缓存所有对象；对象缓存命中可以提高效率，但缓存Miss也不会造成错误，因为可以通过计算重新得到。</p>
-
-<p>要明白WeakHashMap的工作原理，还需要引入一个概念：<strong>弱引用</strong>。我们知道Java中的内存是通过GC自动管理的，GC会在程序运行过程中自动判断哪些对象时可以被回收的，并在合适的时机进行内存释放。GC判断某个对象是否可以回收的依据是：<strong>是否有有效的引用指向该对象</strong>。如果没有有效引用指向该对象（意味着不存在访问该对象的方式），那么该对象就是可回收的。这里的<strong>有效引用并不包括弱引用</strong>。也就是说，虽然<strong>弱引用可以用来访问对象，但进行垃圾回收时弱引用并不会被考虑在内，仅有弱引用指向的对象仍然会被GC回收</strong>。</p>
-
-<p>WeakHashMap内部使用弱引用来管理entry，弱引用的特性对应到WeakHashMap上意味着什么呢？将一对key,value放入到WeakHashMap里并不能避免该key值被GC回收，除非在WeakHashMap之外还有对该key的强引用。</p>
-
-<h2 id="toc_0">具体实现</h2>
-
-<p>WeakHashMap的储存结构类似于HashMap，可参考前文。</p>
-
-<h3 id="toc_1">WeakHashSet？</h3>
-
-<p>如果你看过前几篇关于Map和Set的讲解，一定会问：既然有 WeekHashMap，是否有WeekHashSet呢？答案是没有！不过Java Collections工具类给出了解决方案，<code>Collections.newSetFromMap(Map&lt;E,Boolean&gt; map)</code>方法可以将任何Map包装成一个Set。通过如下方式可以快速得到一个 Weak HashSet：<br/>
-<code>java<br/>
-// 将WeakHashMap包装成一个Set<br/>
-Set&lt;Object&gt; weakHashSet = Collections.newSetFromMap(<br/>
-        new WeakHashMap&lt;Object, Boolean&gt;());<br/>
-</code><br/>
-其内部只是对传入的Map进行了简单的封装：</p>
-
-<pre><code class="language-java">// Collections.newSetFromMap()用于将任何Map包装成一个Set
-public static &lt;E&gt; Set&lt;E&gt; newSetFromMap(Map&lt;E, Boolean&gt; map) {
-    return new SetFromMap&lt;&gt;(map);
-}
-
-private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
-    implements Set&lt;E&gt;, Serializable
-{
-    private final Map&lt;E, Boolean&gt; m;  // The backing map
-    private transient Set&lt;E&gt; s;       // Its keySet
-    SetFromMap(Map&lt;E, Boolean&gt; map) {
-        if (!map.isEmpty())
-            throw new IllegalArgumentException(&quot;Map is non-empty&quot;);
-        m = map;
-        s = map.keySet();
-    }
-    public void clear()               {        m.clear(); }
-    public int size()                 { return m.size(); }
-    public boolean isEmpty()          { return m.isEmpty(); }
-    public boolean contains(Object o) { return m.containsKey(o); }
-    public boolean remove(Object o)   { return m.remove(o) != null; }
-    public boolean add(E e) { return m.put(e, Boolean.TRUE) == null; }
-    public Iterator&lt;E&gt; iterator()     { return s.iterator(); }
-    public Object[] toArray()         { return s.toArray(); }
-    public &lt;T&gt; T[] toArray(T[] a)     { return s.toArray(a); }
-    public String toString()          { return s.toString(); }
-    public int hashCode()             { return s.hashCode(); }
-    public boolean equals(Object o)   { return o == this || s.equals(o); }
-    public boolean containsAll(Collection&lt;?&gt; c) {return s.containsAll(c);}
-    public boolean removeAll(Collection&lt;?&gt; c)   {return s.removeAll(c);}
-    public boolean retainAll(Collection&lt;?&gt; c)   {return s.retainAll(c);}
-    // addAll is the only inherited implementation
-    ......
-}
-</code></pre>
-
-<h2 id="toc_2">声明</h2>
-
-<p>本系列博文装载自：<a href="https://github.com/CarpenterLee/JCFInternals">https://github.com/CarpenterLee/JCFInternals</a><br/>
-作者：CarpenterLee</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2017/2/26</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='Java.html'>Java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                      
-                        &nbsp;<a  class="ds-thread-count" data-thread-key="14880758779206.html" data-count-type="comments" href="14880758779206.html#ds-thread"></a>
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -840,6 +859,8 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
             <a href="%E8%AF%BE%E7%A8%8B%E7%9B%B8%E5%85%B3.html"><strong>课程相关</strong></a>
         
             <a href="%E7%AE%97%E6%B3%95-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html"><strong>算法-数据结构</strong></a>
+        
+            <a href="%E5%85%B6%E5%AE%83.html"><strong>其它</strong></a>
          
         </p>
 
@@ -870,6 +891,24 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
 	      
 		      
 			      <li class="post">
+			        <a href="15090149503358.html">Jupyterhub安装流程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15090148978006.html"></a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15037351230027.html">Java研发工程师的面试宝典</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="14896338034345.html">设计模式-适配器模式</a>
 			      </li>
 		     
@@ -877,24 +916,6 @@ private static class SetFromMap&lt;E&gt; extends AbstractSet&lt;E&gt;
 		      
 			      <li class="post">
 			        <a href="14894720983586.html">设计模式-命令模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893892449120.html">设计模式-单例模式</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893744942754.html">剑指Offer-合并两个排序的链表</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14893043668918.html">设计模式-抽象工厂模式</a>
 			      </li>
 		     
 		  
@@ -1000,7 +1021,7 @@ var duoshuoQuery = {short_name:'zhanjingbo'};
     </script>
 
     <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
 <script>
 var _hmt = _hmt || [];
 (function() {
